@@ -48,6 +48,7 @@ module.exports = {
     '@typescript-eslint/no-shadow': ['error'],
     'import/extensions': 'off',
     'import/no-unresolved': 'off',
+    'import/no-extraneous-dependencies': 'off',
 
     // --- 其他細項可選 ---
     'react/function-component-definition': 'off', // 允許箭頭函式元件
