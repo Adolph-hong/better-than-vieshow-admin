@@ -36,7 +36,7 @@ module.exports = {
   rules: {
     // --- prettier ---
     'prettier/prettier': ['warn', { endOfLine: 'auto' }],
-
+    quotes: ['off'],
     // --- react 基礎 ---
     'react/react-in-jsx-scope': 'off', // React 17+ 不需要 import React
     'react/jsx-filename-extension': [1, { extensions: ['.tsx'] }],
