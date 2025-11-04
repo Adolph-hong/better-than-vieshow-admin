@@ -1,4 +1,4 @@
-const TheaterPage = () =>{
+const Theaters = () =>{
     return(
         <>
             
@@ -6,4 +6,4 @@ const TheaterPage = () =>{
     )
 }
 
-export default TheaterPage
+export default Theaters
