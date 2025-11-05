@@ -10,7 +10,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/theaters-detail',
-    element: <TheatersDetail/>,
+    element: <TheatersDetail />,
   },
 ])
 
