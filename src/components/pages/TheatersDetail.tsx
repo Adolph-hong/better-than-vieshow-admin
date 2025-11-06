@@ -54,9 +54,6 @@ const TheatersDetail = () => {
             </div>
           </div>
         </section>
-        <section>
-          <h1>座位表</h1>
-        </section>
       </div>
     </div>
   )
