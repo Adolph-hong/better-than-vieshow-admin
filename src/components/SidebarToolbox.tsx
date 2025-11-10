@@ -51,16 +51,16 @@ const SidebarToolbox = () => {
               <div className="flex items-center justify-center gap-9">
                 <button
                   onClick={() => setRows(Math.max(1, rows - 1))}
-                  className="w-9 h-9 rounded-full bg-[#5365AC] text-white flex items-center justify-center hover:bg-[#43549A] transition-colors"
+                  className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-700 transition-colors"
                 >
                   <Minus/>
                 </button>
-                <span className="text-3xl font-bold text-gray-800 min-w-[60px] text-center">
+                <span className="text-3xl font-bold min-w-[60px] text-center">
                   {rows}
                 </span>
                 <button
                   onClick={() => setRows(rows + 1)}
-                  className="w-9 h-9 rounded-full bg-[#5365AC] text-white flex items-center justify-center hover:bg-[#43549A] transition-colors"
+                  className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-700 transition-colors"
                 >
                   <Plus/>
                 </button>
@@ -72,7 +72,7 @@ const SidebarToolbox = () => {
               <div className="flex items-center justify-center gap-9">
                 <button
                   onClick={() => setColumns(Math.max(1, columns - 1))}
-                  className="w-9 h-9 rounded-full bg-[#5365AC] text-white flex items-center justify-center hover:bg-[#43549A] transition-colors"
+                  className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-700 transition-colors"
                 >
                   <Minus/>
                 </button>
@@ -81,7 +81,7 @@ const SidebarToolbox = () => {
                 </span>
                 <button
                   onClick={() => setColumns(columns + 1)}
-                  className="w-9 h-9 rounded-full bg-[#5365AC] text-white flex items-center justify-center hover:bg-[#43549A] transition-colors"
+                  className="w-9 h-9 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-700 transition-colors"
                 >
                   <Plus/>
                 </button>
@@ -97,7 +97,7 @@ const SidebarToolbox = () => {
                   onClick={() => setSeatType("normal")}
                   className={`w-[117px] h-[77px] flex flex-col items-center justify-center gap-2 rounded-[10px] border px-4 text-sm transition-colors ${
                     seatType === "normal"
-                      ? "bg-[#5365AC] text-white"
+                      ? "bg-primary-500 text-white"
                       : "bg-[#F7F7F7] border-[#F7F7F7]"
                   }`}
                 >
@@ -109,7 +109,7 @@ const SidebarToolbox = () => {
                   onClick={() => setSeatType("accessible")}
                   className={`w-[117px] h-[77px] flex flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
                     seatType === "accessible"
-                      ? "bg-[#5365AC] text-white"
+                      ? "bg-primary-500 text-white"
                       : "bg-[#F7F7F7] border-[#F7F7F7]"
                   }`}
                 >
@@ -131,7 +131,7 @@ const SidebarToolbox = () => {
                   }
                   className={`w-[117px] h-[77px] flex flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
                     selectedScene === "aisle"
-                      ? "bg-[#5365AC] text-white"
+                      ? "bg-primary-500 text-white"
                       : "bg-[#F7F7F7] border-[#F7F7F7]"
                   }`}
                 >
@@ -150,7 +150,7 @@ const SidebarToolbox = () => {
                   onClick={() => setToolItem(toolItem === "eraser" ? null : "eraser")}
                   className={`w-[117px] h-[77px] flex flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
                     toolItem === "eraser"
-                      ? "bg-[#5365AC] text-white"
+                      ? "bg-primary-500 text-white"
                       : "bg-[#F7F7F7] border-[#F7F7F7]"
                   }`}
                 >
