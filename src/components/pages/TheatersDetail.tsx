@@ -1,4 +1,5 @@
 import { ArrowLeft, ChevronDown } from 'lucide-react'
+import SidebarToolbox from '@/components/SidebarToolbox'
 
 const TheatersDetail = () => {
   return (
@@ -52,6 +53,9 @@ const TheatersDetail = () => {
                 </div>
               </label>
             </div>
+          </div>
+          <div className="mt-4">
+            <SidebarToolbox />
           </div>
         </section>
       </div>
