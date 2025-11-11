@@ -1,9 +1,10 @@
+import { Link } from 'react-router-dom'
+
 const Home = () => {
   return (
-    <div>
-      <span>hi</span>
-      <span>hi</span>
-      <span>hi</span>
+    <div className="flex flex-col items-center justify-center">
+      <Link to="/">Home</Link>
+      <Link to="/theaters">Theaters</Link>
     </div>
   )
 }
