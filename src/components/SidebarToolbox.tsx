@@ -11,11 +11,11 @@ const SidebarToolbox = () => {
   const tabBase = "flex items-center justify-center w-full h-full text-sm rounded-md transition-colors";
 
   return (
-    <div className="relative w-fit">
+    <div>
+      <h1 className="header-3 mb-4">座位表</h1>
       <aside
         className="relative w-[270px] h-[499px] bg-white border border-white rounded-sm p-3 space-y-4"
       >
-        <h1 className="header-3">座位表</h1>
         <div className="relative h-10 w-full rounded-sm bg-[#F7F7F7] p-1">
           <div
             className={`absolute inset-y-1 left-1 rounded-sm bg-white shadow transition-all duration-200 ${
