@@ -73,7 +73,7 @@ const TheatersDetail = () => {
               columns={columns}
               setColumns={setColumns}
             />
-            <div className="flex-1">
+            <div className="flex-1 mt-7">
               <SeatingChart selectedTool={selectedTool} rowsCount={rows} columnsCount={columns} />
             </div>
           </div>
