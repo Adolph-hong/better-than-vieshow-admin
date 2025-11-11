@@ -14,12 +14,12 @@ type SeatingChartProps = {
 type RowLabel = string
 
 const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartProps) => {
-  // 以 "A-1" 作為 key 的座位圖狀態
+
   const [seatMap, setSeatMap] = useState<Record<string, SeatType>>({})
 
   const screenWidth = useMemo(() => {
-    const seatWidth = 40 // Tailwind w-10 = 2.5rem = 40px
-    const seatGap = 8 // Tailwind gap-2 = 0.5rem = 8px
+    const seatWidth = 40
+    const seatGap = 8
     const cols = Math.max(columnsCount, 1)
     const totalSeatWidth = cols * seatWidth
     const totalGapWidth = Math.max(cols - 1, 0) * seatGap
@@ -31,12 +31,10 @@ const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartPro
     return Array.from({ length: rowsCount }, (_, i) => String.fromCharCode(65 + i))
   }, [rowsCount])
 
-  // 產生列 [1..N]
   const allColumns: number[] = useMemo(() => {
     return Array.from({ length: columnsCount }, (_, i) => i + 1)
   }, [columnsCount])
 
-  // 根據圖片描述定義座位類型
   const getSeatType = (row: RowLabel, col: number): SeatType => {
     const key = `${row}-${col}`
     return seatMap[key] ?? 'empty'
