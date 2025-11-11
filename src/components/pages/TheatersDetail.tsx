@@ -1,7 +1,15 @@
+import { useState } from 'react'
 import { ArrowLeft, ChevronDown } from 'lucide-react'
 import SidebarToolbox from '@/components/SidebarToolbox'
+import SeatingChart from '@/components/SeatingChart'
+import type { ToolType } from '@/components/SeatingChart'
 
 const TheatersDetail = () => {
+  const [activeTab, setActiveTab] = useState<'tools' | 'seats'>('tools')
+  const [selectedTool, setSelectedTool] = useState<ToolType>('normal')
+  const [rows, setRows] = useState<number>(8)
+  const [columns, setColumns] = useState<number>(16)
+
   return (
     <div className="flex min-h-screen">
       <aside className="w-60 border-r border-gray-300 bg-gray-500">臨時側邊欄</aside>
@@ -54,8 +62,20 @@ const TheatersDetail = () => {
               </label>
             </div>
           </div>
-          <div className="mt-4">
-            <SidebarToolbox />
+          <div className="mt-6 flex gap-6">
+            <SidebarToolbox
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              selectedTool={selectedTool}
+              setSelectedTool={setSelectedTool}
+              rows={rows}
+              setRows={setRows}
+              columns={columns}
+              setColumns={setColumns}
+            />
+            <div className="flex-1">
+              <SeatingChart selectedTool={selectedTool} rowsCount={rows} columnsCount={columns} />
+            </div>
           </div>
         </section>
       </div>
