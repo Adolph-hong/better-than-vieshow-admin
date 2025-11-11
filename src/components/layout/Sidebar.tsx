@@ -1,6 +1,9 @@
+import { NavLink } from 'react-router-dom'
+import SIDEBAR_ITEMS from '@/data/sidebarItem'
+
 const Sidebar = () => {
   return (
-    <div className="min-h-screen w-60 bg-white py-6">
+    <aside className="min-h-screen w-60 bg-white py-6">
       {/* 上方logo與主題文字 */}
       <section className="mb-11 flex justify-center gap-5">
         <img src="/public/logo.svg" alt="logo" />
@@ -9,7 +12,20 @@ const Sidebar = () => {
           <span className="body-large">威秀</span>
         </div>
       </section>
-    </div>
+      {/* 中間選單 */}
+      <section className="flex flex-col">
+        {SIDEBAR_ITEMS.map(({ id, to, title, icon: Icon }) => (
+          <NavLink
+            key={id}
+            to={to}
+            className="flex items-center gap-4 py-5 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6"
+          >
+            <Icon className="ml-9 text-gray-500" active:text-primary-500 />
+            <span className="active:text-primary-500">{title}</span>
+          </NavLink>
+        ))}
+      </section>
+    </aside>
   )
 }
 
