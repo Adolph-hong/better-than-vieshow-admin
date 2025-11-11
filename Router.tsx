@@ -1,7 +1,7 @@
 // Router.tsx
 import { createBrowserRouter } from 'react-router-dom'
 import Home from './src/components/pages/Home'
-import Theaters from './src/components/pages/Theaters'
+import TheatersDetail from './src/components/TheatersDetail'
 
 const router = createBrowserRouter([
   {
@@ -9,8 +9,8 @@ const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: '/theaters',
-    element: <Theaters />,
+    path: '/theaters-detail',
+    element: <TheatersDetail />,
   },
 ])
 
