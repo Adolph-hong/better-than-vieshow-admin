@@ -1,18 +1,31 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Armchair, Accessibility, Minus } from 'lucide-react'
 
 type SeatType = 'normal' | 'accessible' | 'aisle' | 'empty'
 export type ToolType = 'normal' | 'accessible' | 'aisle' | 'eraser' | null
 
+export type SeatStats = {
+  normalSeats: number
+  accessibleSeats: number
+  aisleSeats: number
+  totalAssigned: number
+}
+
 type SeatingChartProps = {
   selectedTool: ToolType
   rowsCount: number
   columnsCount: number
+  onSeatStatsChange: (stats: SeatStats) => void
 }
 
 type RowLabel = string
 
-const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartProps) => {
+const SeatingChart = ({
+  selectedTool,
+  rowsCount,
+  columnsCount,
+  onSeatStatsChange,
+}: SeatingChartProps) => {
   const [seatMap, setSeatMap] = useState<Record<string, SeatType>>({})
 
   const screenWidth = useMemo(() => {
@@ -44,7 +57,7 @@ const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartPro
     setSeatMap((prev) => {
       const next = { ...prev }
       if (selectedTool === 'eraser') {
-        next[key] = 'empty'
+        delete next[key]
       } else if (selectedTool === 'normal') {
         next[key] = 'normal'
       } else if (selectedTool === 'accessible') {
@@ -112,6 +125,35 @@ const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartPro
         )
     }
   }
+
+  const seatStats = useMemo<SeatStats>(() => {
+    let normalSeats = 0
+    let accessibleSeats = 0
+    let aisleSeats = 0
+
+    Object.values(seatMap).forEach((type) => {
+      if (type === 'normal') {
+        normalSeats += 1
+      } else if (type === 'accessible') {
+        accessibleSeats += 1
+      } else if (type === 'aisle') {
+        aisleSeats += 1
+      }
+    })
+
+    return {
+      normalSeats,
+      accessibleSeats,
+      aisleSeats,
+      totalAssigned: normalSeats + accessibleSeats + aisleSeats,
+    }
+  }, [seatMap])
+
+  useEffect(() => {
+    if (onSeatStatsChange) {
+      onSeatStatsChange(seatStats)
+    }
+  }, [seatStats, onSeatStatsChange])
 
   return (
     <div className="flex justify-start bg-[#E7E8EF] p-6">
