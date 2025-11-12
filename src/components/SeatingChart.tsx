@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Armchair, Accessibility, Minus } from 'lucide-react'
-import maskGroup from '@/assets/maskgroup.svg'
 
 type SeatType = 'normal' | 'accessible' | 'aisle' | 'empty'
 export type ToolType = 'normal' | 'accessible' | 'aisle' | 'eraser' | null
@@ -14,7 +13,6 @@ type SeatingChartProps = {
 type RowLabel = string
 
 const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartProps) => {
-
   const [seatMap, setSeatMap] = useState<Record<string, SeatType>>({})
 
   const screenWidth = useMemo(() => {
@@ -120,15 +118,16 @@ const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartPro
       <div className="flex w-full max-w-6xl justify-start">
         <div className="flex flex-1 flex-col items-start">
           <div className="rounded-sm bg-white p-6">
-            <div className="mb-4 flex w-full justify-center">
-              <img
-                src={maskGroup}
-                alt="影廳螢幕裝飾"
-                className="max-w-full object-contain"
+            <div className="mb-4 flex w-full justify-center px-4">
+              <div
+                className="flex flex-col items-center gap-2"
                 style={{
                   width: `${screenWidth}px`,
                 }}
-              />
+              >
+                <span className="text-sm font-normal">螢幕</span>
+                <div className="h-1 w-full bg-[#243B97]" />
+              </div>
             </div>
             <div className="mb-2 flex items-center gap-1">
               <div className="h-10 w-10" />
