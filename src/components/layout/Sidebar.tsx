@@ -1,6 +1,14 @@
 import { NavLink } from 'react-router-dom'
 import SIDEBAR_ITEMS from '@/data/sidebarItem'
 
+const sideBarStyle = (isActive: boolean) => {
+  const baseStyle =
+    'body-small active:text-primary-500 active:border-primary-500 flex items-center gap-4 py-5 leading-none text-gray-500 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6'
+  const activeStyle = 'border-primary-500 border-l-4 bg-[#6877D9]/6'
+  const defaultStyle = 'border-transparent border-l-4'
+  return `${baseStyle} ${isActive ? activeStyle : defaultStyle}`
+}
+
 const Sidebar = () => {
   return (
     <aside className="flex min-h-screen w-60 flex-col bg-white py-6">
@@ -15,13 +23,9 @@ const Sidebar = () => {
       {/* 中間選單 */}
       <section className="flex flex-col">
         {SIDEBAR_ITEMS.map(({ id, to, title, icon: Icon }) => (
-          <NavLink
-            key={id}
-            to={to}
-            className="body-small flex items-center gap-4 py-5 leading-none text-gray-500 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6"
-          >
-            <Icon className="ml-9" active:text-primary-500 />
-            <span className="active:text-primary-500">{title}</span>
+          <NavLink key={id} to={to} className={({ isActive }) => sideBarStyle(isActive)}>
+            <Icon className="ml-8" />
+            <span>{title}</span>
           </NavLink>
         ))}
       </section>
