@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import SIDEBAR_ITEMS from '@/data/sidebarItem'
 
-const sideBarStyle = (isActive: boolean) => {
+const sidebarStyle = (isActive: boolean) => {
   const baseStyle =
     'body-small active:text-primary-500 active:border-primary-500 flex items-center gap-4 py-5 leading-none text-gray-500 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6'
   const activeStyle = 'border-primary-500 border-l-4 bg-[#6877D9]/6'
@@ -23,7 +23,7 @@ const Sidebar = () => {
       {/* 中間選單 */}
       <section className="flex flex-col">
         {SIDEBAR_ITEMS.map(({ id, to, title, icon: Icon }) => (
-          <NavLink key={id} to={to} className={({ isActive }) => sideBarStyle(isActive)}>
+          <NavLink key={id} to={to} className={({ isActive }) => sidebarStyle(isActive)}>
             <Icon className="ml-8" />
             <span>{title}</span>
           </NavLink>
