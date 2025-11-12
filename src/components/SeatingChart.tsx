@@ -117,8 +117,8 @@ const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartPro
     <div className="flex justify-start bg-[#E7E8EF] p-6">
       <div className="flex w-full max-w-6xl justify-start">
         <div className="flex flex-1 flex-col items-start">
-          <div className="rounded-sm bg-white p-6">
-            <div className="mb-4 flex w-full justify-center px-4">
+          <div className="rounded-sm bg-white px-6 pt-4 pb-6">
+            <div className="flex w-full justify-center px-4" style={{ marginBottom: '19px' }}>
               <div
                 className="flex flex-col items-center gap-2"
                 style={{
