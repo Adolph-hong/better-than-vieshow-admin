@@ -14,7 +14,7 @@ const Sidebar = () => {
     <aside className="flex min-h-screen w-60 flex-col bg-white py-6">
       {/* 上方logo與主題文字 */}
       <section className="mb-11 ml-4 flex gap-5 text-[#333333]">
-        <img src="/public/logo.svg" alt="logo" />
+        <img src="/logo.svg" alt="logo" />
         <div className="flex flex-col items-center">
           <span className="body-small font-bold">Better Than</span>
           <span className="body-large font-semibold">威秀</span>
@@ -32,7 +32,7 @@ const Sidebar = () => {
       {/* 下方會員 */}
       <section className="mt-auto px-3">
         <div className="flex gap-3">
-          <img src="/public/admin-photo.svg" alt="admin-photo" />
+          <img src="/admin-photo.svg" alt="admin-photo" />
           <div className="mt-auto flex h-[45px] min-w-0 flex-1 flex-col justify-end gap-1">
             <span className="font-inter text-lg leading-none font-semibold text-[#000000]">
               Zhen Yu
