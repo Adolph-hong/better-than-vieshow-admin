@@ -1,20 +1,31 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Armchair, Accessibility, Minus } from 'lucide-react'
-import maskGroup from '@/assets/maskgroup.svg'
 
 type SeatType = 'normal' | 'accessible' | 'aisle' | 'empty'
 export type ToolType = 'normal' | 'accessible' | 'aisle' | 'eraser' | null
+
+export type SeatStats = {
+  normalSeats: number
+  accessibleSeats: number
+  aisleSeats: number
+  totalAssigned: number
+}
 
 type SeatingChartProps = {
   selectedTool: ToolType
   rowsCount: number
   columnsCount: number
+  onSeatStatsChange: (stats: SeatStats) => void
 }
 
 type RowLabel = string
 
-const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartProps) => {
-
+const SeatingChart = ({
+  selectedTool,
+  rowsCount,
+  columnsCount,
+  onSeatStatsChange,
+}: SeatingChartProps) => {
   const [seatMap, setSeatMap] = useState<Record<string, SeatType>>({})
 
   const screenWidth = useMemo(() => {
@@ -46,7 +57,7 @@ const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartPro
     setSeatMap((prev) => {
       const next = { ...prev }
       if (selectedTool === 'eraser') {
-        next[key] = 'empty'
+        delete next[key]
       } else if (selectedTool === 'normal') {
         next[key] = 'normal'
       } else if (selectedTool === 'accessible') {
@@ -115,20 +126,50 @@ const SeatingChart = ({ selectedTool, rowsCount, columnsCount }: SeatingChartPro
     }
   }
 
+  const seatStats = useMemo<SeatStats>(() => {
+    let normalSeats = 0
+    let accessibleSeats = 0
+    let aisleSeats = 0
+
+    Object.values(seatMap).forEach((type) => {
+      if (type === 'normal') {
+        normalSeats += 1
+      } else if (type === 'accessible') {
+        accessibleSeats += 1
+      } else if (type === 'aisle') {
+        aisleSeats += 1
+      }
+    })
+
+    return {
+      normalSeats,
+      accessibleSeats,
+      aisleSeats,
+      totalAssigned: normalSeats + accessibleSeats + aisleSeats,
+    }
+  }, [seatMap])
+
+  useEffect(() => {
+    if (onSeatStatsChange) {
+      onSeatStatsChange(seatStats)
+    }
+  }, [seatStats, onSeatStatsChange])
+
   return (
     <div className="flex justify-start bg-[#E7E8EF] p-6">
       <div className="flex w-full max-w-6xl justify-start">
         <div className="flex flex-1 flex-col items-start">
-          <div className="rounded-sm bg-white p-6">
-            <div className="mb-4 flex w-full justify-center">
-              <img
-                src={maskGroup}
-                alt="影廳螢幕裝飾"
-                className="max-w-full object-contain"
+          <div className="rounded-sm bg-white px-6 pt-4 pb-6">
+            <div className="flex w-full justify-center px-4" style={{ marginBottom: '19px' }}>
+              <div
+                className="flex flex-col items-center gap-2"
                 style={{
                   width: `${screenWidth}px`,
                 }}
-              />
+              >
+                <span className="text-sm font-normal">螢幕</span>
+                <div className="h-1 w-full bg-[#243B97]" />
+              </div>
             </div>
             <div className="mb-2 flex items-center gap-1">
               <div className="h-10 w-10" />
