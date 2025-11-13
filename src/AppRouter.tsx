@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
-import Home from '@/components/pages/Home'
-import Movie from '@/components/pages/Movie'
+import Home from '../pages/Home'
+import Movie from '../pages/Movie'
 
 const AppRouter = () => {
   return (
