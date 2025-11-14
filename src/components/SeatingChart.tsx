@@ -37,7 +37,6 @@ const SeatingChart = ({
     return totalSeatWidth + totalGapWidth
   }, [columnsCount])
 
-  // 產生行標籤 A, B, C...
   const rows: RowLabel[] = useMemo(() => {
     return Array.from({ length: rowsCount }, (_, i) => String.fromCharCode(65 + i))
   }, [rowsCount])
@@ -49,6 +48,25 @@ const SeatingChart = ({
   const getSeatType = (row: RowLabel, col: number): SeatType => {
     const key = `${row}-${col}`
     return seatMap[key] ?? 'empty'
+  }
+
+  const isRowAllAisle = (row: RowLabel): boolean => {
+    return columnsCount > 0 && allColumns.every((col) => getSeatType(row, col) === 'aisle')
+  }
+
+  const isColumnAllAisle = (col: number): boolean => {
+    return rows.length > 0 && rows.every((row) => getSeatType(row, col) === 'aisle')
+  }
+
+  const getRowLabel = (rowIndex: number): string => {
+    const nonAisleRows = rows.slice(0, rowIndex + 1).filter((row) => !isRowAllAisle(row))
+    const labelIndex = nonAisleRows.length
+    return String.fromCharCode(65 + labelIndex - 1)
+  }
+
+  const getColumnLabel = (col: number): number => {
+    const nonAisleColumns = allColumns.filter((c) => c < col && !isColumnAllAisle(c))
+    return nonAisleColumns.length + 1
   }
 
   const handleSeatClick = (row: RowLabel, col: number) => {
@@ -174,24 +192,32 @@ const SeatingChart = ({
             <div className="mb-2 flex items-center gap-1">
               <div className="h-10 w-10" />
               <div className="flex gap-2">
-                {allColumns.map((col) => (
-                  <div
-                    key={col}
-                    className="flex h-10 w-10 items-center justify-center text-center text-[18px] font-medium text-gray-300"
-                  >
-                    {col}
-                  </div>
-                ))}
+                {allColumns.map((col) => {
+                  if (isColumnAllAisle(col)) {
+                    return <div key={col} className="h-10 w-10" />
+                  }
+                  const actualLabel = getColumnLabel(col)
+                  return (
+                    <div
+                      key={col}
+                      className="flex h-10 w-10 items-center justify-center text-center text-[18px] font-medium text-gray-300"
+                    >
+                      {actualLabel}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              {rows.map((row) => {
+              {rows.map((row, rowIndex) => {
+                const shouldShowRowLabel = !isRowAllAisle(row)
+                const actualLabel = shouldShowRowLabel ? getRowLabel(rowIndex) : ''
                 return (
                   <div key={row}>
                     <div className="flex items-center gap-1">
                       <div className="flex h-10 w-10 items-center justify-center text-center text-[18px] font-medium text-gray-300">
-                        {row}
+                        {actualLabel}
                       </div>
 
                       <div className="flex gap-2">
