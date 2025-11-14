@@ -1,12 +1,12 @@
 import { Route, Routes } from 'react-router-dom'
-import Home from '@/components/pages/Home'
-import Theaters from '@/components/pages/Theaters'
+import Home from '../pages/Home'
+import Movie from '../pages/Movie'
 
 const AppRouter = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/theaters" element={<Theaters />} />
+      <Route path="/movies" element={<Movie />} />
     </Routes>
   )
 }
