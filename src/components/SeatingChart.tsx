@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { Armchair, Accessibility, Minus } from 'lucide-react'
 
 type SeatType = 'normal' | 'accessible' | 'aisle' | 'empty'
@@ -27,6 +27,8 @@ const SeatingChart = ({
   onSeatStatsChange,
 }: SeatingChartProps) => {
   const [seatMap, setSeatMap] = useState<Record<string, SeatType>>({})
+  const [isDragging, setIsDragging] = useState(false)
+  const processedSeatsRef = useRef<Set<string>>(new Set())
 
   const screenWidth = useMemo(() => {
     const seatWidth = 40
@@ -69,9 +71,18 @@ const SeatingChart = ({
     return nonAisleColumns.length + 1
   }
 
-  const handleSeatClick = (row: RowLabel, col: number) => {
+  const updateSeat = (row: RowLabel, col: number, skipCheck = false) => {
     if (!selectedTool) return
     const key = `${row}-${col}`
+
+    if (isDragging && !skipCheck && processedSeatsRef.current.has(key)) {
+      return
+    }
+
+    if (isDragging) {
+      processedSeatsRef.current.add(key)
+    }
+
     setSeatMap((prev) => {
       const next = { ...prev }
       if (selectedTool === 'eraser') {
@@ -87,11 +98,37 @@ const SeatingChart = ({
     })
   }
 
+  const handleSeatMouseDown = (row: RowLabel, col: number) => {
+    if (!selectedTool) return
+    setIsDragging(true)
+    processedSeatsRef.current.clear()
+    updateSeat(row, col, true)
+  }
+
+  const handleSeatMouseEnter = (row: RowLabel, col: number) => {
+    if (isDragging && selectedTool) {
+      updateSeat(row, col)
+    }
+  }
+
+  const handleSeatClick = (row: RowLabel, col: number) => {
+    if (!selectedTool || isDragging) return
+    updateSeat(row, col, true)
+  }
+
   const renderSeat = (row: RowLabel, col: number) => {
     const type = getSeatType(row, col)
 
     const baseClasses =
       'flex h-10 w-10 items-center justify-center rounded border transition-colors'
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+      e.preventDefault()
+      handleSeatMouseDown(row, col)
+    }
+
+    const handleMouseEnter = () => handleSeatMouseEnter(row, col)
+    const handleClick = () => handleSeatClick(row, col)
 
     switch (type) {
       case 'accessible':
@@ -101,7 +138,9 @@ const SeatingChart = ({
             className={`${baseClasses} border-white bg-[#A0CBA3]`}
             title={`${row}${col} - 無障礙座位`}
             aria-label={`${row}${col} - 無障礙座位`}
-            onClick={() => handleSeatClick(row, col)}
+            onMouseDown={handleMouseDown}
+            onMouseEnter={handleMouseEnter}
+            onClick={handleClick}
           >
             <Accessibility className="h-5 w-5 text-white" />
           </button>
@@ -113,7 +152,9 @@ const SeatingChart = ({
             className={`${baseClasses} border-white bg-gray-200`}
             title={`${row}${col} - 走道`}
             aria-label={`${row}${col} - 走道`}
-            onClick={() => handleSeatClick(row, col)}
+            onMouseDown={handleMouseDown}
+            onMouseEnter={handleMouseEnter}
+            onClick={handleClick}
           >
             <Minus className="h-4 w-4 text-gray-300" />
           </button>
@@ -125,7 +166,9 @@ const SeatingChart = ({
             className={`${baseClasses} border-[#C2C2C2] bg-white`}
             title={`${row}${col} - 空白`}
             aria-label={`${row}${col} - 空白`}
-            onClick={() => handleSeatClick(row, col)}
+            onMouseDown={handleMouseDown}
+            onMouseEnter={handleMouseEnter}
+            onClick={handleClick}
           />
         )
       case 'normal':
@@ -136,7 +179,9 @@ const SeatingChart = ({
             className={`${baseClasses} border-white bg-[#8EAFCB]`}
             title={`${row}${col} - 一般座位`}
             aria-label={`${row}${col} - 一般座位`}
-            onClick={() => handleSeatClick(row, col)}
+            onMouseDown={handleMouseDown}
+            onMouseEnter={handleMouseEnter}
+            onClick={handleClick}
           >
             <Armchair className="h-5 w-5 text-white" />
           </button>
@@ -172,6 +217,32 @@ const SeatingChart = ({
       onSeatStatsChange(seatStats)
     }
   }, [seatStats, onSeatStatsChange])
+
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false)
+        processedSeatsRef.current.clear()
+      }
+    }
+
+    const handleMouseLeave = () => {
+      if (isDragging) {
+        setIsDragging(false)
+        processedSeatsRef.current.clear()
+      }
+    }
+
+    if (isDragging) {
+      document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener('mouseleave', handleMouseLeave)
+    }
+
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [isDragging])
 
   return (
     <div className="flex justify-start bg-[#E7E8EF] p-6">
