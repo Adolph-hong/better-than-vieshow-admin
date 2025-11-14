@@ -1,11 +1,11 @@
 import ghost from '@/assets/icon/ghost.svg'
 
-interface ContentProps {
+interface EmptyContentProps {
   title: string
   description: string
 }
 
-const Content = ({ title, description }: ContentProps) => {
+const EmptyContent = ({ title, description }: EmptyContentProps) => {
   return (
     <section className="flex flex-1 flex-col items-center justify-center gap-10">
       <img src={ghost} alt="No movies available yet" />
@@ -17,4 +17,4 @@ const Content = ({ title, description }: ContentProps) => {
   )
 }
 
-export default Content
+export default EmptyContent
