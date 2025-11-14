@@ -6,7 +6,7 @@ const AppRouter = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/movie" element={<Movie />} />
+      <Route path="/movies" element={<Movie />} />
     </Routes>
   )
 }
