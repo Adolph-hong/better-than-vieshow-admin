@@ -1,6 +1,6 @@
-import AdminContainer from '@/components/layout/AdminContainer'
-import EmptyContent from '@/components/ui/EmptyContent'
-import Header from '@/components/ui/Header'
+import AdminContainer from "@/components/layout/AdminContainer"
+import EmptyContent from "@/components/ui/EmptyContent"
+import Header from "@/components/ui/Header"
 
 const Movie = () => {
   return (
