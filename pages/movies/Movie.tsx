@@ -1,8 +1,7 @@
+import { useNavigate } from "react-router-dom"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
-import { useNavigate } from "react-router-dom"
-
 
 const Movie = () => {
   const navigate = useNavigate()
