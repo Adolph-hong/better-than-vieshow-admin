@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { Armchair, Accessibility, Minus } from 'lucide-react'
 
 type SeatType = 'normal' | 'accessible' | 'aisle' | 'empty'
@@ -11,20 +11,29 @@ export type SeatStats = {
   totalAssigned: number
 }
 
+type RowLabel = string
+
+export type SeatCell = {
+  type: 'seat' | 'aisle' | 'empty'
+  seatKind?: Extract<SeatType, 'normal' | 'accessible'>
+  row: RowLabel
+  column: number
+}
+
 type SeatingChartProps = {
   selectedTool: ToolType
   rowsCount: number
   columnsCount: number
   onSeatStatsChange: (stats: SeatStats) => void
+  onSeatMapChange?: (seatMap: SeatCell[][]) => void
 }
-
-type RowLabel = string
 
 const SeatingChart = ({
   selectedTool,
   rowsCount,
   columnsCount,
   onSeatStatsChange,
+  onSeatMapChange,
 }: SeatingChartProps) => {
   const [seatMap, setSeatMap] = useState<Record<string, SeatType>>({})
   const [isDragging, setIsDragging] = useState(false)
@@ -47,10 +56,13 @@ const SeatingChart = ({
     return Array.from({ length: columnsCount }, (_, i) => i + 1)
   }, [columnsCount])
 
-  const getSeatType = (row: RowLabel, col: number): SeatType => {
-    const key = `${row}-${col}`
-    return seatMap[key] ?? 'empty'
-  }
+  const getSeatType = useCallback(
+    (row: RowLabel, col: number): SeatType => {
+      const key = `${row}-${col}`
+      return seatMap[key] ?? 'empty'
+    },
+    [seatMap]
+  )
 
   const isRowAllAisle = (row: RowLabel): boolean => {
     return columnsCount > 0 && allColumns.every((col) => getSeatType(row, col) === 'aisle')
@@ -212,11 +224,45 @@ const SeatingChart = ({
     }
   }, [seatMap])
 
+  const structuredSeatMap = useMemo<SeatCell[][]>(() => {
+    return rows.map((row) =>
+      allColumns.map((col) => {
+        const seatType = getSeatType(row, col)
+        if (seatType === 'aisle') {
+          return {
+            type: 'aisle' as const,
+            row,
+            column: col,
+          }
+        }
+        if (seatType === 'empty') {
+          return {
+            type: 'empty' as const,
+            row,
+            column: col,
+          }
+        }
+        return {
+          type: 'seat' as const,
+          seatKind: seatType === 'accessible' ? 'accessible' : 'normal',
+          row,
+          column: col,
+        }
+      })
+    )
+  }, [rows, allColumns, getSeatType])
+
   useEffect(() => {
     if (onSeatStatsChange) {
       onSeatStatsChange(seatStats)
     }
   }, [seatStats, onSeatStatsChange])
+
+  useEffect(() => {
+    if (onSeatMapChange) {
+      onSeatMapChange(structuredSeatMap)
+    }
+  }, [structuredSeatMap, onSeatMapChange])
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -309,3 +355,7 @@ const SeatingChart = ({
 }
 
 export default SeatingChart
+
+SeatingChart.defaultProps = {
+  onSeatMapChange: undefined,
+}

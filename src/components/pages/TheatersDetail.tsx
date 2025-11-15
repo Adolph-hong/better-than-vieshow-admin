@@ -1,20 +1,59 @@
 import { useState } from 'react'
 import { ArrowLeft, ChevronDown } from 'lucide-react'
 import SidebarToolbox from '@/components/SidebarToolbox'
-import SeatingChart, { type SeatStats, type ToolType } from '@/components/SeatingChart'
+import SeatingChart, {
+  type SeatCell,
+  type SeatStats,
+  type ToolType,
+} from '@/components/SeatingChart'
 import TheatersFooter from '@/components/TheatersFooter'
+
+type TheaterData = {
+  id: string
+  name: string
+  isActive: boolean
+  normalSeats: number
+  accessibleSeats: number
+  seatMap: SeatCell[][]
+}
 
 const TheatersDetail = () => {
   const [activeTab, setActiveTab] = useState<'tools' | 'seats'>('tools')
   const [selectedTool, setSelectedTool] = useState<ToolType>('normal')
   const [rows, setRows] = useState<number>(8)
   const [columns, setColumns] = useState<number>(16)
+  const [theaterName, setTheaterName] = useState<string>('')
+  const [seatMapData, setSeatMapData] = useState<SeatCell[][]>([])
   const [seatStats, setSeatStats] = useState<SeatStats>({
     normalSeats: 0,
     accessibleSeats: 0,
     aisleSeats: 0,
     totalAssigned: 0,
   })
+  const [, setTheaters] = useState<TheaterData[]>([])
+
+  const handleCreateTheater = () => {
+    const trimmedName = theaterName.trim()
+    if (!trimmedName || seatStats.totalAssigned === 0) {
+      return
+    }
+
+    const newTheater: TheaterData = {
+      id: crypto.randomUUID(),
+      name: trimmedName,
+      isActive: true,
+      normalSeats: seatStats.normalSeats,
+      accessibleSeats: seatStats.accessibleSeats,
+      seatMap: seatMapData,
+    }
+
+    setTheaters((prev) => {
+      const updated = [...prev, newTheater]
+      // eslint-disable-next-line no-console
+      console.log('目前影廳資料：', updated)
+      return updated
+    })
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -37,6 +76,8 @@ const TheatersDetail = () => {
                     id="theaterName"
                     type="text"
                     placeholder="影廳名稱"
+                    value={theaterName}
+                    onChange={(event) => setTheaterName(event.target.value)}
                     className="mt-2 w-[320px] rounded-md border border-white bg-white px-4 py-3 text-[#353642] placeholder:text-[#999999]"
                   />
                 </label>
@@ -86,6 +127,7 @@ const TheatersDetail = () => {
                   rowsCount={rows}
                   columnsCount={columns}
                   onSeatStatsChange={setSeatStats}
+                  onSeatMapChange={setSeatMapData}
                 />
               </div>
             </div>
@@ -94,7 +136,8 @@ const TheatersDetail = () => {
         <TheatersFooter
           normalSeatCount={seatStats.normalSeats}
           accessibleSeatCount={seatStats.accessibleSeats}
-          isCreateDisabled={seatStats.totalAssigned === 0}
+          onCreate={handleCreateTheater}
+          isCreateDisabled={!theaterName.trim() || seatStats.totalAssigned === 0}
         />
       </div>
     </div>
