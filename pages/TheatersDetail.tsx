@@ -2,9 +2,9 @@ import SeatingChart, {
   type SeatCell,
   type SeatStats,
   type ToolType,
-} from "@/components/SeatingChart"
-import SidebarToolbox from "@/components/SidebarToolbox"
-import TheatersFooter from "@/components/TheatersFooter"
+} from "@/components/theater-builder/SeatingChart"
+import SidebarToolbox from "@/components/theater-builder/SidebarToolbox"
+import TheatersFooter from "@/components/theater-builder/TheatersFooter"
 import { ArrowLeft, ChevronDown } from "lucide-react"
 import { useState } from "react"
 
