@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import { ArrowLeft, ChevronDown } from 'lucide-react'
-import SidebarToolbox from '@/components/SidebarToolbox'
 import SeatingChart, {
   type SeatCell,
   type SeatStats,
   type ToolType,
-} from '@/components/SeatingChart'
-import TheatersFooter from '@/components/TheatersFooter'
+} from "@/components/SeatingChart"
+import SidebarToolbox from "@/components/SidebarToolbox"
+import TheatersFooter from "@/components/TheatersFooter"
+import { ArrowLeft, ChevronDown } from "lucide-react"
+import { useState } from "react"
 
 type TheaterData = {
   id: string
@@ -18,11 +18,11 @@ type TheaterData = {
 }
 
 const TheatersDetail = () => {
-  const [activeTab, setActiveTab] = useState<'tools' | 'seats'>('tools')
-  const [selectedTool, setSelectedTool] = useState<ToolType>('normal')
+  const [activeTab, setActiveTab] = useState<"tools" | "seats">("tools")
+  const [selectedTool, setSelectedTool] = useState<ToolType>("normal")
   const [rows, setRows] = useState<number>(8)
   const [columns, setColumns] = useState<number>(16)
-  const [theaterName, setTheaterName] = useState<string>('')
+  const [theaterName, setTheaterName] = useState<string>("")
   const [seatMapData, setSeatMapData] = useState<SeatCell[][]>([])
   const [seatStats, setSeatStats] = useState<SeatStats>({
     normalSeats: 0,
@@ -50,7 +50,7 @@ const TheatersDetail = () => {
     setTheaters((prev) => {
       const updated = [...prev, newTheater]
       // eslint-disable-next-line no-console
-      console.log('目前影廳資料：', updated)
+      console.log("目前影廳資料：", updated)
       return updated
     })
   }

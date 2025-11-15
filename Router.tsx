@@ -1,15 +1,15 @@
 // Router.tsx
-import { createBrowserRouter } from 'react-router-dom'
-import Home from './src/components/pages/Home'
-import TheatersDetail from './src/components/TheatersDetail'
+import { createBrowserRouter } from "react-router-dom"
+import Home from "./src/components/pages/Home"
+import TheatersDetail from "./src/components/TheatersDetail"
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Home />,
   },
   {
-    path: '/theaters-detail',
+    path: "/theaters-detail",
     element: <TheatersDetail />,
   },
 ])

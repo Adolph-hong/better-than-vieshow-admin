@@ -1,10 +1,10 @@
-import { Armchair, Accessibility, Minus, Eraser, Plus } from 'lucide-react'
+import { Armchair, Accessibility, Minus, Eraser, Plus } from "lucide-react"
 
-type ToolType = 'normal' | 'accessible' | 'aisle' | 'eraser' | null
+type ToolType = "normal" | "accessible" | "aisle" | "eraser" | null
 
 type SidebarToolboxProps = {
-  activeTab: 'tools' | 'seats'
-  setActiveTab: (tab: 'tools' | 'seats') => void
+  activeTab: "tools" | "seats"
+  setActiveTab: (tab: "tools" | "seats") => void
   selectedTool: ToolType
   setSelectedTool: (tool: ToolType) => void
   rows: number
@@ -24,7 +24,7 @@ const SidebarToolbox = ({
   setColumns,
 }: SidebarToolboxProps) => {
   const tabBase =
-    'flex items-center justify-center w-full h-full text-sm rounded-md transition-colors'
+    "flex items-center justify-center w-full h-full text-sm rounded-md transition-colors"
 
   return (
     <div>
@@ -33,22 +33,22 @@ const SidebarToolbox = ({
         <div className="relative h-10 w-full rounded-sm bg-[#F7F7F7] p-1">
           <div
             className={`absolute inset-y-1 left-1 rounded-sm bg-white shadow transition-all duration-200 ${
-              activeTab === 'seats' ? 'w-[119px] translate-x-[119px]' : 'w-[119px] translate-x-0'
+              activeTab === "seats" ? "w-[119px] translate-x-[119px]" : "w-[119px] translate-x-0"
             }`}
           />
 
           <div className="relative z-10 grid h-full grid-cols-2">
-            <button onClick={() => setActiveTab('tools')} className={`${tabBase}`}>
+            <button onClick={() => setActiveTab("tools")} className={`${tabBase}`}>
               工具箱
             </button>
-            <button onClick={() => setActiveTab('seats')} className={`${tabBase}`}>
+            <button onClick={() => setActiveTab("seats")} className={`${tabBase}`}>
               座位數量
             </button>
           </div>
         </div>
 
         <div className="flex flex-col">
-          {activeTab === 'seats' ? (
+          {activeTab === "seats" ? (
             <div className="space-y-[18px]">
               <div className="space-y-4">
                 <h3>排數（深度）</h3>
@@ -96,11 +96,11 @@ const SidebarToolbox = ({
                 <h3 className="font-medium">座位</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => setSelectedTool(selectedTool === 'normal' ? null : 'normal')}
+                    onClick={() => setSelectedTool(selectedTool === "normal" ? null : "normal")}
                     className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-[10px] border px-4 text-sm transition-colors ${
-                      selectedTool === 'normal'
-                        ? 'bg-primary-500 text-white'
-                        : 'border-[#F7F7F7] bg-[#F7F7F7]'
+                      selectedTool === "normal"
+                        ? "bg-primary-500 text-white"
+                        : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
                     <Armchair size={28} className="flex-shrink-0" />
@@ -109,12 +109,12 @@ const SidebarToolbox = ({
 
                   <button
                     onClick={() =>
-                      setSelectedTool(selectedTool === 'accessible' ? null : 'accessible')
+                      setSelectedTool(selectedTool === "accessible" ? null : "accessible")
                     }
                     className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
-                      selectedTool === 'accessible'
-                        ? 'bg-primary-500 text-white'
-                        : 'border-[#F7F7F7] bg-[#F7F7F7]'
+                      selectedTool === "accessible"
+                        ? "bg-primary-500 text-white"
+                        : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
                     <Accessibility size={28} className="flex-shrink-0" />
@@ -129,11 +129,11 @@ const SidebarToolbox = ({
                 <h3 className="font-medium">場景</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => setSelectedTool(selectedTool === 'aisle' ? null : 'aisle')}
+                    onClick={() => setSelectedTool(selectedTool === "aisle" ? null : "aisle")}
                     className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
-                      selectedTool === 'aisle'
-                        ? 'bg-primary-500 text-white'
-                        : 'border-[#F7F7F7] bg-[#F7F7F7]'
+                      selectedTool === "aisle"
+                        ? "bg-primary-500 text-white"
+                        : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
                     <Minus size={28} className="flex-shrink-0" />
@@ -148,11 +148,11 @@ const SidebarToolbox = ({
                 <h3 className="font-medium">工具</h3>
                 <div className="grid grid-cols-2">
                   <button
-                    onClick={() => setSelectedTool(selectedTool === 'eraser' ? null : 'eraser')}
+                    onClick={() => setSelectedTool(selectedTool === "eraser" ? null : "eraser")}
                     className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
-                      selectedTool === 'eraser'
-                        ? 'bg-primary-500 text-white'
-                        : 'border-[#F7F7F7] bg-[#F7F7F7]'
+                      selectedTool === "eraser"
+                        ? "bg-primary-500 text-white"
+                        : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
                     <Eraser size={28} className="flex-shrink-0" />

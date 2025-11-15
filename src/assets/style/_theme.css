@@ -1,25 +1,25 @@
 @theme {
-    --font-family-inter: Inter, ui-sans-serif, system-ui, sans-serif;
-  
-    --color-primary-100: #bec9f5;
-    --color-primary-300: #7d8fda;
-    --color-primary-500: #5365ac;
-    --color-primary-700: #243b97;
-    --color-primary-900: #0e1c54;
-  
-    --color-secondary-100: #fffae4;
-    --color-secondary-300: #f8ebb8;
-    --color-secondary-500: #f3de8a;
-    --color-secondary-700: #e0be37;
-    --color-secondary-900: #b8991c;
-  
-    --color-gray-50: #cccee1;
-    --color-gray-100: #a0a1b6;
-    --color-gray-300: #838495;
-    --color-gray-500: #575867;
-    --color-gray-700: #353642;
-    --color-gray-900: #151519;
-  
-    --color-background: #bec9f5;
-    --color-white: #ffffff;
-  }
+  --font-family-inter: Inter, ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary-100: #bec9f5;
+  --color-primary-300: #7d8fda;
+  --color-primary-500: #5365ac;
+  --color-primary-700: #243b97;
+  --color-primary-900: #0e1c54;
+
+  --color-secondary-100: #fffae4;
+  --color-secondary-300: #f8ebb8;
+  --color-secondary-500: #f3de8a;
+  --color-secondary-700: #e0be37;
+  --color-secondary-900: #b8991c;
+
+  --color-gray-50: #cccee1;
+  --color-gray-100: #a0a1b6;
+  --color-gray-300: #838495;
+  --color-gray-500: #575867;
+  --color-gray-700: #353642;
+  --color-gray-900: #151519;
+
+  --color-background: #bec9f5;
+  --color-white: #ffffff;
+}
