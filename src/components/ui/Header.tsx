@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 interface HeaderProps {
   title: string
   buttonText: string

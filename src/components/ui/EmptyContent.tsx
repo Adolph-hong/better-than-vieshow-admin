@@ -1,4 +1,4 @@
-import ghost from '@/assets/icon/ghost.svg'
+import ghost from "@/assets/icon/ghost.svg"
 
 interface EmptyContentProps {
   title: string

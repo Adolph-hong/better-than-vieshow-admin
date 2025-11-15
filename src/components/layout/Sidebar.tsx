@@ -1,13 +1,13 @@
-import { NavLink } from 'react-router-dom'
-import SIDEBAR_ITEMS from '@/components/layout/sidebarItem'
-import logo from '@/assets/icon/logo.svg'
-import adminPhoto from '@/assets/icon/admin-photo.svg'
+import { NavLink } from "react-router-dom"
+import adminPhoto from "@/assets/icon/admin-photo.svg"
+import logo from "@/assets/icon/logo.svg"
+import SIDEBAR_ITEMS from "@/components/layout/sidebarItem"
 
 const sidebarStyle = (isActive: boolean) => {
   const baseStyle =
-    'font-family-inter font-midium text-[14px] active:text-primary-500 active:border-primary-500 flex items-center gap-4 py-5 leading-none text-gray-500 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6'
-  const activeStyle = 'border-primary-500 border-l-4 bg-[#6877D9]/6'
-  const defaultStyle = 'border-transparent border-l-4'
+    "font-family-inter font-midium text-[14px] active:text-primary-500 active:border-primary-500 flex items-center gap-4 py-5 leading-none text-gray-500 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6"
+  const activeStyle = "border-primary-500 border-l-4 bg-[#6877D9]/6"
+  const defaultStyle = "border-transparent border-l-4"
   return `${baseStyle} ${isActive ? activeStyle : defaultStyle}`
 }
 
