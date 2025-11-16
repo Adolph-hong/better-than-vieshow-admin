@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { ArrowLeft, ChevronDown } from "lucide-react"
 import AdminContainer from "@/components/layout/AdminContainer"
 import SeatingChart, {
@@ -19,6 +20,7 @@ type TheaterData = {
 }
 
 const NewTheater = () => {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<"tools" | "seats">("tools")
   const [selectedTool, setSelectedTool] = useState<ToolType>("normal")
   const [rows, setRows] = useState<number>(8)
@@ -64,7 +66,7 @@ const NewTheater = () => {
             type="button"
             className="cursor-pointer transition-transform hover:scale-125 hover:cursor-pointer"
           >
-            <ArrowLeft className="h-10 w-10" />
+            <ArrowLeft className="h-10 w-10" onClick={() => navigate("/theaters")} />
           </button>
           <h1 className="text-[40px] font-bold">新增影廳</h1>
         </header>
