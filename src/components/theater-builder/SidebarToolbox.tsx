@@ -29,7 +29,7 @@ const SidebarToolbox = ({
   return (
     <div>
       <h1 className="header-3 mb-4">座位表</h1>
-      <aside className="relative h-[499px] w-[270px] space-y-4 rounded-sm border border-white bg-white p-3">
+      <aside className="relative w-[270px] space-y-4 rounded-sm border border-white bg-white p-3">
         <div className="relative h-10 w-full rounded-sm bg-[#F7F7F7] p-1">
           <div
             className={`absolute inset-y-1 left-1 rounded-sm bg-white shadow transition-all duration-200 ${
@@ -38,10 +38,16 @@ const SidebarToolbox = ({
           />
 
           <div className="relative z-10 grid h-full grid-cols-2">
-            <button onClick={() => setActiveTab("tools")} className={`${tabBase} hover:cursor-pointer`}>
+            <button
+              onClick={() => setActiveTab("tools")}
+              className={`${tabBase} hover:cursor-pointer`}
+            >
               工具箱
             </button>
-            <button onClick={() => setActiveTab("seats")} className={`${tabBase} hover:cursor-pointer`}>
+            <button
+              onClick={() => setActiveTab("seats")}
+              className={`${tabBase} hover:cursor-pointer`}
+            >
               座位數量
             </button>
           </div>
@@ -55,26 +61,26 @@ const SidebarToolbox = ({
                 <div className="flex items-center justify-center gap-9">
                   <button
                     onClick={() => setRows(Math.max(1, rows - 1))}
-                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:cursor-pointer"
                   >
                     <Minus />
                   </button>
                   <span className="min-w-[60px] text-center text-3xl font-bold">{rows}</span>
                   <button
                     onClick={() => setRows(rows + 1)}
-                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:cursor-pointer"
                   >
                     <Plus />
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="mb-[247px] space-y-4">
                 <h3>列數（寬度）</h3>
                 <div className="flex items-center justify-center gap-9">
                   <button
                     onClick={() => setColumns(Math.max(1, columns - 1))}
-                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:cursor-pointer"
                   >
                     <Minus />
                   </button>
@@ -83,7 +89,7 @@ const SidebarToolbox = ({
                   </span>
                   <button
                     onClick={() => setColumns(columns + 1)}
-                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:cursor-pointer"
                   >
                     <Plus />
                   </button>
