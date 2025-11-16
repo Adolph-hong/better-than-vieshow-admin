@@ -2,14 +2,13 @@ type TheatersFooterProps = {
   normalSeatCount: number
   accessibleSeatCount: number
   onCreate?: () => void
-  createLabel?: string
   isCreateDisabled?: boolean
 }
 
 const TheatersFooter = (props: TheatersFooterProps) => {
-  const { normalSeatCount, accessibleSeatCount, onCreate, createLabel, isCreateDisabled } = props
+  const { normalSeatCount, accessibleSeatCount, onCreate, isCreateDisabled } = props
 
-  const buttonLabel = createLabel ?? "建立影廳"
+  const buttonLabel = "建立影廳"
   const disabled = isCreateDisabled ?? false
 
   return (
@@ -45,7 +44,6 @@ const TheatersFooter = (props: TheatersFooterProps) => {
 
 TheatersFooter.defaultProps = {
   onCreate: undefined,
-  createLabel: "建立影廳",
   isCreateDisabled: false,
 }
 
