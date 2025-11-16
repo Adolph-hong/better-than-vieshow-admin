@@ -41,6 +41,7 @@ module.exports = {
     "react/react-in-jsx-scope": "off", // React 17+ 不需要 import React
     "react/jsx-filename-extension": [1, { extensions: [".tsx"] }],
     "react/prop-types": "off",
+    "react/jsx-props-no-spreading": "off",
     "react/button-has-type": "off",
     "react/require-default-props": "off",
 

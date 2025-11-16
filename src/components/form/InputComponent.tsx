@@ -1,0 +1,44 @@
+import type { FieldPath, FieldValues, UseFormRegister } from "react-hook-form"
+
+interface InputComponentProps<T extends FieldValues> {
+  label: string
+  placeholder?: string
+  type?: React.InputHTMLAttributes<HTMLInputElement>["type"]
+  register: UseFormRegister<T>
+  registerName: FieldPath<T>
+  error?: string
+  suffix?: string
+}
+
+const InputComponent = <T extends FieldValues>({
+  label,
+  placeholder,
+  type = "text",
+  register,
+  registerName,
+  error,
+  suffix,
+}: InputComponentProps<T>) => {
+  return (
+    <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
+      <label htmlFor={registerName}>{label}</label>
+      <div className="relative">
+        <input
+          id={registerName}
+          placeholder={placeholder}
+          className={`h-10 w-full rounded-lg border border-white bg-white px-3 pr-${suffix ? "[52px]" : "3"} text-gray-900`}
+          type={type}
+          {...register(registerName)}
+        />
+        {suffix && (
+          <span className="font-family-inter text-regular pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-900">
+            {suffix}
+          </span>
+        )}
+      </div>
+      {error && <span>{error}</span>}
+    </div>
+  )
+}
+
+export default InputComponent
