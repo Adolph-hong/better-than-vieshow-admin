@@ -60,7 +60,10 @@ const NewTheater = () => {
     <AdminContainer>
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <header className="flex items-center gap-2 bg-[#E7E8EF] px-6 py-6">
-          <button type="button" className="cursor-pointer transition-transform hover:scale-125">
+          <button
+            type="button"
+            className="cursor-pointer transition-transform hover:scale-125 hover:cursor-pointer"
+          >
             <ArrowLeft className="h-10 w-10" />
           </button>
           <h1 className="text-[40px] font-bold">新增影廳</h1>

@@ -31,7 +31,7 @@ const TheatersFooter = (props: TheatersFooterProps) => {
           onClick={onCreate}
           disabled={disabled}
           className={`body-medium mt-6 mr-6 mb-6 flex h-11 items-center justify-center rounded-[10px] px-4 py-[10.5px] text-white transition-colors ${
-            disabled ? "bg-primary-500 opacity-[60%]" : "bg-primary-500 cursor-pointer"
+            disabled ? "bg-primary-500 opacity-[60%]" : "bg-primary-500 cursor-pointer hover:cursor-pointer"
           }`}
         >
           {buttonLabel}

@@ -38,10 +38,10 @@ const SidebarToolbox = ({
           />
 
           <div className="relative z-10 grid h-full grid-cols-2">
-            <button onClick={() => setActiveTab("tools")} className={`${tabBase}`}>
+            <button onClick={() => setActiveTab("tools")} className={`${tabBase} hover:cursor-pointer`}>
               工具箱
             </button>
-            <button onClick={() => setActiveTab("seats")} className={`${tabBase}`}>
+            <button onClick={() => setActiveTab("seats")} className={`${tabBase} hover:cursor-pointer`}>
               座位數量
             </button>
           </div>
@@ -55,14 +55,14 @@ const SidebarToolbox = ({
                 <div className="flex items-center justify-center gap-9">
                   <button
                     onClick={() => setRows(Math.max(1, rows - 1))}
-                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
                   >
                     <Minus />
                   </button>
                   <span className="min-w-[60px] text-center text-3xl font-bold">{rows}</span>
                   <button
                     onClick={() => setRows(rows + 1)}
-                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
                   >
                     <Plus />
                   </button>
@@ -74,7 +74,7 @@ const SidebarToolbox = ({
                 <div className="flex items-center justify-center gap-9">
                   <button
                     onClick={() => setColumns(Math.max(1, columns - 1))}
-                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
                   >
                     <Minus />
                   </button>
@@ -83,7 +83,7 @@ const SidebarToolbox = ({
                   </span>
                   <button
                     onClick={() => setColumns(columns + 1)}
-                    className="bg-primary-500 hover:bg-primary-700 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
+                    className="bg-primary-500 hover:bg-primary-700 hover:cursor-pointer flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors"
                   >
                     <Plus />
                   </button>
@@ -97,7 +97,7 @@ const SidebarToolbox = ({
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setSelectedTool(selectedTool === "normal" ? null : "normal")}
-                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-[10px] border px-4 text-sm transition-colors ${
+                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-[10px] border px-4 text-sm transition-colors hover:cursor-pointer ${
                       selectedTool === "normal"
                         ? "bg-primary-500 text-white"
                         : "border-[#F7F7F7] bg-[#F7F7F7]"
@@ -111,7 +111,7 @@ const SidebarToolbox = ({
                     onClick={() =>
                       setSelectedTool(selectedTool === "accessible" ? null : "accessible")
                     }
-                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
+                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors hover:cursor-pointer ${
                       selectedTool === "accessible"
                         ? "bg-primary-500 text-white"
                         : "border-[#F7F7F7] bg-[#F7F7F7]"
@@ -130,7 +130,7 @@ const SidebarToolbox = ({
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setSelectedTool(selectedTool === "aisle" ? null : "aisle")}
-                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
+                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors hover:cursor-pointer ${
                       selectedTool === "aisle"
                         ? "bg-primary-500 text-white"
                         : "border-[#F7F7F7] bg-[#F7F7F7]"
@@ -149,7 +149,7 @@ const SidebarToolbox = ({
                 <div className="grid grid-cols-2">
                   <button
                     onClick={() => setSelectedTool(selectedTool === "eraser" ? null : "eraser")}
-                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors ${
+                    className={`flex h-[77px] w-[117px] flex-col items-center justify-center gap-2 rounded-lg border px-4 text-sm transition-colors hover:cursor-pointer ${
                       selectedTool === "eraser"
                         ? "bg-primary-500 text-white"
                         : "border-[#F7F7F7] bg-[#F7F7F7]"

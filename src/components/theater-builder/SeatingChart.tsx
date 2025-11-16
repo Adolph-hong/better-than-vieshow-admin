@@ -132,7 +132,7 @@ const SeatingChart = ({
     const type = getSeatType(row, col)
 
     const baseClasses =
-      "flex h-10 w-10 items-center justify-center rounded border transition-colors"
+      "flex h-10 w-10 items-center justify-center rounded border transition-colors hover:cursor-pointer"
 
     const handleMouseDown = (e: React.MouseEvent) => {
       e.preventDefault()
