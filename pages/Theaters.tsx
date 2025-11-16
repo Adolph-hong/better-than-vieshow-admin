@@ -1,11 +1,13 @@
+import { useNavigate } from "react-router-dom"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
 
 const Theaters = () => {
+  const navigate = useNavigate()
   return (
     <AdminContainer>
-      <Header title="影廳" buttonText="建立影廳" onClick={() => {}} />
+      <Header title="影廳" buttonText="建立影廳" onClick={() => navigate("/theaters/new")} />
       <EmptyContent title="一間影廳都還沒有" description="點擊「建立影廳」來新增第一間吧" />
     </AdminContainer>
   )
