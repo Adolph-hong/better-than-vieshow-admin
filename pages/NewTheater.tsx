@@ -1,3 +1,5 @@
+import { useState } from "react"
+import { ArrowLeft, ChevronDown } from "lucide-react"
 import SeatingChart, {
   type SeatCell,
   type SeatStats,
@@ -5,8 +7,6 @@ import SeatingChart, {
 } from "@/components/theater-builder/SeatingChart"
 import SidebarToolbox from "@/components/theater-builder/SidebarToolbox"
 import TheatersFooter from "@/components/theater-builder/TheatersFooter"
-import { ArrowLeft, ChevronDown } from "lucide-react"
-import { useState } from "react"
 
 type TheaterData = {
   id: string
@@ -17,7 +17,7 @@ type TheaterData = {
   seatMap: SeatCell[][]
 }
 
-const TheatersDetail = () => {
+const NewTheater = () => {
   const [activeTab, setActiveTab] = useState<"tools" | "seats">("tools")
   const [selectedTool, setSelectedTool] = useState<ToolType>("normal")
   const [rows, setRows] = useState<number>(8)
@@ -144,4 +144,4 @@ const TheatersDetail = () => {
   )
 }
 
-export default TheatersDetail
+export default NewTheater
