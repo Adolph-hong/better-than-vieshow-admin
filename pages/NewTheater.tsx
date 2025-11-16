@@ -86,6 +86,8 @@ const NewTheater = () => {
                 <span>樓層數</span>
                 <input
                   id="floorCount"
+                  type="number"
+                  min={0}
                   placeholder="樓層數"
                   className="mt-2 w-[129px] rounded-md border border-white bg-white px-4 py-3 text-[#353642] placeholder:text-[#999999]"
                 />
