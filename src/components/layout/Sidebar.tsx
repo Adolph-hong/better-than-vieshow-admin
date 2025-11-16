@@ -13,7 +13,7 @@ const sidebarStyle = (isActive: boolean) => {
 
 const Sidebar = () => {
   return (
-    <aside className="flex min-h-screen w-60 flex-col bg-white py-6">
+    <aside className="flex min-h-screen w-60 flex-shrink-0 flex-col bg-white py-6">
       {/* 上方logo與主題文字 */}
       <section className="mb-11 ml-4 flex gap-5 text-[#333333]">
         <img src={logo} alt="logo" />
