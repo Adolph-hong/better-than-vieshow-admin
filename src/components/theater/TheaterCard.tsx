@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react"
-import { Maximize2, MoreVertical, Trash2 } from "lucide-react"
+import { Fullscreen, EllipsisVertical, Trash2 } from "lucide-react"
 import type { TheaterData } from "@/contexts/TheaterContext"
 
-interface TheaterCardProps {
+type TheaterCardProps = {
   theater: TheaterData
   onDelete: (id: string) => void
 }
@@ -34,44 +34,39 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   }
 
   return (
-    <div className="relative rounded-lg bg-white p-6 shadow-sm">
-      {/* 標題和狀態區域 */}
+    <div className="relative rounded-xl bg-white p-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="text-xl font-bold text-gray-700">{theater.name}</h3>
+          <h1 className="text-2xl font-normal text-gray-700">{theater.name}</h1>
           <span
-            className={`rounded-full px-3 py-1 text-sm font-medium ${
-              theater.isActive ? "bg-[#5B9BD5] text-white" : "bg-gray-200 text-gray-600"
+            className={`rounded-full px-3 py-1 text-sm font-normal ${
+              theater.isActive ? "bg-[#69BDCE] text-white" : "bg-gray-200 text-gray-600"
             }`}
           >
             {theater.isActive ? "使用中" : "未使用"}
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="flex h-8 w-8 items-center justify-center rounded hover:bg-gray-100"
-            aria-label="全屏"
-          >
-            <Maximize2 className="h-5 w-5 text-gray-600" />
+        <div className="flex gap-5">
+          <button type="button" className="hover:cursor-pointer" aria-label="全屏">
+            <Fullscreen />
           </button>
           <div className="relative" ref={menuRef}>
             <button
               type="button"
-              className="flex h-8 w-8 items-center justify-center rounded hover:bg-gray-100"
+              className="flex items-center hover:cursor-pointer"
               onClick={() => setShowMenu(!showMenu)}
               aria-label="更多選項"
             >
-              <MoreVertical className="h-5 w-5 text-gray-600" />
+              <EllipsisVertical />
             </button>
             {showMenu && (
-              <div className="absolute top-10 right-0 z-10 min-w-[120px] rounded-lg border border-gray-200 bg-white shadow-lg">
+              <div className="absolute top-8 right-0 min-w-[143px] rounded-sm border border-gray-200 bg-white shadow-sm">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                  className="flex w-full items-center gap-3 px-4 py-2 text-left hover:cursor-pointer"
                   onClick={handleDelete}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-[18px] w-[18px] text-[#575867]" />
                   刪除
                 </button>
               </div>
@@ -80,15 +75,14 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
         </div>
       </div>
 
-      {/* 座位統計區域 */}
       <div className="flex gap-8">
         <div className="flex flex-col">
-          <span className="text-3xl font-bold text-gray-700">{theater.normalSeats}</span>
-          <span className="text-sm text-gray-500">一般座位</span>
+          <span className="text-[32px] font-semibold">{theater.normalSeats}</span>
+          <span className="text-xl font-medium text-[#646464]">一般座位</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-3xl font-bold text-gray-700">{theater.accessibleSeats}</span>
-          <span className="text-sm text-gray-500">殘障座位</span>
+          <span className="text-[32px] font-semibold">{theater.accessibleSeats}</span>
+          <span className="text-xl font-medium text-[#646464]">殘障座位</span>
         </div>
       </div>
     </div>
