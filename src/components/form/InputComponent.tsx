@@ -8,6 +8,7 @@ interface InputComponentProps<T extends FieldValues> {
   registerName: FieldPath<T>
   error?: string
   suffix?: string
+  as?: "input" | "textarea"
 }
 
 const InputComponent = <T extends FieldValues>({
@@ -18,18 +19,29 @@ const InputComponent = <T extends FieldValues>({
   registerName,
   error,
   suffix,
+  as = "input",
 }: InputComponentProps<T>) => {
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
       <label htmlFor={registerName}>{label}</label>
       <div className="relative">
-        <input
-          id={registerName}
-          placeholder={placeholder}
-          className={`h-10 w-full rounded-lg border border-white bg-white px-3 pr-${suffix ? "[52px]" : "3"} text-gray-900`}
-          type={type}
-          {...register(registerName)}
-        />
+        {as === "textarea" ? (
+          <textarea
+            className={`h-[118px] w-full rounded-lg border border-white bg-white p-3 pr-${suffix ? "[52px]" : "3"} resize-none text-gray-900`}
+            id={registerName}
+            placeholder={placeholder}
+            {...register(registerName)}
+          />
+        ) : (
+          <input
+            id={registerName}
+            placeholder={placeholder}
+            className={`h-10 w-full rounded-lg border border-white bg-white px-3 pr-${suffix ? "[52px]" : "3"} text-gray-900`}
+            type={type}
+            {...register(registerName)}
+          />
+        )}
+
         {suffix && (
           <span className="font-family-inter text-regular pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-900">
             {suffix}

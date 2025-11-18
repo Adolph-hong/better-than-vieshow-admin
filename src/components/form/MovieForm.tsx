@@ -1,17 +1,18 @@
 import { useForm } from "react-hook-form"
 import CustomSelect from "./CustomSelect"
 import InputComponent from "./InputComponent"
+import PosterUpload from "./PosterUpload"
 import TitleComponent from "./TitleComponent"
 
 interface MovieFormValues {
-  title: string
-  time: string
+  movieName: string
+  duration: string
   category: string
   director: string
   actors: string
   describe: string
-  trailer: string
-  poster: FileList
+  trailerLink: string
+  poster: File | null
   startAt: string
   endAt: string
 }
@@ -21,23 +22,23 @@ const MovieForm = () => {
     handleSubmit,
     control,
     formState: { errors },
+    setValue,
   } = useForm<MovieFormValues>({
     defaultValues: {
-      title: "",
-      time: "",
+      movieName: "",
+      duration: "",
       category: "",
       director: "",
       actors: "",
       describe: "",
-      trailer: "",
-      poster: undefined as unknown as FileList,
+      trailerLink: "",
+      poster: null,
       startAt: "",
       endAt: "",
     },
   })
-
-  const onSubmit = (data: MovieFormValues) => {
-    console.log(data)
+  const onSubmit = () => {
+    //  API
   }
 
   return (
@@ -50,8 +51,8 @@ const MovieForm = () => {
             label="電影名稱"
             placeholder="電影名稱"
             register={register}
-            registerName="title"
-            error={errors.title?.message}
+            registerName="movieName"
+            error={errors.movieName?.message}
           />
           <div className="flex gap-6">
             <div className="flex-1">
@@ -60,8 +61,8 @@ const MovieForm = () => {
                 placeholder="60"
                 type="text"
                 register={register}
-                registerName="time"
-                error={errors.time?.message}
+                registerName="duration"
+                error={errors.duration?.message}
                 suffix="分鐘"
               />
             </div>
@@ -80,6 +81,47 @@ const MovieForm = () => {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 電影介紹 */}
+      <section className="flex justify-between border-t border-gray-100 py-6">
+        <TitleComponent title="電影介紹" description="會顯示在電影資訊頁面" />
+        <div className="flex w-full max-w-141 flex-col gap-6">
+          <InputComponent
+            label="導演"
+            placeholder="導演"
+            register={register}
+            registerName="director"
+            error={errors.director?.message}
+          />
+          <InputComponent
+            label="演員"
+            placeholder="演員A、演員B、演員C"
+            register={register}
+            registerName="actors"
+            error={errors.actors?.message}
+          />
+          <InputComponent
+            label="描述"
+            placeholder="電影名稱"
+            register={register}
+            registerName="describe"
+            error={errors.describe?.message}
+            as="textarea"
+          />
+          <InputComponent
+            label="預告片連結"
+            placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX"
+            register={register}
+            registerName="trailerLink"
+            error={errors.trailerLink?.message}
+          />
+          <PosterUpload
+            label="電影封面"
+            placeholder="JPG or PNG"
+            onChange={(file) => setValue("poster", file)}
+          />
         </div>
       </section>
     </form>
