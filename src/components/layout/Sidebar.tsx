@@ -5,7 +5,7 @@ import SIDEBAR_ITEMS from "@/components/layout/sidebarItem"
 
 const sidebarStyle = (isActive: boolean) => {
   const baseStyle =
-    "font-family-inter font-midium text-[14px] active:text-primary-500 active:border-primary-500 flex items-center gap-4 py-5 leading-none text-gray-500 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6"
+    "font-family-inter font-midium text-[14px] active:text-primary-500 active:border-primary-500 flex items-center gap-4 py-5 leading-none text-gray-500 hover:bg-[#F5F5F5] active:bg-[#6877D9]/6 hover:cursor-pointer"
   const activeStyle = "border-primary-500 border-l-4 bg-[#6877D9]/6"
   const defaultStyle = "border-transparent border-l-4"
   return `${baseStyle} ${isActive ? activeStyle : defaultStyle}`
@@ -13,7 +13,7 @@ const sidebarStyle = (isActive: boolean) => {
 
 const Sidebar = () => {
   return (
-    <aside className="flex min-h-screen w-60 flex-col bg-white py-6">
+    <aside className="flex min-h-screen w-60 flex-shrink-0 flex-col bg-white py-6">
       {/* 上方logo與主題文字 */}
       <section className="mb-11 ml-4 flex gap-5 text-[#333333]">
         <img src={logo} alt="logo" />
