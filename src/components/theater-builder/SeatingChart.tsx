@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import { Armchair, Accessibility, Minus } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState, useRef } from "react"
+import { Armchair, Accessibility, Minus } from "lucide-react"
 
-type SeatType = 'normal' | 'accessible' | 'aisle' | 'empty'
-export type ToolType = 'normal' | 'accessible' | 'aisle' | 'eraser' | null
+type SeatType = "normal" | "accessible" | "aisle" | "empty"
+export type ToolType = "normal" | "accessible" | "aisle" | "eraser" | null
 
 export type SeatStats = {
   normalSeats: number
@@ -14,8 +14,8 @@ export type SeatStats = {
 type RowLabel = string
 
 export type SeatCell = {
-  type: 'seat' | 'aisle' | 'empty'
-  seatKind?: Extract<SeatType, 'normal' | 'accessible'>
+  type: "seat" | "aisle" | "empty"
+  seatKind?: Extract<SeatType, "normal" | "accessible">
   row: RowLabel
   column: number
 }
@@ -59,17 +59,17 @@ const SeatingChart = ({
   const getSeatType = useCallback(
     (row: RowLabel, col: number): SeatType => {
       const key = `${row}-${col}`
-      return seatMap[key] ?? 'empty'
+      return seatMap[key] ?? "empty"
     },
     [seatMap]
   )
 
   const isRowAllAisle = (row: RowLabel): boolean => {
-    return columnsCount > 0 && allColumns.every((col) => getSeatType(row, col) === 'aisle')
+    return columnsCount > 0 && allColumns.every((col) => getSeatType(row, col) === "aisle")
   }
 
   const isColumnAllAisle = (col: number): boolean => {
-    return rows.length > 0 && rows.every((row) => getSeatType(row, col) === 'aisle')
+    return rows.length > 0 && rows.every((row) => getSeatType(row, col) === "aisle")
   }
 
   const getRowLabel = (rowIndex: number): string => {
@@ -97,14 +97,14 @@ const SeatingChart = ({
 
     setSeatMap((prev) => {
       const next = { ...prev }
-      if (selectedTool === 'eraser') {
+      if (selectedTool === "eraser") {
         delete next[key]
-      } else if (selectedTool === 'normal') {
-        next[key] = 'normal'
-      } else if (selectedTool === 'accessible') {
-        next[key] = 'accessible'
-      } else if (selectedTool === 'aisle') {
-        next[key] = 'aisle'
+      } else if (selectedTool === "normal") {
+        next[key] = "normal"
+      } else if (selectedTool === "accessible") {
+        next[key] = "accessible"
+      } else if (selectedTool === "aisle") {
+        next[key] = "aisle"
       }
       return next
     })
@@ -132,7 +132,7 @@ const SeatingChart = ({
     const type = getSeatType(row, col)
 
     const baseClasses =
-      'flex h-10 w-10 items-center justify-center rounded border transition-colors'
+      "flex h-10 w-10 items-center justify-center rounded border transition-colors hover:cursor-pointer"
 
     const handleMouseDown = (e: React.MouseEvent) => {
       e.preventDefault()
@@ -143,7 +143,7 @@ const SeatingChart = ({
     const handleClick = () => handleSeatClick(row, col)
 
     switch (type) {
-      case 'accessible':
+      case "accessible":
         return (
           <button
             key={`${row}-${col}`}
@@ -157,7 +157,7 @@ const SeatingChart = ({
             <Accessibility className="h-5 w-5 text-white" />
           </button>
         )
-      case 'aisle':
+      case "aisle":
         return (
           <button
             key={`${row}-${col}`}
@@ -171,7 +171,7 @@ const SeatingChart = ({
             <Minus className="h-4 w-4 text-gray-300" />
           </button>
         )
-      case 'empty':
+      case "empty":
         return (
           <button
             key={`${row}-${col}`}
@@ -183,7 +183,7 @@ const SeatingChart = ({
             onClick={handleClick}
           />
         )
-      case 'normal':
+      case "normal":
       default:
         return (
           <button
@@ -207,11 +207,11 @@ const SeatingChart = ({
     let aisleSeats = 0
 
     Object.values(seatMap).forEach((type) => {
-      if (type === 'normal') {
+      if (type === "normal") {
         normalSeats += 1
-      } else if (type === 'accessible') {
+      } else if (type === "accessible") {
         accessibleSeats += 1
-      } else if (type === 'aisle') {
+      } else if (type === "aisle") {
         aisleSeats += 1
       }
     })
@@ -228,23 +228,23 @@ const SeatingChart = ({
     return rows.map((row) =>
       allColumns.map((col) => {
         const seatType = getSeatType(row, col)
-        if (seatType === 'aisle') {
+        if (seatType === "aisle") {
           return {
-            type: 'aisle' as const,
+            type: "aisle" as const,
             row,
             column: col,
           }
         }
-        if (seatType === 'empty') {
+        if (seatType === "empty") {
           return {
-            type: 'empty' as const,
+            type: "empty" as const,
             row,
             column: col,
           }
         }
         return {
-          type: 'seat' as const,
-          seatKind: seatType === 'accessible' ? 'accessible' : 'normal',
+          type: "seat" as const,
+          seatKind: seatType === "accessible" ? "accessible" : "normal",
           row,
           column: col,
         }
@@ -280,13 +280,13 @@ const SeatingChart = ({
     }
 
     if (isDragging) {
-      document.addEventListener('mouseup', handleMouseUp)
-      document.addEventListener('mouseleave', handleMouseLeave)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.addEventListener("mouseleave", handleMouseLeave)
     }
 
     return () => {
-      document.removeEventListener('mouseup', handleMouseUp)
-      document.removeEventListener('mouseleave', handleMouseLeave)
+      document.removeEventListener("mouseup", handleMouseUp)
+      document.removeEventListener("mouseleave", handleMouseLeave)
     }
   }, [isDragging])
 
@@ -295,7 +295,7 @@ const SeatingChart = ({
       <div className="flex w-full max-w-6xl justify-start">
         <div className="flex flex-1 flex-col items-start">
           <div className="rounded-sm bg-white px-6 pt-4 pb-6">
-            <div className="flex w-full justify-center px-4" style={{ marginBottom: '19px' }}>
+            <div className="flex w-full justify-center px-4" style={{ marginBottom: "19px" }}>
               <div
                 className="flex flex-col items-center gap-2"
                 style={{
@@ -329,7 +329,7 @@ const SeatingChart = ({
             <div className="flex flex-col gap-2">
               {rows.map((row, rowIndex) => {
                 const shouldShowRowLabel = !isRowAllAisle(row)
-                const actualLabel = shouldShowRowLabel ? getRowLabel(rowIndex) : ''
+                const actualLabel = shouldShowRowLabel ? getRowLabel(rowIndex) : ""
                 return (
                   <div key={row}>
                     <div className="flex items-center gap-1">
