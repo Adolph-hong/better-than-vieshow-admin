@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Fullscreen, EllipsisVertical, Trash2 } from "lucide-react"
+import Modal from "@/components/theater/Modal"
+import SeatingChartView from "@/components/theater/SeatingChartView"
 import type { TheaterData } from "@/contexts/TheaterContext"
 
 type TheaterCardProps = {
@@ -9,6 +11,7 @@ type TheaterCardProps = {
 
 const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   const [showMenu, setShowMenu] = useState(false)
+  const [showSeatingChart, setShowSeatingChart] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   // 點擊外部關閉選單
@@ -47,7 +50,12 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           </span>
         </div>
         <div className="flex gap-5">
-          <button type="button" className="hover:cursor-pointer" aria-label="全屏">
+          <button
+            type="button"
+            className="hover:cursor-pointer"
+            aria-label="全屏"
+            onClick={() => setShowSeatingChart(true)}
+          >
             <Fullscreen />
           </button>
           <div className="relative" ref={menuRef}>
@@ -85,6 +93,13 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           <span className="text-xl font-medium text-[#646464]">殘障座位</span>
         </div>
       </div>
+      <Modal isOpen={showSeatingChart} onClose={() => setShowSeatingChart(false)}>
+        <SeatingChartView
+          seatMap={theater.seatMap}
+          title={`${theater.name} 座位表`}
+          onClose={() => setShowSeatingChart(false)}
+        />
+      </Modal>
     </div>
   )
 }
