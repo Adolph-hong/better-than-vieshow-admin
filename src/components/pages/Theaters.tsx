@@ -1,4 +1,4 @@
-import ghost from '../../asset/Group.svg'
+import ghost from "../../asset/Group.svg"
 
 const Theaters = () => {
   return (
