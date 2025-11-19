@@ -124,6 +124,36 @@ const MovieForm = () => {
           />
         </div>
       </section>
+
+      {/* 播放區間 */}
+      <section className="flex justify-between border-t border-gray-100 py-6">
+        <TitleComponent
+          title="播放區間"
+          description="只有在播放區間內的電影可以被排進時刻標中販售"
+        />
+        <div className="flex w-full max-w-141 gap-6">
+          <div className="flex-1">
+            <InputComponent
+              label="上映日"
+              placeholder="2025/12/30"
+              type="date"
+              register={register}
+              registerName="startAt"
+              error={errors.startAt?.message}
+            />
+          </div>
+          <div className="flex-1">
+            <InputComponent
+              label="上映日"
+              placeholder="2025/12/30"
+              type="date"
+              register={register}
+              registerName="endAt"
+              error={errors.endAt?.message}
+            />
+          </div>
+        </div>
+      </section>
     </form>
   )
 }
