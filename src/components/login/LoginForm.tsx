@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { EyeClosedIcon, Eye } from "lucide-react"
+import { EyeClosedIcon, Eye, CheckIcon } from "lucide-react"
 
 type LoginFormProps = {
   className?: string
@@ -7,6 +7,7 @@ type LoginFormProps = {
 
 const LoginForm = ({ className }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   return (
     <section
       className={`min-w-[485px] rounded-[10px] bg-white px-12 py-[64.5px] ${className || ""}`}
@@ -34,7 +35,7 @@ const LoginForm = ({ className }: LoginFormProps) => {
 
         <label htmlFor="password" className="flex flex-col gap-2">
           <span className="body-medium">密碼</span>
-          <div className="relative flex h-[56px] items-center rounded-[10px] border border-[#CCCEE1] px-4">
+          <div className="relative flex h-[56px] rounded-[10px] border border-[#CCCEE1] px-4">
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -43,7 +44,7 @@ const LoginForm = ({ className }: LoginFormProps) => {
             />
             <button
               type="button"
-              className="absolute right-4 flex items-center justify-center"
+              className="cursor-pointer"
               aria-label="切換顯示密碼"
               onClick={() => setShowPassword(!showPassword)}
             >
@@ -52,12 +53,19 @@ const LoginForm = ({ className }: LoginFormProps) => {
           </div>
         </label>
 
-        <label htmlFor="remember" className="flex items-center gap-2">
+        <label htmlFor="remember" className="flex cursor-pointer items-center gap-2">
           <input
             type="checkbox"
             id="remember"
-            className="h-[18px] w-[18px] appearance-none rounded-[4px] border border-[#D9D9D9] checked:border-[#D9D9D9]"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="hidden"
           />
+          <span
+            className={`relative flex h-[18px] w-[18px] items-center justify-center rounded-[4px] border ${rememberMe ? "border-[#5365AC] bg-[#5365AC]" : "border-[#D9D9D9]"}`}
+          >
+            {rememberMe && <CheckIcon className="h-5 w-5 text-white" />}
+          </span>
           <span className="text-sm">記住我</span>
         </label>
 
