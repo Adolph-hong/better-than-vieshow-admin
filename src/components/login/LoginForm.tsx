@@ -1,8 +1,12 @@
+import { useState } from "react"
+import { EyeClosedIcon, Eye } from "lucide-react"
+
 type LoginFormProps = {
   className?: string
 }
 
 const LoginForm = ({ className }: LoginFormProps) => {
+  const [showPassword, setShowPassword] = useState(false)
   return (
     <section
       className={`min-w-[485px] rounded-[10px] bg-white px-12 py-[64.5px] ${className || ""}`}
@@ -33,17 +37,17 @@ const LoginForm = ({ className }: LoginFormProps) => {
           <div className="relative flex h-[56px] items-center rounded-[10px] border border-[#CCCEE1] px-4">
             <input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="輸入密碼"
               className="w-full outline-none placeholder:text-[#A0A1B6]"
             />
-            {/* 眼睛 icon 按鈕 */}
             <button
               type="button"
               className="absolute right-4 flex items-center justify-center"
               aria-label="切換顯示密碼"
+              onClick={() => setShowPassword(!showPassword)}
             >
-              {/* 你之後放 SVG */}
+              {showPassword ? <Eye /> : <EyeClosedIcon />}
             </button>
           </div>
         </label>
