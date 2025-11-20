@@ -1,0 +1,49 @@
+{
+  "movies": [
+    {
+      "id": "4308ea5d-e691-459d-bf7d-efeba187c64d",
+      "movieName": "",
+      "duration": "",
+      "category": "",
+      "director": "",
+      "actors": "",
+      "describe": "",
+      "trailerLink": "",
+      "poster": null,
+      "startAt": "",
+      "endAt": ""
+    },
+    {
+      "id": "2b084e93-c0c3-46b9-98f7-691534e49bfc",
+      "movieName": "王子果果戀愛故事",
+      "duration": "180",
+      "category": "R-18",
+      "director": "羅志祥",
+      "actors": "王子 果果",
+      "describe": "羅大導演跨刀劇作 出軌",
+      "trailerLink": "https://www.youtube.com/watch?v=d3PCwIJfcHs",
+      "poster": {
+        "path": "./13.jpg",
+        "relativePath": "./13.jpg"
+      },
+      "startAt": "2025-11-26",
+      "endAt": "2025-11-29"
+    },
+    {
+      "id": "c41f6cfc-9732-436b-9d1c-3db936788e88",
+      "movieName": "妳籌啥",
+      "duration": "185",
+      "category": "R-18",
+      "director": "蕭告",
+      "actors": "國棟",
+      "describe": "老子瘋狗的外號她媽十歲就有啦",
+      "trailerLink": "https://www.youtube.com/watch?v=laY6RulRAls",
+      "poster": {
+        "path": "./13.jpg",
+        "relativePath": "./13.jpg"
+      },
+      "startAt": "2025-12-05",
+      "endAt": "2025-12-06"
+    }
+  ]
+}

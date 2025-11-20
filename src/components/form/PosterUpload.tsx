@@ -21,6 +21,7 @@ const PosterUpload = ({
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[], event: DropEvent) => {
       if (fileRejections.length > 0) {
+        // eslint-disable-next-line no-alert
         alert("檔案格式不正確，只能上傳 JPG / PNG")
         return
       }

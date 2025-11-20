@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import CustomSelect from "./CustomSelect"
 import InputComponent from "./InputComponent"
@@ -17,6 +18,7 @@ interface MovieFormValues {
   endAt: string
 }
 const MovieForm = () => {
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
@@ -37,8 +39,18 @@ const MovieForm = () => {
       endAt: "",
     },
   })
-  const onSubmit = () => {
-    //  API
+  const onSubmit = async (data: MovieFormValues) => {
+    const payload = {
+      ...data,
+      id: crypto.randomUUID(),
+    }
+
+    await fetch("http://localhost:3001/movies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+    navigate("/movies")
   }
 
   return (
@@ -153,6 +165,22 @@ const MovieForm = () => {
             />
           </div>
         </div>
+      </section>
+      {/* 送出 */}
+      <section className="flex justify-end gap-6 border-t border-gray-100 py-6">
+        <button
+          className="body-medium text-primary-500 border-primary-500 flex cursor-pointer items-center justify-center rounded-[10px] border px-4 py-2.5"
+          type="button"
+          onClick={() => navigate("/movies")}
+        >
+          取消
+        </button>
+        <button
+          type="submit"
+          className="body-medium border-primary-500 bg-primary-500 flex cursor-pointer items-center justify-center rounded-[10px] border px-4 py-2.5 text-white"
+        >
+          建立影廳
+        </button>
       </section>
     </form>
   )
