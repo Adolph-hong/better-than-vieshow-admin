@@ -147,7 +147,6 @@ const MovieForm = () => {
           <div className="flex-1">
             <InputComponent
               label="上映日"
-              placeholder="2025/12/30"
               type="date"
               register={register}
               registerName="startAt"
@@ -157,7 +156,6 @@ const MovieForm = () => {
           <div className="flex-1">
             <InputComponent
               label="上映日"
-              placeholder="2025/12/30"
               type="date"
               register={register}
               registerName="endAt"

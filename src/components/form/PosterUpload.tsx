@@ -63,7 +63,7 @@ const PosterUpload = ({
 
       <div
         {...getRootProps()}
-        className={`flex h-40 w-full cursor-pointer items-center justify-center rounded-[10px] border-2 ${
+        className={`flex w-full max-w-[564px] cursor-pointer items-center justify-center rounded-[10px] border-2 ${
           isDragActive
             ? "border-blue-500 bg-blue-50 text-blue-600"
             : "border-dashed border-[#d8d8d8] bg-white text-gray-700"
@@ -71,11 +71,11 @@ const PosterUpload = ({
       >
         <input {...getInputProps()} />
         {previewUrl ? (
-          <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-gray-50">
-            <img src={previewUrl} alt="poster preview" className="h-full w-full object-cover" />
+          <div className="flex w-full items-center justify-center rounded-[10px] bg-gray-50">
+            <img src={previewUrl} alt="poster preview" className="w-full rounded-[10px]" />
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex min-h-[160px] w-full flex-col items-center justify-center gap-3">
             <Image size={40} className="text-[#CCCCCC]" />
             <div className="font-family-inter font-bold text-[#000000]">
               <span className="text-[#7B9BD1]">Upload</span> or drag and drop an image
