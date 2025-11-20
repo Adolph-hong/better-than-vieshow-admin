@@ -1,4 +1,4 @@
-import logo from "@/assets/icon/Group 6.svg"
+import logo from "@/assets/icon/login-logo.svg"
 
 type LoginBackgroundProps = {
   className?: string
