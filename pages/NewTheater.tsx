@@ -9,18 +9,11 @@ import SeatingChart, {
 } from "@/components/theater-builder/SeatingChart"
 import SidebarToolbox from "@/components/theater-builder/SidebarToolbox"
 import TheatersFooter from "@/components/theater-builder/TheatersFooter"
-
-type TheaterData = {
-  id: string
-  name: string
-  isActive: boolean
-  normalSeats: number
-  accessibleSeats: number
-  seatMap: SeatCell[][]
-}
+import { useTheater } from "@/contexts/TheaterContext"
 
 const NewTheater = () => {
   const navigate = useNavigate()
+  const { addTheater } = useTheater()
   const [activeTab, setActiveTab] = useState<"tools" | "seats">("tools")
   const [selectedTool, setSelectedTool] = useState<ToolType>("normal")
   const [rows, setRows] = useState<number>(8)
@@ -33,7 +26,6 @@ const NewTheater = () => {
     aisleSeats: 0,
     totalAssigned: 0,
   })
-  const [, setTheaters] = useState<TheaterData[]>([])
 
   const handleCreateTheater = () => {
     const trimmedName = theaterName.trim()
@@ -41,7 +33,7 @@ const NewTheater = () => {
       return
     }
 
-    const newTheater: TheaterData = {
+    const newTheater = {
       id: crypto.randomUUID(),
       name: trimmedName,
       isActive: true,
@@ -50,12 +42,8 @@ const NewTheater = () => {
       seatMap: seatMapData,
     }
 
-    setTheaters((prev) => {
-      const updated = [...prev, newTheater]
-      // eslint-disable-next-line no-console
-      console.log("目前影廳資料：", updated)
-      return updated
-    })
+    addTheater(newTheater)
+    navigate("/theaters")
   }
 
   return (
