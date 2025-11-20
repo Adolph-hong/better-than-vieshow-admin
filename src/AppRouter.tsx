@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom"
+import AdminLogin from "../pages/AdminLogin"
 import Home from "../pages/Home"
 import CreateMovie from "../pages/movies/CreateMovie"
 import Movie from "../pages/movies/Movie"
@@ -13,6 +14,7 @@ const AppRouter = () => {
       <Route path="/theaters/new" element={<NewTheater />} />
       <Route path="/movies" element={<Movie />} />
       <Route path="/movies/create" element={<CreateMovie />} />
+      <Route path="/login" element={<AdminLogin />} />
     </Routes>
   )
 }
