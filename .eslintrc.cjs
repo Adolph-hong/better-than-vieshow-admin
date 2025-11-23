@@ -83,5 +83,6 @@ module.exports = {
 
     // --- 其他細項可選 ---
     "react/function-component-definition": "off", // 允許箭頭函式元件
+    "no-alert": "off", // 允許使用 alert
   },
 }

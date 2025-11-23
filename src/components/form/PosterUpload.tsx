@@ -7,6 +7,7 @@ interface PosterUploadProps {
   label: string
   placeholder: string
   accept?: string[]
+  existingImageUrl?: string | null
   onChange?: (file: File | null, event?: DropEvent) => void
 }
 
@@ -14,6 +15,7 @@ const PosterUpload = ({
   label,
   placeholder,
   accept = ["image/jpeg", "image/png"],
+  existingImageUrl,
   onChange,
 }: PosterUploadProps) => {
   const [file, setFile] = useState<File | null>(null)
@@ -21,7 +23,6 @@ const PosterUpload = ({
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[], event: DropEvent) => {
       if (fileRejections.length > 0) {
-        // eslint-disable-next-line no-alert
         alert("檔案格式不正確，只能上傳 JPG / PNG")
         return
       }
@@ -43,36 +44,76 @@ const PosterUpload = ({
   })
 
   const previewUrl = useMemo(() => {
-    if (!file) {
-      return null
+    if (file) {
+      return URL.createObjectURL(file)
     }
 
-    return URL.createObjectURL(file)
-  }, [file])
+    if (existingImageUrl && existingImageUrl.trim() !== "") {
+      return existingImageUrl
+    }
+    return null
+  }, [file, existingImageUrl])
 
   useEffect(() => {
-    if (!previewUrl) {
+    if (!file) {
       return undefined
     }
-    return () => URL.revokeObjectURL(previewUrl)
-  }, [previewUrl])
+    const blobUrl = URL.createObjectURL(file)
+    return () => URL.revokeObjectURL(blobUrl)
+  }, [file])
+
+  const getContainerClassName = () => {
+    if (previewUrl) {
+      return "cursor-default border-transparent"
+    }
+    if (isDragActive) {
+      return "cursor-pointer border-blue-500 bg-blue-50 text-blue-600"
+    }
+    return "cursor-pointer border-dashed border-[#d8d8d8] bg-white text-gray-700"
+  }
 
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
       <span>{label}</span>
 
       <div
-        {...getRootProps()}
-        className={`flex w-full max-w-[564px] cursor-pointer items-center justify-center rounded-[10px] border-2 ${
-          isDragActive
-            ? "border-blue-500 bg-blue-50 text-blue-600"
-            : "border-dashed border-[#d8d8d8] bg-white text-gray-700"
-        }`}
+        {...(previewUrl ? {} : getRootProps())}
+        className={`flex w-full max-w-[564px] items-center justify-center rounded-[10px] border-2 ${getContainerClassName()}`}
       >
-        <input {...getInputProps()} />
+        {!previewUrl && <input {...getInputProps()} />}
         {previewUrl ? (
-          <div className="flex w-full items-center justify-center rounded-[10px] bg-gray-50">
-            <img src={previewUrl} alt="poster preview" className="w-full rounded-[10px]" />
+          <div className="relative flex w-full items-center justify-center rounded-[10px] bg-gray-50">
+            <img
+              src={previewUrl}
+              alt="poster preview"
+              className="w-full rounded-[10px]"
+              onError={(e) => {
+                e.currentTarget.style.display = "none"
+              }}
+            />
+            <div className="absolute inset-0 flex justify-center rounded-[10px] bg-white/40">
+              <button
+                type="button"
+                className="body-medium absolute top-[60px] cursor-pointer rounded-[10px] bg-white px-6 py-4 text-[#000000]"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const input = document.createElement("input")
+                  input.type = "file"
+                  input.accept = accept.join(",")
+                  input.onchange = (event) => {
+                    const target = event.target as HTMLInputElement
+                    const selectedFile = target.files?.[0] ?? null
+                    if (selectedFile) {
+                      setFile(selectedFile)
+                      onChange?.(selectedFile)
+                    }
+                  }
+                  input.click()
+                }}
+              >
+                選擇其他照片
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex min-h-[160px] w-full flex-col items-center justify-center gap-3">

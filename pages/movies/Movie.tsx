@@ -4,6 +4,7 @@ import { Search } from "lucide-react"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
+import { deleteImageFromCloudinary } from "@/utils/cloudinary"
 
 interface MovieItem {
   id: string
@@ -14,7 +15,7 @@ interface MovieItem {
   actors: string
   describe: string
   trailerLink: string
-  poster: string | { path: string; relativePath: string } | null
+  poster: string | null
   startAt: string
   endAt: string
   createdAt: string
@@ -50,11 +51,7 @@ const formatDate = (dateString: string): string => {
   return `${year}/${month}/${day}`
 }
 
-const getPosterUrl = (poster: string | { path: string; relativePath: string } | null): string => {
-  if (!poster) return ""
-  if (typeof poster === "string") return poster
-  return poster.path || poster.relativePath || ""
-}
+const getPosterUrl = (poster: string | null): string => poster ?? ""
 
 const Movie = () => {
   const navigate = useNavigate()
@@ -96,6 +93,31 @@ const Movie = () => {
     )
   }, [movies, searchQuery])
 
+  const handleDelete = async (e: React.MouseEvent, movieId: string, posterUrl: string | null) => {
+    e.stopPropagation()
+    if (!window.confirm("確定要刪除這部電影嗎？")) return
+
+    try {
+      // 刪除 Cloudinary 圖片
+      if (posterUrl) {
+        await deleteImageFromCloudinary(posterUrl)
+      }
+
+      // 刪除 JSON 資料
+      const res = await fetch(`http://localhost:3001/movies/${movieId}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) {
+        throw new Error("刪除失敗")
+      }
+
+      setMovies((prev) => prev.filter((movie) => movie.id !== movieId))
+    } catch (err) {
+      alert("刪除電影失敗，請稍後再試")
+    }
+  }
+
   return (
     <AdminContainer>
       <Header title="電影" buttonText="建立電影" onClick={() => navigate("/movies/create")} />
@@ -123,51 +145,70 @@ const Movie = () => {
         <section className="flex p-6">
           <div className="flex w-full flex-wrap gap-6">
             {filteredMovies.map((movie) => (
-              <article
+              <div
                 key={movie.id}
-                className="flex h-51 basis-[calc(50%-12px)] rounded-lg border border-transparent bg-white p-3"
+                className="basis-[calc(50%-12px)] cursor-pointer transition-shadow hover:shadow-md"
+                onClick={() => navigate(`/movies/edit/${movie.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    navigate(`/movies/edit/${movie.id}`)
+                  }
+                }}
+                role="button"
+                tabIndex={0}
               >
-                <div className="flex w-full items-center justify-between gap-4">
-                  <img
-                    className="w-35"
-                    src={getPosterUrl(movie.poster)}
-                    alt="movie poster"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none"
-                    }}
-                  />
-                  <div className="flex flex-1 flex-col py-4.5">
-                    {/* 標題 */}
-                    <section className="mb-[26px] flex justify-between">
-                      <h1 className="body-large text-[#000000]">{movie.movieName}</h1>
-                      <div className="body-small flex h-[28px] items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
-                        上映中
-                      </div>
-                    </section>
-                    {/* 內容 */}
-                    <section className="flex flex-col gap-4">
-                      <div className="flex gap-3">
-                        <span className="body-medium w-20 text-gray-300">片長</span>
-                        <span className="body-medium text-[#000000]">
-                          {formatDuration(movie.duration)}
-                        </span>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="body-medium w-20 text-gray-300">分級</span>
-                        <span className="body-medium text-[#000000]">
-                          {categoryMap[movie.category] || movie.category}
-                        </span>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="body-medium w-20 text-gray-300">播放區間</span>
-                        <span className="body-medium text-[#000000]">
-                          {formatDate(movie.startAt)} - {formatDate(movie.endAt)}
-                        </span>
-                      </div>
-                    </section>
+                <article className="flex h-51 rounded-lg border border-transparent bg-white p-3">
+                  <div className="flex w-full items-center justify-between gap-4">
+                    <img
+                      className="h-full w-35 object-cover"
+                      src={getPosterUrl(movie.poster)}
+                      alt="movie poster"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none"
+                      }}
+                    />
+                    <div className="flex flex-1 flex-col py-4.5">
+                      {/* 標題 */}
+                      <section className="mb-[26px] flex justify-between">
+                        <h1 className="body-large text-[#000000]">{movie.movieName}</h1>
+                        <div className="body-small flex h-[28px] items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
+                          上映中
+                        </div>
+                      </section>
+                      {/* 內容 */}
+                      <section className="flex flex-col gap-4">
+                        <div className="flex gap-3">
+                          <span className="body-medium w-20 text-gray-300">片長</span>
+                          <span className="body-medium text-[#000000]">
+                            {formatDuration(movie.duration)}
+                          </span>
+                        </div>
+                        <div className="flex gap-3">
+                          <span className="body-medium w-20 text-gray-300">分級</span>
+                          <span className="body-medium text-[#000000]">
+                            {categoryMap[movie.category] || movie.category}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex gap-3">
+                            <span className="body-medium w-20 text-gray-300">播放區間</span>
+                            <span className="body-medium text-[#000000]">
+                              {formatDate(movie.startAt)} - {formatDate(movie.endAt)}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDelete(e, movie.id, movie.poster)}
+                          >
+                            刪除
+                          </button>
+                        </div>
+                      </section>
+                    </div>
                   </div>
-                </div>
-              </article>
+                </article>
+              </div>
             ))}
           </div>
         </section>
