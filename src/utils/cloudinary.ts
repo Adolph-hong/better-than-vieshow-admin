@@ -21,6 +21,20 @@ export const uploadImageToCloudinary = async (file: File): Promise<string> => {
   return data.secure_url
 }
 
+const generateSignature = async (
+  publicId: string,
+  timestamp: number,
+  apiSecret: string
+): Promise<string> => {
+  const message = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest("SHA-1", data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+  return hashHex
+}
+
 export const deleteImageFromCloudinary = async (imageUrl: string): Promise<void> => {
   if (!imageUrl) return
 
@@ -66,18 +80,4 @@ export const deleteImageFromCloudinary = async (imageUrl: string): Promise<void>
     // eslint-disable-next-line no-console
     console.error("刪除 Cloudinary 圖片時發生錯誤:", error)
   }
-}
-
-const generateSignature = async (
-  publicId: string,
-  timestamp: number,
-  apiSecret: string
-): Promise<string> => {
-  const message = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`
-  const encoder = new TextEncoder()
-  const data = encoder.encode(message)
-  const hashBuffer = await crypto.subtle.digest("SHA-1", data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
-  return hashHex
 }
