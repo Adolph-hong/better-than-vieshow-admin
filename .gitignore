@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Env files
+.env
+.env.*
+
 # Editor directories and files
 .idea
 .DS_Store

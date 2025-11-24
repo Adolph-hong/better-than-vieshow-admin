@@ -14,7 +14,7 @@ const TheatersFooter = (props: TheatersFooterProps) => {
   return (
     <>
       <div className="h-[88px]" />
-      <footer className="fixed bottom-0 left-60 right-0 z-10 h-[88px] w-auto border-t border-[#E5E5E5] bg-white">
+      <footer className="fixed right-0 bottom-0 left-60 z-10 h-[88px] w-auto border-t border-[#E5E5E5] bg-white">
         <div className="mx-auto flex h-full w-full items-center justify-between">
           <div
             className="ml-6 flex items-center gap-8 text-base font-medium text-[#353642]"
