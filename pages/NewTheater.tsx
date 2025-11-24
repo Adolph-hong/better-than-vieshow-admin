@@ -70,7 +70,7 @@ const NewTheater = () => {
                   placeholder="影廳名稱"
                   value={theaterName}
                   onChange={(event) => setTheaterName(event.target.value)}
-                  className="mt-2 w-[320px] rounded-md border border-white bg-white px-4 py-3 text-[#353642] placeholder:text-[#999999]"
+                  className="mt-2 w-[320px] rounded-md border border-white bg-white px-4 py-3 text-gray-700 placeholder:text-[#999999]"
                 />
               </label>
             </div>
@@ -82,7 +82,7 @@ const NewTheater = () => {
                   type="number"
                   min={0}
                   placeholder="樓層數"
-                  className="mt-2 w-[129px] rounded-md border border-white bg-white px-4 py-3 text-[#353642] placeholder:text-[#999999]"
+                  className="mt-2 w-[129px] rounded-md border border-white bg-white px-4 py-3 text-gray-700 placeholder:text-[#999999]"
                 />
               </label>
             </div>

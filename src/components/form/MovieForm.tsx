@@ -335,7 +335,7 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
           type="submit"
           className="body-medium border-primary-500 bg-primary-500 flex cursor-pointer items-center justify-center rounded-[10px] border px-4 py-2.5 text-white"
         >
-          {isEditMode ? "更新" : "建立影廳"}
+          {isEditMode ? "更新" : "建立電影"}
         </button>
       </section>
     </form>
