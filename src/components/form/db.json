@@ -1,7 +1,7 @@
 {
   "movies": [
     {
-      "movieName": "妳籌啥子",
+      "movieName": "妳籌啥子啊",
       "duration": "185",
       "category": "R-18",
       "director": "蕭告",
@@ -64,6 +64,19 @@
       "endAt": "2025-11-29",
       "poster": "https://res.cloudinary.com/dojpfbtw8/image/upload/v1763892746/fcuxwxlj2jyk5pu7fxgg.jpg",
       "id": "448e31e9-ea30-462f-aee4-339477f0f849"
+    },
+    {
+      "movieName": "王子果果愛情故事",
+      "duration": "185",
+      "category": "R-18",
+      "director": "王子",
+      "actors": "果果",
+      "describe": "出軌",
+      "trailerLink": "https://www.youtube.com/watch?v=d3PCwIJfcHs",
+      "startAt": "2025-11-18",
+      "endAt": "2025-11-29",
+      "poster": "https://res.cloudinary.com/dojpfbtw8/image/upload/v1763967888/xnu4pz3loz3tihlkpcpb.jpg",
+      "id": "817c1fef-05cd-4d50-a3c0-c4341c5e734e"
     }
   ]
 }
