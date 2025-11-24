@@ -5,7 +5,7 @@ import Header from "@/components/ui/Header"
 const CreateMovie = () => {
   return (
     <AdminContainer>
-      <Header back title="電影" />
+      <Header back title="新增電影" />
       <MovieForm />
     </AdminContainer>
   )

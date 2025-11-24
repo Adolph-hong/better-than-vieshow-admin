@@ -41,6 +41,7 @@ module.exports = {
     "react/react-in-jsx-scope": "off", // React 17+ 不需要 import React
     "react/jsx-filename-extension": [1, { extensions: [".tsx"] }],
     "react/prop-types": "off",
+    "react/jsx-props-no-spreading": "off",
     "react/button-has-type": "off",
     "react/require-default-props": "off",
 
@@ -82,5 +83,6 @@ module.exports = {
 
     // --- 其他細項可選 ---
     "react/function-component-definition": "off", // 允許箭頭函式元件
+    "no-alert": "off", // 允許使用 alert
   },
 }

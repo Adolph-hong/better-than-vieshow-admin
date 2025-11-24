@@ -1,7 +1,7 @@
 import AdminContainer from "@/components/layout/AdminContainer"
 
 const Home = () => {
-  return <AdminContainer />
+  return <AdminContainer>{null}</AdminContainer>
 }
 
 export default Home
