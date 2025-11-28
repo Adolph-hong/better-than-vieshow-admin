@@ -87,7 +87,11 @@ const TimeLine = () => {
             onGoToday={handleGoToday}
             onPrevDay={() => handleChangeDay(-1)}
             onNextDay={() => handleChangeDay(1)}
-            onEdit={() => navigate("/timelines/edit")}
+            onEdit={() =>
+              navigate("/timelines/edit", {
+                state: { formattedDate: formattedSelectedDate },
+              })
+            }
           />
           {/* 廳次列表 */}
           <TheaterScheduleList theaters={theaters} timeSlots={timeSlots} />
