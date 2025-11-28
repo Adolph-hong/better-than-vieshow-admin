@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { format, isSameMonth, startOfMonth } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import moviesData from "@/components/form/db.json"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TimelineLayout from "@/components/layout/TimelineLayout"
-import CalendarPanel from "@/components/TimeLine/CalendarPanel"
-import MovieList from "@/components/TimeLine/MovieList"
-import ScheduleNav from "@/components/TimeLine/ScheduleNav"
+import CalendarPanel from "@/components/timeline/CalendarPanel"
+import MovieList from "@/components/timeline/MovieList"
+import ScheduleNav from "@/components/timeline/ScheduleNav"
+import TheaterScheduleList from "@/components/timeline/TheaterScheduleList"
+import { theaters, timeSlots } from "@/components/timeline/timelineData"
 import Header from "@/components/ui/Header"
 
 interface Movie {
@@ -15,6 +18,7 @@ interface Movie {
 }
 
 const TimeLine = () => {
+  const navigate = useNavigate()
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(new Date()))
 
@@ -76,13 +80,17 @@ const TimeLine = () => {
           <MovieList movies={movies} />
         </div>
         {/* 右邊排程區 */}
-        <div className="flex flex-1 flex-col gap-6">
+        <div className="flex flex-1 flex-col gap-6 overflow-hidden">
+          {/* nav */}
           <ScheduleNav
             formattedDate={formattedSelectedDate}
             onGoToday={handleGoToday}
             onPrevDay={() => handleChangeDay(-1)}
             onNextDay={() => handleChangeDay(1)}
+            onEdit={() => navigate("/timelines/edit")}
           />
+          {/* 廳次列表 */}
+          <TheaterScheduleList theaters={theaters} timeSlots={timeSlots} />
         </div>
       </TimelineLayout>
     </AdminContainer>
