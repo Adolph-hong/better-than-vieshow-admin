@@ -45,9 +45,9 @@ const TimeLineEditor = () => {
   }
 
   return (
-    <AdminContainer>
+    <AdminContainer sidebarBorderColor="border-gray-50">
       <Header title={`編輯時刻表 - ${formattedDate}`} back backTo="/timelines" />
-      <div className="mt-3 flex gap-6 px-6">
+      <div className="mt-3 flex gap-6 px-6 pb-6">
         {/* 左邊電影列表 */}
         <div className="flex w-full max-w-67.5 flex-col rounded-sm bg-white p-3">
           <h1 className="font-family-inter flex px-2 py-3 text-base font-semibold text-[#000000]">
@@ -60,10 +60,10 @@ const TimeLineEditor = () => {
                 className="flex items-center gap-3 rounded-[10px] bg-gray-900 p-1"
               >
                 <div className="flex w-full max-w-44.5 flex-col gap-1 px-2">
-                  <span className="body-medium line-clamp-2 break-all text-white">
+                  <span className="body-medium line-clamp-1 break-all text-white">
                     {movie.movieName}
                   </span>
-                  <span className="font-family-inter line-clamp-2 text-xs font-normal break-all text-gray-50">
+                  <span className="font-family-inter line-clamp-1 text-xs font-normal break-all text-gray-50">
                     {formatDuration(movie.duration)}
                   </span>
                 </div>
@@ -76,6 +76,15 @@ const TimeLineEditor = () => {
             ))}
           </div>
         </div>
+      </div>
+      {/* 底部 */}
+      <div className="flex justify-end bg-white p-6">
+        <button
+          type="button"
+          className="bg-primary-500 body-medium flex cursor-pointer rounded-[10px] px-4 py-2.5 text-white"
+        >
+          儲存時刻表
+        </button>
       </div>
     </AdminContainer>
   )
