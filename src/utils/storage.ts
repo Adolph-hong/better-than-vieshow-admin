@@ -1,0 +1,173 @@
+import moviesData from "@/components/form/db.json"
+
+const STORAGE_KEYS = {
+  MOVIES: "better-than-vieshow-movies",
+  SCHEDULES: "better-than-vieshow-schedules",
+  VERSION: "better-than-vieshow-version",
+} as const
+
+const DATA_VERSION = "1.0.0"
+
+interface Movie {
+  id: string
+  movieName: string
+  duration: string
+  poster: string
+  category?: string
+  director?: string
+  actors?: string
+  describe?: string
+  trailerLink?: string
+  startAt?: string
+  endAt?: string
+}
+
+interface MoviesData {
+  movies?: Movie[]
+}
+
+// 開發環境：永遠從 db.json 讀取
+// 生產環境：從 LocalStorage 讀取，如果為空則從 db.json 初始化
+export const getMovies = (): Movie[] => {
+  if (import.meta.env.DEV) {
+    // 開發環境：直接從 db.json 讀取
+    const data = moviesData as MoviesData
+    return data.movies ?? []
+  }
+
+  // 生產環境：從 LocalStorage 讀取
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.MOVIES)
+    if (stored) {
+      const parsed = JSON.parse(stored) as Movie[]
+      return parsed
+    }
+
+    // 如果 LocalStorage 為空，從 db.json 初始化
+    const data = moviesData as MoviesData
+    const movies = data.movies ?? []
+    localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(movies))
+    localStorage.setItem(STORAGE_KEYS.VERSION, DATA_VERSION)
+    return movies
+  } catch (error) {
+    console.error("Failed to read movies from localStorage:", error)
+    // 如果讀取失敗，回退到 db.json
+    const data = moviesData as MoviesData
+    return data.movies ?? []
+  }
+}
+
+// 儲存電影資料（只在生產環境寫入 LocalStorage）
+export const saveMovies = (movies: Movie[]): void => {
+  if (import.meta.env.DEV) {
+    // 開發環境：不寫入 LocalStorage（保持 db.json 為唯一來源）
+    console.log("開發環境：電影資料不會寫入 LocalStorage")
+    return
+  }
+
+  // 生產環境：寫入 LocalStorage
+  try {
+    localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(movies))
+  } catch (error) {
+    console.error("Failed to save movies to localStorage:", error)
+  }
+}
+
+// 從 formattedDate 解析出日期字串 (yyyy/MM/dd)
+const parseDateFromFormatted = (formattedDate: string): string => {
+  // formattedDate 格式: "2025/11/30(日)"
+  const match = formattedDate.match(/^(\d{4}\/\d{2}\/\d{2})/)
+  return match ? match[1] : ""
+}
+
+// 排程資料的讀取和儲存（根據日期）
+export const getSchedules = <T>(date?: string): T[] => {
+  if (!date) return []
+
+  try {
+    const key = `${STORAGE_KEYS.SCHEDULES}-${date}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      return JSON.parse(stored) as T[]
+    }
+  } catch (error) {
+    console.error("Failed to read schedules from localStorage:", error)
+  }
+  return []
+}
+
+// 從 formattedDate 讀取排程
+export const getSchedulesByFormattedDate = <T>(formattedDate: string): T[] => {
+  const date = parseDateFromFormatted(formattedDate)
+  return getSchedules<T>(date)
+}
+
+export const saveSchedules = <T>(schedules: T[], date?: string): void => {
+  if (!date) {
+    console.error("saveSchedules: date is required")
+    return
+  }
+
+  try {
+    const key = `${STORAGE_KEYS.SCHEDULES}-${date}`
+    localStorage.setItem(key, JSON.stringify(schedules))
+  } catch (error) {
+    console.error("Failed to save schedules to localStorage:", error)
+  }
+}
+
+// 從 formattedDate 儲存排程
+export const saveSchedulesByFormattedDate = <T>(
+  schedules: T[],
+  formattedDate: string
+): void => {
+  const date = parseDateFromFormatted(formattedDate)
+  saveSchedules(schedules, date)
+}
+
+// 檢查指定日期是否有草稿
+export const hasDraft = (formattedDate: string): boolean => {
+  const date = parseDateFromFormatted(formattedDate)
+  if (!date) return false
+
+  try {
+    const key = `${STORAGE_KEYS.SCHEDULES}-${date}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      const schedules = JSON.parse(stored) as unknown[]
+      return schedules.length > 0
+    }
+  } catch (error) {
+    console.error("Failed to check draft:", error)
+  }
+  return false
+}
+
+// 清除所有資料（用於重置）
+export const clearAllData = (): void => {
+  localStorage.removeItem(STORAGE_KEYS.MOVIES)
+  localStorage.removeItem(STORAGE_KEYS.VERSION)
+  // 清除所有日期的排程
+  const keys = Object.keys(localStorage)
+  keys.forEach((key) => {
+    if (key.startsWith(STORAGE_KEYS.SCHEDULES)) {
+      localStorage.removeItem(key)
+    }
+  })
+}
+
+// 重置為預設資料（從 db.json 重新載入）
+export const resetToDefault = (): void => {
+  const data = moviesData as MoviesData
+  const movies = data.movies ?? []
+  localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(movies))
+  localStorage.setItem(STORAGE_KEYS.VERSION, DATA_VERSION)
+  // 清除所有日期的排程
+  const keys = Object.keys(localStorage)
+  keys.forEach((key) => {
+    if (key.startsWith(STORAGE_KEYS.SCHEDULES)) {
+      localStorage.removeItem(key)
+    }
+  })
+}
+

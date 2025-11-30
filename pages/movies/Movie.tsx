@@ -171,7 +171,9 @@ const Movie = () => {
                     <div className="flex flex-1 flex-col py-4.5">
                       {/* 標題 */}
                       <section className="mb-[26px] flex justify-between">
-                        <h1 className="body-large text-[#000000]">{movie.movieName}</h1>
+                        <h1 className="body-large line-clamp-1 max-w-150 break-all text-[#000000]">
+                          {movie.movieName}
+                        </h1>
                         <div className="body-small flex h-[28px] items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
                           上映中
                         </div>
