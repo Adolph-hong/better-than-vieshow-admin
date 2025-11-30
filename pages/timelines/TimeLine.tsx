@@ -2,19 +2,30 @@ import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { format, isSameMonth, startOfMonth } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
-import moviesData from "@/components/form/db.json"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TimelineLayout from "@/components/layout/TimelineLayout"
-import CalendarPanel from "@/components/timeline/CalendarPanel"
-import MovieList from "@/components/timeline/MovieList"
-import ScheduleNav from "@/components/timeline/ScheduleNav"
-import TheaterScheduleList from "@/components/timeline/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/timeline/timelineData"
+import CalendarPanel from "@/components/TimeLine/CalendarPanel"
+import MovieList from "@/components/TimeLine/MovieList"
+import ScheduleNav from "@/components/TimeLine/ScheduleNav"
+import TheaterScheduleList from "@/components/TimeLine/TheaterScheduleList"
+import { theaters, timeSlots } from "@/components/TimeLine/timelineData"
 import Header from "@/components/ui/Header"
+import { getMovies, getSchedulesByFormattedDate, hasDraft } from "@/utils/storage"
 
 interface Movie {
   id: string
   movieName: string
+  duration: string
+  poster: string
+}
+
+interface Schedule {
+  id: string
+  movieId: string
+  theaterId: string
+  startTime: string
+  endTime: string
+  movie: Movie
 }
 
 const TimeLine = () => {
@@ -23,8 +34,7 @@ const TimeLine = () => {
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(new Date()))
 
   const movies = useMemo(() => {
-    const data = moviesData as { movies?: Movie[] }
-    return data.movies ?? []
+    return getMovies()
   }, [])
 
   const handleSelectDate = (date?: Date) => {
@@ -65,6 +75,16 @@ const TimeLine = () => {
     return `${dateText}(${weekDay})`
   }, [selectedDate])
 
+  // 讀取當前日期的排程
+  const schedules = useMemo(() => {
+    return getSchedulesByFormattedDate<Schedule>(formattedSelectedDate)
+  }, [formattedSelectedDate])
+
+  // 檢查是否有草稿
+  const hasDraftStatus = useMemo(() => {
+    return hasDraft(formattedSelectedDate)
+  }, [formattedSelectedDate])
+
   return (
     <AdminContainer>
       <Header title="時刻表" />
@@ -84,6 +104,7 @@ const TimeLine = () => {
           {/* nav */}
           <ScheduleNav
             formattedDate={formattedSelectedDate}
+            hasDraft={hasDraftStatus}
             onGoToday={handleGoToday}
             onPrevDay={() => handleChangeDay(-1)}
             onNextDay={() => handleChangeDay(1)}
@@ -92,9 +113,15 @@ const TimeLine = () => {
                 state: { formattedDate: formattedSelectedDate },
               })
             }
+            onPreview={() => {
+              // TODO: 實作預覽功能
+            }}
+            onStartSelling={() => {
+              // TODO: 實作開始販售功能
+            }}
           />
           {/* 廳次列表 */}
-          <TheaterScheduleList theaters={theaters} timeSlots={timeSlots} />
+          <TheaterScheduleList theaters={theaters} timeSlots={timeSlots} schedules={schedules} />
         </div>
       </TimelineLayout>
     </AdminContainer>
