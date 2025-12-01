@@ -34,7 +34,8 @@ const TimeLine = () => {
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(new Date()))
 
   const movies = useMemo(() => {
-    return getMovies()
+    const moviesData = getMovies()
+    return Array.isArray(moviesData) ? moviesData : []
   }, [])
 
   const handleSelectDate = (date?: Date) => {
@@ -97,7 +98,7 @@ const TimeLine = () => {
             onSelectDate={handleSelectDate}
             onMonthChange={handleMonthChange}
           />
-          <MovieList movies={movies} />
+          <MovieList movies={movies} schedules={schedules} />
         </div>
         {/* 右邊排程區 */}
         <div className="flex flex-1 flex-col gap-6 overflow-hidden">

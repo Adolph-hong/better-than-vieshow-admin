@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
 
 const DATA_VERSION = "1.0.0"
 
-interface Movie {
+export interface Movie {
   id: string
   movieName: string
   duration: string
@@ -29,31 +29,45 @@ interface MoviesData {
 // 開發環境：永遠從 db.json 讀取
 // 生產環境：從 LocalStorage 讀取，如果為空則從 db.json 初始化
 export const getMovies = (): Movie[] => {
-  if (import.meta.env.DEV) {
-    // 開發環境：直接從 db.json 讀取
-    const data = moviesData as MoviesData
-    return data.movies ?? []
-  }
-
-  // 生產環境：從 LocalStorage 讀取
   try {
-    const stored = localStorage.getItem(STORAGE_KEYS.MOVIES)
-    if (stored) {
-      const parsed = JSON.parse(stored) as Movie[]
-      return parsed
+    // 確保 moviesData 存在
+    if (!moviesData) {
+      console.error("moviesData is not available")
+      return []
     }
 
-    // 如果 LocalStorage 為空，從 db.json 初始化
     const data = moviesData as MoviesData
-    const movies = data.movies ?? []
-    localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(movies))
-    localStorage.setItem(STORAGE_KEYS.VERSION, DATA_VERSION)
-    return movies
+    const moviesFromJson = Array.isArray(data.movies) ? data.movies : []
+
+    if (import.meta.env.DEV) {
+      // 開發環境：直接從 db.json 讀取
+      return moviesFromJson
+    }
+
+    // 生產環境：從 LocalStorage 讀取
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.MOVIES)
+      if (stored) {
+        const parsed = JSON.parse(stored) as Movie[]
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed
+        }
+      }
+
+      // 如果 LocalStorage 為空或無效，從 db.json 初始化
+      if (moviesFromJson.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(moviesFromJson))
+        localStorage.setItem(STORAGE_KEYS.VERSION, DATA_VERSION)
+      }
+      return moviesFromJson
+    } catch (localStorageError) {
+      console.error("Failed to read movies from localStorage:", localStorageError)
+      // 如果讀取失敗，回退到 db.json
+      return moviesFromJson
+    }
   } catch (error) {
-    console.error("Failed to read movies from localStorage:", error)
-    // 如果讀取失敗，回退到 db.json
-    const data = moviesData as MoviesData
-    return data.movies ?? []
+    console.error("Failed to get movies:", error)
+    return []
   }
 }
 

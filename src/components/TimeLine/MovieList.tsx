@@ -1,8 +1,26 @@
-interface MovieListProps {
-  movies: { id: string; movieName: string }[]
+interface Schedule {
+  id: string
+  movieId: string
+  theaterId: string
+  startTime: string
+  endTime: string
 }
 
-const MovieList = ({ movies }: MovieListProps) => {
+interface MovieListProps {
+  movies: { id: string; movieName: string }[]
+  schedules?: Schedule[]
+}
+
+const MovieList = ({ movies, schedules = [] }: MovieListProps) => {
+  // 確保 movies 和 schedules 都是數組
+  const safeMovies = Array.isArray(movies) ? movies : []
+  const safeSchedules = Array.isArray(schedules) ? schedules : []
+
+  // 計算每個電影的場次數量（以天計算，不區分廳）
+  const getShowtimeCount = (movieId: string): number => {
+    return safeSchedules.filter((schedule) => schedule.movieId === movieId).length
+  }
+
   return (
     <div className="rounded-sm bg-white p-4">
       <div className="font-family-inter flex justify-between px-2 py-3 font-semibold text-[#000000]">
@@ -11,13 +29,13 @@ const MovieList = ({ movies }: MovieListProps) => {
       </div>
 
       <div className="flex flex-col">
-        {movies.map((movie) => (
+        {safeMovies.map((movie) => (
           <div
             key={movie.id}
             className="body-medium flex justify-between border-t border-gray-50 px-2 py-3"
           >
             <span className="line-clamp-2 max-w-46.5 break-all">{movie.movieName}</span>
-            <span>0</span>
+            <span>{getShowtimeCount(movie.id)}</span>
           </div>
         ))}
       </div>
