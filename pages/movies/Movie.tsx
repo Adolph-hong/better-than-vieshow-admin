@@ -5,6 +5,7 @@ import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
 import { deleteImageFromCloudinary } from "@/utils/cloudinary"
+import { getMovies, saveMovies } from "@/utils/storage"
 
 interface MovieItem {
   id: string
@@ -61,27 +62,18 @@ const Movie = () => {
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
-    const controller = new AbortController()
-    const fetchMovies = async () => {
+    const loadMovies = () => {
       try {
-        const res = await fetch("http://localhost:3001/movies", {
-          signal: controller.signal,
-        })
-        if (!res.ok) {
-          throw new Error("無法取得電影資料")
-        }
-        const data: MovieItem[] = await res.json()
-        setMovies(data)
-      } catch (err) {
-        if ((err as DOMException).name !== "AbortError") {
-          setError("讀取電影列表時發生錯誤")
-        }
+        const data = getMovies() as MovieItem[]
+        setMovies(Array.isArray(data) ? data : [])
+      } catch {
+        setError("讀取電影列表時發生錯誤")
       } finally {
         setIsLoading(false)
       }
     }
-    fetchMovies()
-    return () => controller.abort()
+
+    loadMovies()
   }, [])
 
   const filteredMovies = useMemo(() => {
@@ -103,16 +95,16 @@ const Movie = () => {
         await deleteImageFromCloudinary(posterUrl)
       }
 
-      // 刪除 JSON 資料
-      const res = await fetch(`http://localhost:3001/movies/${movieId}`, {
-        method: "DELETE",
+      // 刪除本地電影資料（使用 LocalStorage / db.json）
+      setMovies((prev) => {
+        const updated = prev.filter((movie) => movie.id !== movieId)
+        try {
+          saveMovies(updated as unknown as never[])
+        } catch {
+          // 儲存失敗時先忽略，畫面仍會更新
+        }
+        return updated
       })
-
-      if (!res.ok) {
-        throw new Error("刪除失敗")
-      }
-
-      setMovies((prev) => prev.filter((movie) => movie.id !== movieId))
     } catch (err) {
       alert("刪除電影失敗，請稍後再試")
     }
