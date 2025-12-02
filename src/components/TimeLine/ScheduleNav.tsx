@@ -83,7 +83,7 @@ const ScheduleNav = ({
               <MoreVertical className="h-8 w-8 text-gray-900" />
             </button>
             {showMenu && (
-              <div className="absolute top-10 right-0 z-10 min-w-32 rounded-lg bg-white p-2 shadow-lg">
+              <div className="absolute top-12 right-0 z-10 min-w-32 rounded-sm bg-white py-1 shadow-lg">
                 <button
                   type="button"
                   className="font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
