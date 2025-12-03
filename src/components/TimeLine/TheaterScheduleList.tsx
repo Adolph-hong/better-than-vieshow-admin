@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { theaters } from "@/components/TimeLine/timelineData"
-import type { Theater } from "@/components/TimeLine/timelineData"
+import { theaters } from "@/components/timeline/timelineData"
+import type { Theater } from "@/components/timeline/timelineData"
 
 interface Movie {
   id: string
@@ -279,7 +279,7 @@ const TheaterScheduleList = ({
                             alt={schedule.movie.movieName}
                             className="h-full w-full rounded-lg object-cover"
                           />
-                          <div className="absolute right-0 bottom-0 left-0 h-8 rounded-b-lg bg-gradient-to-t from-gray-900 to-transparent" />
+                          <div className="absolute right-0 bottom-0 left-0 h-8 rounded-b-lg bg-linear-to-t from-gray-900 to-transparent" />
                         </div>
                       </div>
                     </div>

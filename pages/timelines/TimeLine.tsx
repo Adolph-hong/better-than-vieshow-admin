@@ -4,14 +4,21 @@ import { format, isSameMonth, startOfMonth } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TimelineLayout from "@/components/layout/TimelineLayout"
-import CalendarPanel from "@/components/TimeLine/CalendarPanel"
-import MovieList from "@/components/TimeLine/MovieList"
-import ScheduleNav from "@/components/TimeLine/ScheduleNav"
-import SchedulePreview from "@/components/TimeLine/SchedulePreview"
-import TheaterScheduleList from "@/components/TimeLine/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/TimeLine/timelineData"
+import CalendarPanel from "@/components/timeline/CalendarPanel"
+import ConfirmDialog from "@/components/timeline/ConfirmDialog"
+import MovieList from "@/components/timeline/MovieList"
+import ScheduleNav from "@/components/timeline/ScheduleNav"
+import SchedulePreview from "@/components/timeline/SchedulePreview"
+import TheaterScheduleList from "@/components/timeline/TheaterScheduleList"
+import { theaters, timeSlots } from "@/components/timeline/timelineData"
 import Header from "@/components/ui/Header"
-import { getMovies, getSchedulesByFormattedDate, hasDraft } from "@/utils/storage"
+import {
+  getMovies,
+  getSchedulesByFormattedDate,
+  hasDraft,
+  markDateAsPublished,
+  isDatePublished,
+} from "@/utils/storage"
 
 interface Movie {
   id: string
@@ -34,6 +41,8 @@ const TimeLine = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(new Date()))
   const [showPreview, setShowPreview] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const movies = useMemo(() => {
     const moviesData = getMovies()
@@ -81,12 +90,35 @@ const TimeLine = () => {
   // 讀取當前日期的排程
   const schedules = useMemo(() => {
     return getSchedulesByFormattedDate<Schedule>(formattedSelectedDate)
-  }, [formattedSelectedDate])
+  }, [formattedSelectedDate, refreshKey])
 
   // 檢查是否有草稿
   const hasDraftStatus = useMemo(() => {
     return hasDraft(formattedSelectedDate)
-  }, [formattedSelectedDate])
+  }, [formattedSelectedDate, refreshKey])
+
+  // 檢查是否已販售
+  const isPublished = useMemo(() => {
+    return isDatePublished(formattedSelectedDate)
+  }, [formattedSelectedDate, refreshKey])
+
+  // 處理開始販售
+  const handleStartSelling = () => {
+    setShowConfirmDialog(true)
+  }
+
+  // 確認開始販售
+  const handleConfirmSelling = () => {
+    markDateAsPublished(formattedSelectedDate)
+    setRefreshKey((prev) => prev + 1)
+    setShowConfirmDialog(false)
+    // 可以加入成功提示或其他後續處理
+  }
+
+  // 取消開始販售
+  const handleCancelSelling = () => {
+    setShowConfirmDialog(false)
+  }
 
   return (
     <AdminContainer>
@@ -108,6 +140,7 @@ const TimeLine = () => {
           <ScheduleNav
             formattedDate={formattedSelectedDate}
             hasDraft={hasDraftStatus}
+            isPublished={isPublished}
             onGoToday={handleGoToday}
             onPrevDay={() => handleChangeDay(-1)}
             onNextDay={() => handleChangeDay(1)}
@@ -119,9 +152,7 @@ const TimeLine = () => {
             onPreview={() => {
               setShowPreview(true)
             }}
-            onStartSelling={() => {
-              // TODO: 實作開始販售功能
-            }}
+            onStartSelling={handleStartSelling}
           />
           {/* 廳次列表 */}
           <TheaterScheduleList theaters={theaters} timeSlots={timeSlots} schedules={schedules} />
@@ -135,6 +166,17 @@ const TimeLine = () => {
           onClose={() => setShowPreview(false)}
         />
       )}
+      {/* 開始販售確認對話框 */}
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        title="開始販售"
+        message={`確定要開始販售 ${formattedSelectedDate} 的電影票嗎?`}
+        warning="販售後就無法再度編輯該日的電影時刻表"
+        onConfirm={handleConfirmSelling}
+        onCancel={handleCancelSelling}
+        confirmText="確認"
+        cancelText="取消"
+      />
     </AdminContainer>
   )
 }

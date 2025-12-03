@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
   MOVIES: "better-than-vieshow-movies",
   SCHEDULES: "better-than-vieshow-schedules",
   VERSION: "better-than-vieshow-version",
+  PUBLISHED_DATES: "better-than-vieshow-published-dates",
 } as const
 
 const DATA_VERSION = "1.0.0"
@@ -180,4 +181,41 @@ export const resetToDefault = (): void => {
       localStorage.removeItem(key)
     }
   })
+}
+
+// 標記指定日期為已販售（無法再編輯）
+export const markDateAsPublished = (formattedDate: string): void => {
+  const date = parseDateFromFormatted(formattedDate)
+  if (!date) return
+
+  try {
+    const key = STORAGE_KEYS.PUBLISHED_DATES
+    const stored = localStorage.getItem(key)
+    const publishedDates = stored ? (JSON.parse(stored) as string[]) : []
+
+    if (!publishedDates.includes(date)) {
+      publishedDates.push(date)
+      localStorage.setItem(key, JSON.stringify(publishedDates))
+    }
+  } catch (error) {
+    console.error("Failed to mark date as published:", error)
+  }
+}
+
+// 檢查指定日期是否已販售（無法再編輯）
+export const isDatePublished = (formattedDate: string): boolean => {
+  const date = parseDateFromFormatted(formattedDate)
+  if (!date) return false
+
+  try {
+    const key = STORAGE_KEYS.PUBLISHED_DATES
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      const publishedDates = JSON.parse(stored) as string[]
+      return publishedDates.includes(date)
+    }
+  } catch (error) {
+    console.error("Failed to check if date is published:", error)
+  }
+  return false
 }
