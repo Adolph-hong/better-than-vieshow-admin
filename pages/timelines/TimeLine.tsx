@@ -7,6 +7,7 @@ import TimelineLayout from "@/components/layout/TimelineLayout"
 import CalendarPanel from "@/components/TimeLine/CalendarPanel"
 import MovieList from "@/components/TimeLine/MovieList"
 import ScheduleNav from "@/components/TimeLine/ScheduleNav"
+import SchedulePreview from "@/components/TimeLine/SchedulePreview"
 import TheaterScheduleList from "@/components/TimeLine/TheaterScheduleList"
 import { theaters, timeSlots } from "@/components/TimeLine/timelineData"
 import Header from "@/components/ui/Header"
@@ -32,6 +33,7 @@ const TimeLine = () => {
   const navigate = useNavigate()
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(new Date()))
+  const [showPreview, setShowPreview] = useState(false)
 
   const movies = useMemo(() => {
     const moviesData = getMovies()
@@ -115,7 +117,7 @@ const TimeLine = () => {
               })
             }
             onPreview={() => {
-              // TODO: 實作預覽功能
+              setShowPreview(true)
             }}
             onStartSelling={() => {
               // TODO: 實作開始販售功能
@@ -125,6 +127,14 @@ const TimeLine = () => {
           <TheaterScheduleList theaters={theaters} timeSlots={timeSlots} schedules={schedules} />
         </div>
       </TimelineLayout>
+      {/* 預覽視窗 */}
+      {showPreview && (
+        <SchedulePreview
+          formattedDate={formattedSelectedDate}
+          schedules={schedules}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </AdminContainer>
   )
 }

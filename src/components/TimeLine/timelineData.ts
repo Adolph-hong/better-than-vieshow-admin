@@ -31,68 +31,95 @@ export function createTimeSlots(
   return result
 }
 
+// 廳次種類
+export type TheaterType = "數位" | "3DX" | "IMAX"
+
 // 廳次資料介面
 export interface Theater {
   id: string
   name: string
+  type: TheaterType // 廳次種類
   generalSeats: number // 一般座位數
   disabledSeats: number // 殘障座位數
 }
 
-// 九個廳的資料
+// 十一個廳的資料
 export const theaters: Theater[] = [
   {
     id: "dragon",
     name: "龍廳",
+    type: "數位",
     generalSeats: 240,
     disabledSeats: 6,
   },
   {
     id: "phoenix",
     name: "鳳廳",
+    type: "3DX",
     generalSeats: 240,
     disabledSeats: 6,
   },
   {
     id: "turtle",
     name: "烏龜廳",
+    type: "IMAX",
     generalSeats: 120,
     disabledSeats: 4,
   },
   {
     id: "husky",
     name: "哈士奇廳",
+    type: "數位",
     generalSeats: 160,
     disabledSeats: 4,
   },
   {
     id: "tiger",
     name: "虎廳",
+    type: "3DX",
     generalSeats: 200,
     disabledSeats: 5,
   },
   {
     id: "lion",
     name: "獅廳",
+    type: "數位",
     generalSeats: 180,
     disabledSeats: 5,
   },
   {
     id: "eagle",
     name: "鷹廳",
+    type: "IMAX",
     generalSeats: 150,
     disabledSeats: 4,
   },
   {
     id: "bear",
     name: "熊廳",
+    type: "3DX",
     generalSeats: 220,
     disabledSeats: 6,
   },
   {
     id: "wolf",
     name: "狼廳",
+    type: "數位",
     generalSeats: 190,
+    disabledSeats: 5,
+  },
+  {
+    id: "panda",
+    name: "熊貓廳",
+    type: "IMAX",
+    generalSeats: 140,
+    disabledSeats: 4,
+  },
+  {
+    id: "rabbit",
+    name: "兔廳",
+    type: "3DX",
+    generalSeats: 170,
     disabledSeats: 5,
   },
 ]

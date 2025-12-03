@@ -87,6 +87,7 @@ const TimeLineEditor = () => {
     theaterId: string,
     startTime: string,
     endTime: string,
+    movieId: string,
     excludeScheduleId?: string
   ): boolean => {
     const timeToMinutes = (time: string): number => {
@@ -97,18 +98,40 @@ const TimeLineEditor = () => {
     const startMinutes = timeToMinutes(startTime)
     const endMinutes = timeToMinutes(endTime)
 
+    // 找到目標廳的種類
+    const targetTheater = theaters.find((t) => t.id === theaterId)
+    if (!targetTheater) return false
+
     return schedules.some((schedule) => {
-      // 只檢查同一個廳的排程
-      if (schedule.theaterId !== theaterId) return false
       // 排除自己（重新拖曳時）
       if (excludeScheduleId && schedule.id === excludeScheduleId) return false
 
       const scheduleStart = timeToMinutes(schedule.startTime)
       const scheduleEnd = timeToMinutes(schedule.endTime)
 
-      // 檢查是否有時間重疊
-      // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
-      return startMinutes < scheduleEnd && endMinutes > scheduleStart
+      // 1. 檢查同一個廳的時間重疊
+      if (schedule.theaterId === theaterId) {
+        // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
+        return startMinutes < scheduleEnd && endMinutes > scheduleStart
+      }
+
+      // 2. 檢查同一部電影在不同廳（同種類）的衝突
+      // 必須是同一部電影
+      if (schedule.movieId !== movieId) return false
+
+      // 找到現有排程的廳
+      const existingTheater = theaters.find((t) => t.id === schedule.theaterId)
+      if (!existingTheater) return false
+
+      // 必須是同種類的廳
+      if (existingTheater.type !== targetTheater.type) return false
+
+      // 檢查開始時間間隔：至少需要間隔15分鐘
+      // 計算兩個排程開始時間的差距
+      const timeDiff = Math.abs(startMinutes - scheduleStart)
+
+      // 如果開始時間差距小於15分鐘，則衝突
+      return timeDiff < 15
     })
   }
 
@@ -121,7 +144,7 @@ const TimeLineEditor = () => {
       const endTime = calculateEndTime(timeSlot, durationMinutes)
 
       // 檢查衝突
-      if (checkConflict(theaterId, timeSlot, endTime)) {
+      if (checkConflict(theaterId, timeSlot, endTime, draggedItem.movie.id)) {
         setDraggedItem(null)
         return // 如果有衝突，不執行放置
       }
@@ -146,7 +169,15 @@ const TimeLineEditor = () => {
       const endTime = calculateEndTime(timeSlot, durationMinutes)
 
       // 檢查衝突（排除自己）
-      if (checkConflict(theaterId, timeSlot, endTime, draggedItem.schedule.id)) {
+      if (
+        checkConflict(
+          theaterId,
+          timeSlot,
+          endTime,
+          draggedItem.schedule.movieId,
+          draggedItem.schedule.id
+        )
+      ) {
         setDraggedItem(null)
         return // 如果有衝突，不執行放置
       }

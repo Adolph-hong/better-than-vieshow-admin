@@ -86,7 +86,7 @@ const ScheduleNav = ({
               <div className="absolute top-12 right-0 z-10 min-w-32 rounded-sm bg-white py-1 shadow-lg">
                 <button
                   type="button"
-                  className="font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                  className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
                   onClick={() => {
                     onPreview?.()
                     setShowMenu(false)
@@ -96,7 +96,7 @@ const ScheduleNav = ({
                 </button>
                 <button
                   type="button"
-                  className="font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                  className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
                   onClick={() => {
                     onEdit?.()
                     setShowMenu(false)
@@ -106,7 +106,7 @@ const ScheduleNav = ({
                 </button>
                 <button
                   type="button"
-                  className="font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                  className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
                   onClick={() => {
                     onStartSelling?.()
                     setShowMenu(false)

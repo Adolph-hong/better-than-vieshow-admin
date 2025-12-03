@@ -131,10 +131,7 @@ export const saveSchedules = <T>(schedules: T[], date?: string): void => {
 }
 
 // 從 formattedDate 儲存排程
-export const saveSchedulesByFormattedDate = <T>(
-  schedules: T[],
-  formattedDate: string
-): void => {
+export const saveSchedulesByFormattedDate = <T>(schedules: T[], formattedDate: string): void => {
   const date = parseDateFromFormatted(formattedDate)
   saveSchedules(schedules, date)
 }
@@ -184,4 +181,3 @@ export const resetToDefault = (): void => {
     }
   })
 }
-
