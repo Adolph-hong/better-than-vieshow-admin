@@ -137,6 +137,37 @@ export const saveSchedulesByFormattedDate = <T>(schedules: T[], formattedDate: s
   saveSchedules(schedules, date)
 }
 
+// 複製時刻表：從來源日期複製到目標日期
+export const copySchedules = (sourceDate: string, targetDate: string): boolean => {
+  // sourceDate 和 targetDate 格式都是 "yyyy/MM/dd"
+  if (!sourceDate || !targetDate) {
+    console.error("copySchedules: sourceDate and targetDate are required")
+    return false
+  }
+
+  try {
+    // 讀取來源日期的排程
+    const sourceKey = `${STORAGE_KEYS.SCHEDULES}-${sourceDate}`
+    const sourceStored = localStorage.getItem(sourceKey)
+    if (!sourceStored) {
+      console.error("copySchedules: source schedule not found")
+      return false
+    }
+
+    // 解析並複製排程
+    const schedules = JSON.parse(sourceStored) as unknown[]
+
+    // 儲存到目標日期
+    const targetKey = `${STORAGE_KEYS.SCHEDULES}-${targetDate}`
+    localStorage.setItem(targetKey, JSON.stringify(schedules))
+
+    return true
+  } catch (error) {
+    console.error("Failed to copy schedules:", error)
+    return false
+  }
+}
+
 // 檢查指定日期是否有草稿
 export const hasDraft = (formattedDate: string): boolean => {
   const date = parseDateFromFormatted(formattedDate)

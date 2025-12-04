@@ -6,6 +6,7 @@ import AdminContainer from "@/components/layout/AdminContainer"
 import TimelineLayout from "@/components/layout/TimelineLayout"
 import CalendarPanel from "@/components/timeline/CalendarPanel"
 import ConfirmDialog from "@/components/timeline/ConfirmDialog"
+import CopyScheduleDialog from "@/components/timeline/CopyScheduleDialog"
 import MovieList from "@/components/timeline/MovieList"
 import ScheduleNav from "@/components/timeline/ScheduleNav"
 import SchedulePreview from "@/components/timeline/SchedulePreview"
@@ -19,6 +20,7 @@ import {
   markDateAsPublished,
   isDatePublished,
   getScheduleStatusDates,
+  copySchedules,
 } from "@/utils/storage"
 
 interface Movie {
@@ -41,7 +43,7 @@ const parseDateFromFormatted = (formattedDate: string): Date | null => {
   // 例如 "2025/12/15(日)" -> 取前面的 yyyy/MM/dd
   const match = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
   if (!match) return null
-  const [_, year, month, day] = match
+  const [, year, month, day] = match
   return new Date(Number(year), Number(month) - 1, Number(day))
 }
 
@@ -60,6 +62,8 @@ const TimeLine = () => {
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(selectedDate))
   const [showPreview, setShowPreview] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showCopyDialog, setShowCopyDialog] = useState(false)
+  const [copyError, setCopyError] = useState<string>("")
   const [refreshKey, setRefreshKey] = useState(0)
 
   const movies = useMemo(() => {
@@ -108,21 +112,25 @@ const TimeLine = () => {
   // 讀取當前日期的排程
   const schedules = useMemo(() => {
     return getSchedulesByFormattedDate<Schedule>(formattedSelectedDate)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formattedSelectedDate, refreshKey])
 
   // 檢查是否有草稿
   const hasDraftStatus = useMemo(() => {
     return hasDraft(formattedSelectedDate)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formattedSelectedDate, refreshKey])
 
   // 檢查是否已販售
   const isPublished = useMemo(() => {
     return isDatePublished(formattedSelectedDate)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formattedSelectedDate, refreshKey])
 
   // 取得日曆用的草稿 / 販售中日期
   const { draft: draftDates, selling: sellingDates } = useMemo(() => {
     return getScheduleStatusDates()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey])
 
   // 處理開始販售
@@ -141,6 +149,52 @@ const TimeLine = () => {
   // 取消開始販售
   const handleCancelSelling = () => {
     setShowConfirmDialog(false)
+  }
+
+  // 處理複製時刻表
+  const handleCopySchedule = () => {
+    setCopyError("")
+    setShowCopyDialog(true)
+  }
+
+  // 確認複製時刻表
+  const handleConfirmCopy = (targetDate: string) => {
+    // targetDate 格式是 "yyyy/MM/dd"
+    // 檢查目標日期是否已販售
+    const [year, month, day] = targetDate.split("/")
+    const targetDateObj = new Date(Number(year), Number(month) - 1, Number(day))
+    const weekDay = targetDateObj.toLocaleDateString("zh-TW", { weekday: "narrow" })
+    const targetFormattedDateWithWeekday = `${targetDate}(${weekDay})`
+
+    if (isDatePublished(targetFormattedDateWithWeekday)) {
+      setCopyError("錯誤：該日已經開始販售了, 請選擇其他日期")
+      return
+    }
+
+    // 解析來源日期：從 formattedSelectedDate 提取 "yyyy/MM/dd" 格式
+    const sourceDateMatch = formattedSelectedDate.match(/^(\d{4}\/\d{2}\/\d{2})/)
+    if (!sourceDateMatch) {
+      setCopyError("錯誤:無法解析來源日期")
+      return
+    }
+    const sourceDate = sourceDateMatch[1]
+
+    // 執行複製
+    const success = copySchedules(sourceDate, targetDate)
+    if (success) {
+      setShowCopyDialog(false)
+      setCopyError("")
+      setRefreshKey((prev) => prev + 1)
+      // 可以加入成功提示
+    } else {
+      setCopyError("錯誤:複製失敗，請重試")
+    }
+  }
+
+  // 取消複製時刻表
+  const handleCancelCopy = () => {
+    setShowCopyDialog(false)
+    setCopyError("")
   }
 
   return (
@@ -178,8 +232,9 @@ const TimeLine = () => {
               setShowPreview(true)
             }}
             onStartSelling={handleStartSelling}
+            onDuplicate={handleCopySchedule}
           />
-          {/* 廳次列表（僅預覽，禁止拖曳）*/}
+          {/* 廳次列表（僅預覽，禁止拖曳） */}
           <TheaterScheduleList
             theaters={theaters}
             timeSlots={timeSlots}
@@ -206,6 +261,15 @@ const TimeLine = () => {
         onCancel={handleCancelSelling}
         confirmText="確認"
         cancelText="取消"
+      />
+      {/* 複製時刻表對話框 */}
+      <CopyScheduleDialog
+        isOpen={showCopyDialog}
+        onConfirm={handleConfirmCopy}
+        onCancel={handleCancelCopy}
+        errorMessage={copyError}
+        draftDates={draftDates}
+        sellingDates={sellingDates}
       />
     </AdminContainer>
   )
