@@ -4,23 +4,27 @@ import { ChevronLeft, ChevronRight, MoreVertical } from "lucide-react"
 interface ScheduleNavProps {
   formattedDate: string
   hasDraft?: boolean
+  isPublished?: boolean
   onGoToday: () => void
   onPrevDay: () => void
   onNextDay: () => void
   onEdit?: () => void
   onPreview?: () => void
   onStartSelling?: () => void
+  onDuplicate?: () => void
 }
 
 const ScheduleNav = ({
   formattedDate,
   hasDraft = false,
+  isPublished = false,
   onGoToday,
   onPrevDay,
   onNextDay,
   onEdit,
   onPreview,
   onStartSelling,
+  onDuplicate,
 }: ScheduleNavProps) => {
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -71,8 +75,12 @@ const ScheduleNav = ({
       </div>
       {hasDraft && (
         <div className="flex items-center gap-4 px-6">
-          <span className="font-family-inter rounded-[48px] bg-gray-300 px-4 py-2 font-normal text-white">
-            草稿
+          <span
+            className={`font-family-inter rounded-[48px] px-4 py-2 font-normal text-white ${
+              isPublished ? "bg-[#E0BE37]" : "bg-gray-300"
+            }`}
+          >
+            {isPublished ? "販售中" : "草稿"}
           </span>
           <div className="relative" ref={menuRef}>
             <button
@@ -83,10 +91,11 @@ const ScheduleNav = ({
               <MoreVertical className="h-8 w-8 text-gray-900" />
             </button>
             {showMenu && (
-              <div className="absolute top-10 right-0 z-10 min-w-32 rounded-lg bg-white p-2 shadow-lg">
+              <div className="absolute top-12 right-0 z-10 min-w-32 rounded-sm bg-white py-1 shadow-lg">
+                {/* 預覽 */}
                 <button
                   type="button"
-                  className="font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                  className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
                   onClick={() => {
                     onPreview?.()
                     setShowMenu(false)
@@ -94,26 +103,43 @@ const ScheduleNav = ({
                 >
                   預覽
                 </button>
-                <button
-                  type="button"
-                  className="font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
-                  onClick={() => {
-                    onEdit?.()
-                    setShowMenu(false)
-                  }}
-                >
-                  編輯
-                </button>
-                <button
-                  type="button"
-                  className="font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
-                  onClick={() => {
-                    onStartSelling?.()
-                    setShowMenu(false)
-                  }}
-                >
-                  開始販售
-                </button>
+
+                {/* 已販售：只顯示「複製時刻表」 */}
+                {isPublished ? (
+                  <button
+                    type="button"
+                    className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                    onClick={() => {
+                      onDuplicate?.()
+                      setShowMenu(false)
+                    }}
+                  >
+                    複製時刻表
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                      onClick={() => {
+                        onEdit?.()
+                        setShowMenu(false)
+                      }}
+                    >
+                      編輯
+                    </button>
+                    <button
+                      type="button"
+                      className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                      onClick={() => {
+                        onStartSelling?.()
+                        setShowMenu(false)
+                      }}
+                    >
+                      開始販售
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>

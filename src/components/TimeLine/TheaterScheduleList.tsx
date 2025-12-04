@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { Theater } from "@/components/TimeLine/timelineData"
+import type { Theater } from "@/components/timeline/timelineData"
 
 interface Movie {
   id: string
@@ -34,6 +34,7 @@ interface TheaterScheduleListProps {
   draggedItem?: DraggedItem | DraggedSchedule | null
   onDrop?: (theaterId: string, timeSlot: string) => void
   onDragStartSchedule?: (schedule: Schedule) => void
+  isInteractive?: boolean
 }
 
 const TheaterScheduleList = ({
@@ -43,6 +44,7 @@ const TheaterScheduleList = ({
   draggedItem,
   onDrop,
   onDragStartSchedule,
+  isInteractive = true,
 }: TheaterScheduleListProps) => {
   const [draggedOverSlot, setDraggedOverSlot] = useState<{
     theaterId: string
@@ -85,11 +87,13 @@ const TheaterScheduleList = ({
   }
 
   const handleDragOver = (e: React.DragEvent, theaterId: string, timeSlot: string) => {
+    if (!isInteractive) return
     e.preventDefault()
     setDraggedOverSlot({ theaterId, timeSlot })
   }
 
   const handleDragLeave = () => {
+    if (!isInteractive) return
     setDraggedOverSlot(null)
   }
 
@@ -105,27 +109,51 @@ const TheaterScheduleList = ({
     theaterId: string,
     startTime: string,
     endTime: string,
+    movieId: string,
     excludeScheduleId?: string
   ): boolean => {
     const startMinutes = timeToMinutes(startTime)
     const endMinutes = timeToMinutes(endTime)
 
+    // 找到目標廳的種類
+    const targetTheater = theaters.find((t) => t.id === theaterId)
+    if (!targetTheater) return false
+
     return schedules.some((schedule) => {
-      // 只檢查同一個廳的排程
-      if (schedule.theaterId !== theaterId) return false
       // 排除自己（重新拖曳時）
       if (excludeScheduleId && schedule.id === excludeScheduleId) return false
 
       const scheduleStart = timeToMinutes(schedule.startTime)
       const scheduleEnd = timeToMinutes(schedule.endTime)
 
-      // 檢查是否有時間重疊
-      // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
-      return startMinutes < scheduleEnd && endMinutes > scheduleStart
+      // 1. 檢查同一個廳的時間重疊
+      if (schedule.theaterId === theaterId) {
+        // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
+        return startMinutes < scheduleEnd && endMinutes > scheduleStart
+      }
+
+      // 2. 檢查同一部電影在不同廳（同種類）的衝突
+      // 必須是同一部電影
+      if (schedule.movieId !== movieId) return false
+
+      // 找到現有排程的廳
+      const existingTheater = theaters.find((t) => t.id === schedule.theaterId)
+      if (!existingTheater) return false
+
+      // 必須是同種類的廳
+      if (existingTheater.type !== targetTheater.type) return false
+
+      // 檢查開始時間間隔：至少需要間隔15分鐘
+      // 計算兩個排程開始時間的差距
+      const timeDiff = Math.abs(startMinutes - scheduleStart)
+
+      // 如果開始時間差距小於15分鐘，則衝突
+      return timeDiff < 15
     })
   }
 
   const getSlotState = (theaterId: string, timeSlot: string) => {
+    if (!isInteractive) return null
     if (
       !draggedItem ||
       draggedOverSlot?.theaterId !== theaterId ||
@@ -135,22 +163,26 @@ const TheaterScheduleList = ({
     }
 
     let durationMinutes: number
+    let movieId: string
     let excludeScheduleId: string | undefined
 
     if (draggedItem.type === "movie") {
       durationMinutes = parseInt(draggedItem.movie.duration, 10)
+      movieId = draggedItem.movie.id
     } else {
       durationMinutes = parseInt(draggedItem.schedule.movie.duration, 10)
+      movieId = draggedItem.schedule.movieId
       excludeScheduleId = draggedItem.schedule.id
     }
 
     const endTime = calculateEndTime(timeSlot, durationMinutes)
-    const hasConflict = checkConflict(theaterId, timeSlot, endTime, excludeScheduleId)
+    const hasConflict = checkConflict(theaterId, timeSlot, endTime, movieId, excludeScheduleId)
 
     return hasConflict ? "conflict" : "can-place"
   }
 
   const handleDropOnTimeSlot = (e: React.DragEvent, theaterId: string, timeSlot: string) => {
+    if (!isInteractive) return
     e.preventDefault()
     setDraggedOverSlot(null)
     if (onDrop) {
@@ -166,7 +198,9 @@ const TheaterScheduleList = ({
             className={`flex w-full min-w-46.5 flex-col gap-2 p-2 ${index < theaters.length - 1 ? "border-r border-gray-50" : ""}`}
           >
             <div className="flex flex-col gap-1 bg-white">
-              <span className="body-medium text-gray-900">{theater.name}</span>
+              <span className="body-medium text-gray-900">
+                {theater.name}({theater.type})
+              </span>
               <div className="font-family-inter flex w-full justify-between text-xs font-normal text-gray-300">
                 <span>一般座位</span>
                 <span>{theater.generalSeats} 位</span>
@@ -207,9 +241,13 @@ const TheaterScheduleList = ({
                 return (
                   <div
                     key={time}
-                    onDragOver={(e) => handleDragOver(e, theater.id, time)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDropOnTimeSlot(e, theater.id, time)}
+                    onDragOver={
+                      isInteractive ? (e) => handleDragOver(e, theater.id, time) : undefined
+                    }
+                    onDragLeave={isInteractive ? handleDragLeave : undefined}
+                    onDrop={
+                      isInteractive ? (e) => handleDropOnTimeSlot(e, theater.id, time) : undefined
+                    }
                     className={`font-family-inter flex h-6 items-center rounded-lg border px-2 text-xs font-normal transition-colors ${borderStyle} ${borderStyle === "border-dashed" ? "[border-dasharray:4_4]" : ""} ${borderColor} ${bgColor} ${textColor}`}
                   >
                     {displayText}
@@ -226,9 +264,13 @@ const TheaterScheduleList = ({
                   return (
                     <div
                       key={schedule.id}
-                      draggable
-                      onDragStart={() => onDragStartSchedule?.(schedule)}
-                      className="absolute right-0 left-0 cursor-move rounded-lg bg-gray-900 p-2 shadow-md"
+                      draggable={isInteractive}
+                      onDragStart={
+                        isInteractive ? () => onDragStartSchedule?.(schedule) : undefined
+                      }
+                      className={`absolute right-0 left-0 rounded-lg bg-gray-900 p-2 shadow-md ${
+                        isInteractive ? "cursor-move" : "cursor-default"
+                      }`}
                       style={{
                         top: `${position.top}px`,
                         height: `${position.height}px`,
@@ -250,7 +292,7 @@ const TheaterScheduleList = ({
                             alt={schedule.movie.movieName}
                             className="h-full w-full rounded-lg object-cover"
                           />
-                          <div className="absolute right-0 bottom-0 left-0 h-8 rounded-b-lg bg-gradient-to-t from-gray-900 to-transparent" />
+                          <div className="absolute right-0 bottom-0 left-0 h-8 rounded-b-lg bg-linear-to-t from-gray-900 to-transparent" />
                         </div>
                       </div>
                     </div>
