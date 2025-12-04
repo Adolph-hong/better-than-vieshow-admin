@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { format, isSameMonth, startOfMonth } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import AdminContainer from "@/components/layout/AdminContainer"
@@ -18,6 +18,7 @@ import {
   hasDraft,
   markDateAsPublished,
   isDatePublished,
+  getScheduleStatusDates,
 } from "@/utils/storage"
 
 interface Movie {
@@ -36,10 +37,27 @@ interface Schedule {
   movie: Movie
 }
 
+const parseDateFromFormatted = (formattedDate: string): Date | null => {
+  // 例如 "2025/12/15(日)" -> 取前面的 yyyy/MM/dd
+  const match = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+  if (!match) return null
+  const [_, year, month, day] = match
+  return new Date(Number(year), Number(month) - 1, Number(day))
+}
+
 const TimeLine = () => {
   const navigate = useNavigate()
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(new Date()))
+  const location = useLocation()
+  const locationState = location.state as { formattedDate?: string } | null
+
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (locationState?.formattedDate) {
+      const parsed = parseDateFromFormatted(locationState.formattedDate)
+      if (parsed) return parsed
+    }
+    return new Date()
+  })
+  const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(selectedDate))
   const [showPreview, setShowPreview] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -102,6 +120,11 @@ const TimeLine = () => {
     return isDatePublished(formattedSelectedDate)
   }, [formattedSelectedDate, refreshKey])
 
+  // 取得日曆用的草稿 / 販售中日期
+  const { draft: draftDates, selling: sellingDates } = useMemo(() => {
+    return getScheduleStatusDates()
+  }, [refreshKey])
+
   // 處理開始販售
   const handleStartSelling = () => {
     setShowConfirmDialog(true)
@@ -129,6 +152,8 @@ const TimeLine = () => {
           <CalendarPanel
             selectedDate={selectedDate}
             visibleMonth={visibleMonth}
+            draftDates={draftDates}
+            sellingDates={sellingDates}
             onSelectDate={handleSelectDate}
             onMonthChange={handleMonthChange}
           />
@@ -154,8 +179,13 @@ const TimeLine = () => {
             }}
             onStartSelling={handleStartSelling}
           />
-          {/* 廳次列表 */}
-          <TheaterScheduleList theaters={theaters} timeSlots={timeSlots} schedules={schedules} />
+          {/* 廳次列表（僅預覽，禁止拖曳）*/}
+          <TheaterScheduleList
+            theaters={theaters}
+            timeSlots={timeSlots}
+            schedules={schedules}
+            isInteractive={false}
+          />
         </div>
       </TimelineLayout>
       {/* 預覽視窗 */}

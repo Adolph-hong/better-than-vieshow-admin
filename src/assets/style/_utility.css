@@ -43,3 +43,23 @@
   font-weight: 500;
   line-height: 120%;
 }
+
+:global(.rdp-day_selected) {
+  position: relative;
+}
+
+:global(.rdp-day_selected button),
+:global(button.rdp-day_selected) {
+  position: relative;
+  z-index: 10;
+}
+
+:global(.rdp-day_selected button::before),
+:global(button.rdp-day_selected::before) {
+  z-index: 0;
+}
+
+:global(.rdp-day_selected button::after),
+:global(button.rdp-day_selected::after) {
+  z-index: 20;
+}

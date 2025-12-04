@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { theaters } from "@/components/timeline/timelineData"
 import type { Theater } from "@/components/timeline/timelineData"
 
 interface Movie {
@@ -35,6 +34,7 @@ interface TheaterScheduleListProps {
   draggedItem?: DraggedItem | DraggedSchedule | null
   onDrop?: (theaterId: string, timeSlot: string) => void
   onDragStartSchedule?: (schedule: Schedule) => void
+  isInteractive?: boolean
 }
 
 const TheaterScheduleList = ({
@@ -44,6 +44,7 @@ const TheaterScheduleList = ({
   draggedItem,
   onDrop,
   onDragStartSchedule,
+  isInteractive = true,
 }: TheaterScheduleListProps) => {
   const [draggedOverSlot, setDraggedOverSlot] = useState<{
     theaterId: string
@@ -86,11 +87,13 @@ const TheaterScheduleList = ({
   }
 
   const handleDragOver = (e: React.DragEvent, theaterId: string, timeSlot: string) => {
+    if (!isInteractive) return
     e.preventDefault()
     setDraggedOverSlot({ theaterId, timeSlot })
   }
 
   const handleDragLeave = () => {
+    if (!isInteractive) return
     setDraggedOverSlot(null)
   }
 
@@ -150,6 +153,7 @@ const TheaterScheduleList = ({
   }
 
   const getSlotState = (theaterId: string, timeSlot: string) => {
+    if (!isInteractive) return null
     if (
       !draggedItem ||
       draggedOverSlot?.theaterId !== theaterId ||
@@ -178,6 +182,7 @@ const TheaterScheduleList = ({
   }
 
   const handleDropOnTimeSlot = (e: React.DragEvent, theaterId: string, timeSlot: string) => {
+    if (!isInteractive) return
     e.preventDefault()
     setDraggedOverSlot(null)
     if (onDrop) {
@@ -236,9 +241,13 @@ const TheaterScheduleList = ({
                 return (
                   <div
                     key={time}
-                    onDragOver={(e) => handleDragOver(e, theater.id, time)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDropOnTimeSlot(e, theater.id, time)}
+                    onDragOver={
+                      isInteractive ? (e) => handleDragOver(e, theater.id, time) : undefined
+                    }
+                    onDragLeave={isInteractive ? handleDragLeave : undefined}
+                    onDrop={
+                      isInteractive ? (e) => handleDropOnTimeSlot(e, theater.id, time) : undefined
+                    }
                     className={`font-family-inter flex h-6 items-center rounded-lg border px-2 text-xs font-normal transition-colors ${borderStyle} ${borderStyle === "border-dashed" ? "[border-dasharray:4_4]" : ""} ${borderColor} ${bgColor} ${textColor}`}
                   >
                     {displayText}
@@ -255,9 +264,13 @@ const TheaterScheduleList = ({
                   return (
                     <div
                       key={schedule.id}
-                      draggable
-                      onDragStart={() => onDragStartSchedule?.(schedule)}
-                      className="absolute right-0 left-0 cursor-move rounded-lg bg-gray-900 p-2 shadow-md"
+                      draggable={isInteractive}
+                      onDragStart={
+                        isInteractive ? () => onDragStartSchedule?.(schedule) : undefined
+                      }
+                      className={`absolute right-0 left-0 rounded-lg bg-gray-900 p-2 shadow-md ${
+                        isInteractive ? "cursor-move" : "cursor-default"
+                      }`}
                       style={{
                         top: `${position.top}px`,
                         height: `${position.height}px`,

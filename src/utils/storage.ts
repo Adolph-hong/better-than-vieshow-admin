@@ -219,3 +219,57 @@ export const isDatePublished = (formattedDate: string): boolean => {
   }
   return false
 }
+
+// 取得所有有排程的日期（草稿）與已販售日期
+export const getScheduleStatusDates = (): { draft: Date[]; selling: Date[] } => {
+  const draftMap = new Map<string, boolean>()
+
+  // 先收集有排程的日期
+  const keys = Object.keys(localStorage)
+  keys.forEach((key) => {
+    if (key.startsWith(STORAGE_KEYS.SCHEDULES)) {
+      const dateStr = key.substring(`${STORAGE_KEYS.SCHEDULES}-`.length)
+      try {
+        const stored = localStorage.getItem(key)
+        if (stored) {
+          const schedules = JSON.parse(stored) as unknown[]
+          if (schedules.length > 0) {
+            draftMap.set(dateStr, true)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to read schedules when collecting status dates:", error)
+      }
+    }
+  })
+
+  // 取得已販售日期
+  let publishedDates: string[] = []
+  try {
+    const publishedStored = localStorage.getItem(STORAGE_KEYS.PUBLISHED_DATES)
+    if (publishedStored) {
+      publishedDates = JSON.parse(publishedStored) as string[]
+    }
+  } catch (error) {
+    console.error("Failed to read published dates:", error)
+  }
+
+  const draft: Date[] = []
+  const selling: Date[] = []
+
+  draftMap.forEach((_, dateStr) => {
+    const isSelling = publishedDates.includes(dateStr)
+    const match = dateStr.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+    if (!match) return
+    const [, year, month, day] = match
+    const d = new Date(Number(year), Number(month) - 1, Number(day))
+
+    if (isSelling) {
+      selling.push(d)
+    } else {
+      draft.push(d)
+    }
+  })
+
+  return { draft, selling }
+}

@@ -217,7 +217,7 @@ const TimeLineEditor = () => {
     // 儲存排程
     saveSchedulesByFormattedDate(schedules, formattedDate)
     // 導航回 TimeLine 頁面
-    navigate("/timelines")
+    navigate("/timelines", { state: { formattedDate } })
   }
 
   return (
@@ -264,6 +264,7 @@ const TimeLineEditor = () => {
               draggedItem={draggedItem}
               onDrop={handleDrop}
               onDragStartSchedule={handleDragStartSchedule}
+              isInteractive
             />
           </div>
         </div>
