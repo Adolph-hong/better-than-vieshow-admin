@@ -64,7 +64,7 @@ const TimeLine = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showCopyDialog, setShowCopyDialog] = useState(false)
   const [copyError, setCopyError] = useState<string>("")
-  const [refreshKey, setRefreshKey] = useState(0)
+  const [, setRefreshKey] = useState(0)
 
   const movies = useMemo(() => {
     const moviesData = getMovies()
@@ -109,29 +109,17 @@ const TimeLine = () => {
     return `${dateText}(${weekDay})`
   }, [selectedDate])
 
-  // 讀取當前日期的排程
-  const schedules = useMemo(() => {
-    return getSchedulesByFormattedDate<Schedule>(formattedSelectedDate)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formattedSelectedDate, refreshKey])
+  // 讀取當前日期的排程（每次渲染直接讀取最新狀態）
+  const schedules = getSchedulesByFormattedDate<Schedule>(formattedSelectedDate)
 
   // 檢查是否有草稿
-  const hasDraftStatus = useMemo(() => {
-    return hasDraft(formattedSelectedDate)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formattedSelectedDate, refreshKey])
+  const hasDraftStatus = hasDraft(formattedSelectedDate)
 
   // 檢查是否已販售
-  const isPublished = useMemo(() => {
-    return isDatePublished(formattedSelectedDate)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formattedSelectedDate, refreshKey])
+  const isPublished = isDatePublished(formattedSelectedDate)
 
   // 取得日曆用的草稿 / 販售中日期
-  const { draft: draftDates, selling: sellingDates } = useMemo(() => {
-    return getScheduleStatusDates()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey])
+  const { draft: draftDates, selling: sellingDates } = getScheduleStatusDates()
 
   // 處理開始販售
   const handleStartSelling = () => {

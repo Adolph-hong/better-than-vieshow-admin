@@ -33,7 +33,6 @@ export const getMovies = (): Movie[] => {
   try {
     // 確保 moviesData 存在
     if (!moviesData) {
-      console.error("moviesData is not available")
       return []
     }
 
@@ -61,13 +60,11 @@ export const getMovies = (): Movie[] => {
         localStorage.setItem(STORAGE_KEYS.VERSION, DATA_VERSION)
       }
       return moviesFromJson
-    } catch (localStorageError) {
-      console.error("Failed to read movies from localStorage:", localStorageError)
+    } catch {
       // 如果讀取失敗，回退到 db.json
       return moviesFromJson
     }
-  } catch (error) {
-    console.error("Failed to get movies:", error)
+  } catch {
     return []
   }
 }
@@ -76,15 +73,14 @@ export const getMovies = (): Movie[] => {
 export const saveMovies = (movies: Movie[]): void => {
   if (import.meta.env.DEV) {
     // 開發環境：不寫入 LocalStorage（保持 db.json 為唯一來源）
-    console.log("開發環境：電影資料不會寫入 LocalStorage")
     return
   }
 
   // 生產環境：寫入 LocalStorage
   try {
     localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(movies))
-  } catch (error) {
-    console.error("Failed to save movies to localStorage:", error)
+  } catch {
+    // 靜默失敗即可，避免中斷流程
   }
 }
 
@@ -105,8 +101,8 @@ export const getSchedules = <T>(date?: string): T[] => {
     if (stored) {
       return JSON.parse(stored) as T[]
     }
-  } catch (error) {
-    console.error("Failed to read schedules from localStorage:", error)
+  } catch {
+    // 讀取失敗時，回傳空陣列即可
   }
   return []
 }
@@ -119,15 +115,14 @@ export const getSchedulesByFormattedDate = <T>(formattedDate: string): T[] => {
 
 export const saveSchedules = <T>(schedules: T[], date?: string): void => {
   if (!date) {
-    console.error("saveSchedules: date is required")
     return
   }
 
   try {
     const key = `${STORAGE_KEYS.SCHEDULES}-${date}`
     localStorage.setItem(key, JSON.stringify(schedules))
-  } catch (error) {
-    console.error("Failed to save schedules to localStorage:", error)
+  } catch {
+    // 靜默失敗即可
   }
 }
 
@@ -141,7 +136,6 @@ export const saveSchedulesByFormattedDate = <T>(schedules: T[], formattedDate: s
 export const copySchedules = (sourceDate: string, targetDate: string): boolean => {
   // sourceDate 和 targetDate 格式都是 "yyyy/MM/dd"
   if (!sourceDate || !targetDate) {
-    console.error("copySchedules: sourceDate and targetDate are required")
     return false
   }
 
@@ -150,7 +144,6 @@ export const copySchedules = (sourceDate: string, targetDate: string): boolean =
     const sourceKey = `${STORAGE_KEYS.SCHEDULES}-${sourceDate}`
     const sourceStored = localStorage.getItem(sourceKey)
     if (!sourceStored) {
-      console.error("copySchedules: source schedule not found")
       return false
     }
 
@@ -162,8 +155,7 @@ export const copySchedules = (sourceDate: string, targetDate: string): boolean =
     localStorage.setItem(targetKey, JSON.stringify(schedules))
 
     return true
-  } catch (error) {
-    console.error("Failed to copy schedules:", error)
+  } catch {
     return false
   }
 }
@@ -180,8 +172,8 @@ export const hasDraft = (formattedDate: string): boolean => {
       const schedules = JSON.parse(stored) as unknown[]
       return schedules.length > 0
     }
-  } catch (error) {
-    console.error("Failed to check draft:", error)
+  } catch {
+    // 若讀取失敗，一律視為沒有草稿
   }
   return false
 }
@@ -228,8 +220,8 @@ export const markDateAsPublished = (formattedDate: string): void => {
       publishedDates.push(date)
       localStorage.setItem(key, JSON.stringify(publishedDates))
     }
-  } catch (error) {
-    console.error("Failed to mark date as published:", error)
+  } catch {
+    // 標記失敗時忽略，不中斷流程
   }
 }
 
@@ -245,8 +237,8 @@ export const isDatePublished = (formattedDate: string): boolean => {
       const publishedDates = JSON.parse(stored) as string[]
       return publishedDates.includes(date)
     }
-  } catch (error) {
-    console.error("Failed to check if date is published:", error)
+  } catch {
+    // 檢查失敗時，一律視為未販售
   }
   return false
 }
@@ -268,8 +260,8 @@ export const getScheduleStatusDates = (): { draft: Date[]; selling: Date[] } => 
             draftMap.set(dateStr, true)
           }
         }
-      } catch (error) {
-        console.error("Failed to read schedules when collecting status dates:", error)
+      } catch {
+        // 單一日期讀取失敗時略過即可
       }
     }
   })
@@ -281,8 +273,8 @@ export const getScheduleStatusDates = (): { draft: Date[]; selling: Date[] } => 
     if (publishedStored) {
       publishedDates = JSON.parse(publishedStored) as string[]
     }
-  } catch (error) {
-    console.error("Failed to read published dates:", error)
+  } catch {
+    // 讀取失敗時，視為目前沒有已販售日期
   }
 
   const draft: Date[] = []

@@ -48,8 +48,9 @@ const CalendarPanel = ({
           caption_label:
             "flex justify-center items-center ml-3 text-gray-700 font-family-inter font-semibold",
           chevron: "fill-gray-700",
-          button_next: "w-6 h-6",
-          day_button: "w-8 h-8 text-xs font-roboto font-normal",
+          button_previous: "w-6 h-6 cursor-pointer",
+          button_next: "w-6 h-6 cursor-pointer",
+          day_button: "w-8 h-8 text-xs font-roboto font-normal cursor-pointer",
         }}
       />
     </div>

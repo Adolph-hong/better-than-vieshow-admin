@@ -63,6 +63,24 @@ const CopyScheduleDialog = ({
 
   const formattedSelectedDate = format(selectedDate, "yyyy/MM/dd", { locale: zhTW })
 
+  const handleDaySelect = (date?: Date) => {
+    if (!date) return
+    setSelectedDate(date)
+    setShowCalendar(false)
+  }
+
+  const dayPickerClassNames = {
+    today: `border-amber-500 `,
+    selected: `relative before:content-[''] before:w-8 before:h-8 before:bg-[#5365AC] before:rounded-full before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:z-0 [&_button]:relative [&_button]:z-10 [&_button]:text-white`,
+    root: `${defaultClassNames.root} w-full`,
+    caption_label:
+      "flex justify-center items-center ml-3 text-gray-700 font-family-inter font-semibold",
+    chevron: "fill-gray-700",
+    button_previous: "w-6 h-6 cursor-pointer",
+    button_next: "w-6 h-6 cursor-pointer",
+    day_button: "w-8 h-8 text-xs font-roboto font-normal cursor-pointer",
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -105,12 +123,7 @@ const CopyScheduleDialog = ({
                 locale={zhTW}
                 weekStartsOn={0}
                 selected={selectedDate}
-                onSelect={(date) => {
-                  if (date) {
-                    setSelectedDate(date)
-                    setShowCalendar(false)
-                  }
-                }}
+                onSelect={handleDaySelect}
                 showOutsideDays
                 modifiers={{
                   draft: draftDates,
@@ -122,16 +135,7 @@ const CopyScheduleDialog = ({
                   selling:
                     "relative after:content-[''] after:w-1.5 after:h-1.5 after:bg-amber-400 after:rounded-full after:absolute after:bottom-2 after:left-1/2 after:-translate-x-1/2 after:z-20",
                 }}
-                classNames={{
-                  today: `border-amber-500 `,
-                  selected: `relative before:content-[''] before:w-8 before:h-8 before:bg-[#5365AC] before:rounded-full before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:z-0 [&_button]:relative [&_button]:z-10 [&_button]:text-white`,
-                  root: `${defaultClassNames.root} w-full`,
-                  caption_label:
-                    "flex justify-center items-center ml-3 text-gray-700 font-family-inter font-semibold",
-                  chevron: "fill-gray-700",
-                  button_next: "w-6 h-6",
-                  day_button: "w-8 h-8 text-xs font-roboto font-normal",
-                }}
+                classNames={dayPickerClassNames}
               />
             </div>
           )}
