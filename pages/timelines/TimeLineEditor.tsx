@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import AdminContainer from "@/components/layout/AdminContainer"
-import TheaterScheduleList from "@/components/timeline/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/timeline/timelineData"
+import TheaterScheduleList from "@/components/aaaaaa/TheaterScheduleList"
+import { theaters, timeSlots } from "@/components/aaaaaa/timelineData"
 import Header from "@/components/ui/Header"
 import {
   getMovies,
