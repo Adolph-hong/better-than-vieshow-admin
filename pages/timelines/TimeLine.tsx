@@ -173,6 +173,11 @@ const TimeLine = () => {
       setShowCopyDialog(false)
       setCopyError("")
       setRefreshKey((prev) => prev + 1)
+      // 跳轉到目標日期
+      setSelectedDate(targetDateObj)
+      if (!isSameMonth(targetDateObj, visibleMonth)) {
+        setVisibleMonth(startOfMonth(targetDateObj))
+      }
       // 可以加入成功提示
     } else {
       setCopyError("錯誤:複製失敗，請重試")

@@ -33,7 +33,7 @@ interface TheaterScheduleListProps {
   schedules?: Schedule[]
   draggedItem?: DraggedItem | DraggedSchedule | null
   onDrop?: (theaterId: string, timeSlot: string) => void
-  onDragStartSchedule?: (schedule: Schedule) => void
+  onDragStartSchedule?: (schedule: Schedule, e: React.DragEvent) => void
   isInteractive?: boolean
 }
 
@@ -266,9 +266,40 @@ const TheaterScheduleList = ({
                       key={schedule.id}
                       draggable={isInteractive}
                       onDragStart={
-                        isInteractive ? () => onDragStartSchedule?.(schedule) : undefined
+                        isInteractive
+                          ? (e) => {
+                              if (e.dataTransfer && e.currentTarget instanceof HTMLElement) {
+                                e.dataTransfer.effectAllowed = "move"
+                                // 直接使用原元素作為拖曳圖像，設置透明度
+                                e.currentTarget.style.opacity = "0.7"
+                                // 使用原元素本身作為拖曳圖像
+                                const rect = e.currentTarget.getBoundingClientRect()
+                                e.dataTransfer.setDragImage(
+                                  e.currentTarget,
+                                  e.clientX - rect.left,
+                                  e.clientY - rect.top
+                                )
+                                // 拖曳結束後恢復透明度
+                                setTimeout(() => {
+                                  if (e.currentTarget instanceof HTMLElement) {
+                                    e.currentTarget.style.opacity = "1"
+                                  }
+                                }, 0)
+                              }
+                              onDragStartSchedule?.(schedule, e)
+                            }
+                          : undefined
                       }
-                      className={`absolute right-0 left-0 rounded-lg bg-gray-900 p-2 shadow-md ${
+                      onDragEnd={
+                        isInteractive
+                          ? (e) => {
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.opacity = "1"
+                              }
+                            }
+                          : undefined
+                      }
+                      className={`absolute right-0 left-0 overflow-hidden rounded-lg bg-gray-900 p-2 shadow-md ${
                         isInteractive ? "cursor-move" : "cursor-default"
                       }`}
                       style={{
