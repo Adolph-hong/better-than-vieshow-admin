@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { X } from "lucide-react"
-import AgeBadge from "@/components/aaaaaa/AgeBadge"
-import { theaters, type TheaterType } from "@/components/aaaaaa/timelineData"
+import AgeBadge from "@/components/timeline/AgeBadge"
+import { theaters, type TheaterType } from "@/components/timeline/timelineData"
 
 interface Movie {
   id: string

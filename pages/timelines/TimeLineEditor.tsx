@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import AdminContainer from "@/components/layout/AdminContainer"
-import TheaterScheduleList from "@/components/aaaaaa/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/aaaaaa/timelineData"
+import TheaterScheduleList from "@/components/timeline/TheaterScheduleList"
+import { theaters, timeSlots } from "@/components/timeline/timelineData"
 import Header from "@/components/ui/Header"
 import {
   getMovies,
@@ -111,8 +111,8 @@ const TimeLineEditor = () => {
 
       // 1. 檢查同一個廳的時間重疊
       if (schedule.theaterId === theaterId) {
-      // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
-      return startMinutes < scheduleEnd && endMinutes > scheduleStart
+        // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
+        return startMinutes < scheduleEnd && endMinutes > scheduleStart
       }
 
       // 2. 檢查同一部電影在不同廳（同種類）的衝突

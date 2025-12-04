@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { Theater } from "@/components/aaaaaa/timelineData"
+import type { Theater } from "@/components/timeline/timelineData"
 
 interface Movie {
   id: string
