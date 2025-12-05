@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import AdminContainer from "@/components/layout/AdminContainer"
-import TheaterScheduleList from "@/components/aaaaaa/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/aaaaaa/timelineData"
+import TheaterScheduleList from "@/components/timeline/TheaterScheduleList"
+import { theaters, timeSlots } from "@/components/timeline/timelineData"
 import Header from "@/components/ui/Header"
 import {
   getMovies,
@@ -75,12 +75,40 @@ const TimeLineEditor = () => {
     return `${String(endHours).padStart(2, "0")}:${String(endMins).padStart(2, "0")}`
   }
 
-  const handleDragStartMovie = (movie: Movie) => {
+  const handleDragStartMovie = (movie: Movie, e: React.DragEvent) => {
     setDraggedItem({ type: "movie", movie })
+    if (e.dataTransfer && e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.effectAllowed = "move"
+      // 直接使用原元素作為拖曳圖像，設置透明度
+      e.currentTarget.style.opacity = "0.7"
+      // 使用原元素本身作為拖曳圖像
+      const rect = e.currentTarget.getBoundingClientRect()
+      e.dataTransfer.setDragImage(e.currentTarget, e.clientX - rect.left, e.clientY - rect.top)
+      // 拖曳結束後恢復透明度
+      setTimeout(() => {
+        if (e.currentTarget instanceof HTMLElement) {
+          e.currentTarget.style.opacity = "1"
+        }
+      }, 0)
+    }
   }
 
-  const handleDragStartSchedule = (schedule: Schedule) => {
+  const handleDragStartSchedule = (schedule: Schedule, e: React.DragEvent) => {
     setDraggedItem({ type: "schedule", schedule })
+    if (e.dataTransfer && e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.effectAllowed = "move"
+      // 直接使用原元素作為拖曳圖像，設置透明度
+      e.currentTarget.style.opacity = "0.7"
+      // 使用原元素本身作為拖曳圖像
+      const rect = e.currentTarget.getBoundingClientRect()
+      e.dataTransfer.setDragImage(e.currentTarget, e.clientX - rect.left, e.clientY - rect.top)
+      // 拖曳結束後恢復透明度
+      setTimeout(() => {
+        if (e.currentTarget instanceof HTMLElement) {
+          e.currentTarget.style.opacity = "1"
+        }
+      }, 0)
+    }
   }
 
   const checkConflict = (
@@ -201,7 +229,11 @@ const TimeLineEditor = () => {
     setDraggedItem(null)
   }
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e: React.DragEvent) => {
+    // 恢復拖曳元素的透明度
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = "1"
+    }
     // 如果拖曳結束時沒有成功放置，就刪除（拖到外面）
     if (draggedItem?.type === "schedule") {
       setSchedules((prev) => {
@@ -235,7 +267,12 @@ const TimeLineEditor = () => {
                 <div
                   key={movie.id}
                   draggable
-                  onDragStart={() => handleDragStartMovie(movie)}
+                  onDragStart={(e) => handleDragStartMovie(movie, e)}
+                  onDragEnd={(e) => {
+                    if (e.currentTarget instanceof HTMLElement) {
+                      e.currentTarget.style.opacity = "1"
+                    }
+                  }}
                   className="flex cursor-move items-center gap-3 rounded-[10px] bg-gray-900 p-1"
                 >
                   <div className="flex w-full max-w-44.5 flex-col gap-1 px-2">

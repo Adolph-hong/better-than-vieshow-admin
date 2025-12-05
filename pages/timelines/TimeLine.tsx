@@ -2,16 +2,16 @@ import { useMemo, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { format, isSameMonth, startOfMonth } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
-import CalendarPanel from "@/components/aaaaaa/CalendarPanel"
-import ConfirmDialog from "@/components/aaaaaa/ConfirmDialog"
-import CopyScheduleDialog from "@/components/aaaaaa/CopyScheduleDialog"
-import MovieList from "@/components/aaaaaa/MovieList"
-import ScheduleNav from "@/components/aaaaaa/ScheduleNav"
-import SchedulePreview from "@/components/aaaaaa/SchedulePreview"
-import TheaterScheduleList from "@/components/aaaaaa/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/aaaaaa/timelineData"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TimelineLayout from "@/components/layout/TimelineLayout"
+import CalendarPanel from "@/components/timeline/CalendarPanel"
+import ConfirmDialog from "@/components/timeline/ConfirmDialog"
+import CopyScheduleDialog from "@/components/timeline/CopyScheduleDialog"
+import MovieList from "@/components/timeline/MovieList"
+import ScheduleNav from "@/components/timeline/ScheduleNav"
+import SchedulePreview from "@/components/timeline/SchedulePreview"
+import TheaterScheduleList from "@/components/timeline/TheaterScheduleList"
+import { theaters, timeSlots } from "@/components/timeline/timelineData"
 import Header from "@/components/ui/Header"
 import {
   getMovies,
@@ -173,6 +173,11 @@ const TimeLine = () => {
       setShowCopyDialog(false)
       setCopyError("")
       setRefreshKey((prev) => prev + 1)
+      // 跳轉到目標日期
+      setSelectedDate(targetDateObj)
+      if (!isSameMonth(targetDateObj, visibleMonth)) {
+        setVisibleMonth(startOfMonth(targetDateObj))
+      }
       // 可以加入成功提示
     } else {
       setCopyError("錯誤:複製失敗，請重試")
