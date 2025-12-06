@@ -7,6 +7,8 @@ import EditMovie from "../pages/movies/EditMovie"
 import Movie from "../pages/movies/Movie"
 import NewTheater from "../pages/NewTheater"
 import Theaters from "../pages/Theaters"
+import TimeLine from "../pages/timelines/TimeLine"
+import TimeLineEditor from "../pages/timelines/TimeLineEditor"
 
 const AppRouter = () => {
   return (
@@ -20,6 +22,8 @@ const AppRouter = () => {
       <Route path="/movies/create" element={<CreateMovie />} />
       <Route path="/login" element={<AdminLogin />} />
       <Route path="/movies/edit/:id" element={<EditMovie />} />
+      <Route path="/timelines" element={<TimeLine />} />
+      <Route path="/timelines/edit" element={<TimeLineEditor />} />
     </Routes>
   )
 }

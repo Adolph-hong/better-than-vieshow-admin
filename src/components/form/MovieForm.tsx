@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { uploadImageToCloudinary, deleteImageFromCloudinary } from "@/utils/cloudinary"
+import { getMovies, saveMovies, type Movie } from "@/utils/storage"
 import CustomSelect from "./CustomSelect"
 import InputComponent from "./InputComponent"
 import PosterUpload from "./PosterUpload"
@@ -53,34 +54,31 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
   useEffect(() => {
     if (!isEditMode) return
 
-    const fetchMovie = async () => {
-      try {
-        const res = await fetch(`http://localhost:3001/movies/${movieId}`)
-        if (!res.ok) {
-          throw new Error("無法取得電影資料")
-        }
-        const movie = await res.json()
+    try {
+      const movies = getMovies()
+      const movie = movies.find((m) => m.id === movieId)
 
-        setOriginalPosterUrl(movie.poster || null)
-        reset({
-          movieName: movie.movieName || "",
-          duration: movie.duration || "",
-          category: movie.category || "",
-          director: movie.director || "",
-          actors: movie.actors || "",
-          describe: movie.describe || "",
-          trailerLink: movie.trailerLink || "",
-          poster: null,
-          startAt: movie.startAt || "",
-          endAt: movie.endAt || "",
-        })
-      } catch (error) {
-        alert("載入電影資料失敗")
-        navigate("/movies")
+      if (!movie) {
+        throw new Error("找不到電影資料")
       }
-    }
 
-    fetchMovie()
+      setOriginalPosterUrl(movie.poster || null)
+      reset({
+        movieName: movie.movieName || "",
+        duration: movie.duration || "",
+        category: movie.category || "",
+        director: movie.director || "",
+        actors: movie.actors || "",
+        describe: movie.describe || "",
+        trailerLink: movie.trailerLink || "",
+        poster: null,
+        startAt: movie.startAt || "",
+        endAt: movie.endAt || "",
+      })
+    } catch (error) {
+      alert("載入電影資料失敗")
+      navigate("/movies")
+    }
   }, [movieId, isEditMode, reset, navigate])
 
   const onSubmit = async (data: MovieFormValues) => {
@@ -135,41 +133,32 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
     }
 
     if (isEditMode) {
-      const payload: Record<string, unknown> = {
+      const payload: Partial<Movie> = {
         ...rest,
-
         poster: posterUrl || originalPosterUrl || "",
       }
 
       try {
-        const res = await fetch(`http://localhost:3001/movies/${movieId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-        if (!res.ok) {
-          throw new Error("更新失敗")
-        }
+        const movies = getMovies()
+        const updated: Movie[] = movies.map((movie) =>
+          movie.id === movieId ? { ...movie, ...payload } : movie
+        )
+        saveMovies(updated)
         navigate("/movies")
       } catch (error) {
         alert("更新電影失敗，請稍後再試")
       }
     } else {
-      const payload = {
+      const payload: Movie = {
         ...rest,
-        poster: posterUrl,
+        poster: posterUrl || "",
         id: crypto.randomUUID(),
       }
 
       try {
-        const res = await fetch("http://localhost:3001/movies", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-        if (!res.ok) {
-          throw new Error("建立失敗")
-        }
+        const movies = getMovies()
+        const updated: Movie[] = [...movies, payload]
+        saveMovies(updated)
         navigate("/movies")
       } catch (error) {
         alert("建立電影失敗，請稍後再試")
