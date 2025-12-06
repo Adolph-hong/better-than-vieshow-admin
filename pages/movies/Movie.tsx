@@ -60,12 +60,60 @@ const Movie = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isInputFocused, setIsInputFocused] = useState(false)
 
   useEffect(() => {
-    const loadMovies = () => {
+    const loadMovies = async () => {
       try {
         const data = getMovies() as MovieItem[]
-        setMovies(Array.isArray(data) ? data : [])
+        const allMovies = Array.isArray(data) ? data : []
+
+        // 取得今天的日期（只比較年月日，不包含時間）
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        // 過濾出需要刪除的電影（下映日已過）
+        const moviesToDelete: MovieItem[] = []
+        const validMovies: MovieItem[] = []
+
+        allMovies.forEach((movie) => {
+          if (!movie.endAt) {
+            // 如果沒有下映日，保留
+            validMovies.push(movie)
+            return
+          }
+
+          // 解析下映日
+          const endDate = new Date(movie.endAt)
+          endDate.setHours(0, 0, 0, 0)
+
+          // 如果下映日小於今天（已過），標記為需要刪除
+          if (endDate < today) {
+            moviesToDelete.push(movie)
+          } else {
+            validMovies.push(movie)
+          }
+        })
+
+        // 如果有需要刪除的電影，刪除它們的圖片並更新列表
+        if (moviesToDelete.length > 0) {
+          // 刪除 Cloudinary 圖片
+          const deletePromises = moviesToDelete.map((movie) => {
+            if (movie.poster) {
+              return deleteImageFromCloudinary(movie.poster).catch(() => {
+                // 圖片刪除失敗時忽略，繼續處理
+              })
+            }
+            return Promise.resolve()
+          })
+
+          await Promise.all(deletePromises)
+
+          // 更新儲存的電影列表（只保留有效的電影）
+          saveMovies(validMovies as unknown as never[])
+        }
+
+        setMovies(validMovies)
       } catch {
         setError("讀取電影列表時發生錯誤")
       } finally {
@@ -114,15 +162,27 @@ const Movie = () => {
     <AdminContainer>
       <Header title="電影" buttonText="建立電影" onClick={() => navigate("/movies/create")} />
       <div className="px-6 pb-6">
-        <div className="relative w-full">
-          <Search className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-300" />
-          <input
-            type="text"
-            placeholder="|  搜尋電影名稱"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="body-medium w-[calc(50%-12px)] rounded-lg border border-gray-200 bg-white py-3 pr-4 pl-12 text-[#000000] placeholder:text-gray-400 focus:placeholder-transparent focus:outline-none"
-          />
+        <div className="flex w-[calc(50%-12px)] items-center gap-3 rounded-lg border border-gray-200 bg-white px-4">
+          <div className="flex h-6 w-6 items-center justify-center">
+            <Search className="h-4.5 w-4.5 text-gray-300" />
+          </div>
+          <div className="flex w-full">
+            {!isInputFocused && (
+              <div className="item-center flex py-3">
+                <span className="item-center body-medium flex shrink-0 border-l border-gray-300 pl-3 text-gray-300">
+                  搜尋電影名稱
+                </span>
+              </div>
+            )}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+              className="body-medium w-full rounded-lg bg-transparent py-3 text-[#000000] placeholder:text-gray-400 focus:placeholder-transparent focus:outline-none"
+            />
+          </div>
         </div>
       </div>
       {isLoading && <EmptyContent title="資料載入中" description="請稍候，我們正在取得電影列表" />}
@@ -163,10 +223,10 @@ const Movie = () => {
                     <div className="flex flex-1 flex-col py-4.5">
                       {/* 標題 */}
                       <section className="mb-[26px] flex justify-between">
-                        <h1 className="body-large line-clamp-1 max-w-150 break-all text-[#000000]">
+                        <h1 className="body-large line-clamp-1 break-all text-[#000000]">
                           {movie.movieName}
                         </h1>
-                        <div className="body-small flex h-[28px] items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
+                        <div className="body-small flex h-[28px] shrink-0 items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
                           上映中
                         </div>
                       </section>

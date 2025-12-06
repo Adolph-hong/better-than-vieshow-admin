@@ -14,6 +14,7 @@ export interface Movie {
   movieName: string
   duration: string
   poster: string
+  filmType?: string
   category?: string
   director?: string
   actors?: string
@@ -27,7 +28,27 @@ interface MoviesData {
   movies?: Movie[]
 }
 
-// 開發環境：永遠從 db.json 讀取
+// 過濾掉下映日已過的電影
+const filterExpiredMovies = (movies: Movie[]): Movie[] => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  return movies.filter((movie) => {
+    if (!movie.endAt) {
+      // 如果沒有下映日，保留
+      return true
+    }
+
+    // 解析下映日
+    const endDate = new Date(movie.endAt)
+    endDate.setHours(0, 0, 0, 0)
+
+    // 如果下映日小於今天（已過），過濾掉
+    return endDate >= today
+  })
+}
+
+// 開發環境：從 LocalStorage 讀取，如果為空則從 db.json 初始化
 // 生產環境：從 LocalStorage 讀取，如果為空則從 db.json 初始化
 export const getMovies = (): Movie[] => {
   try {
@@ -39,44 +60,37 @@ export const getMovies = (): Movie[] => {
     const data = moviesData as MoviesData
     const moviesFromJson = Array.isArray(data.movies) ? data.movies : []
 
-    if (import.meta.env.DEV) {
-      // 開發環境：直接從 db.json 讀取
-      return moviesFromJson
-    }
-
-    // 生產環境：從 LocalStorage 讀取
+    // 優先從 LocalStorage 讀取
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.MOVIES)
       if (stored) {
         const parsed = JSON.parse(stored) as Movie[]
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed
+          // 過濾掉過期電影
+          return filterExpiredMovies(parsed)
         }
       }
 
       // 如果 LocalStorage 為空或無效，從 db.json 初始化
       if (moviesFromJson.length > 0) {
-        localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(moviesFromJson))
+        // 過濾掉過期電影後再儲存
+        const validMovies = filterExpiredMovies(moviesFromJson)
+        localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(validMovies))
         localStorage.setItem(STORAGE_KEYS.VERSION, DATA_VERSION)
+        return validMovies
       }
       return moviesFromJson
     } catch {
-      // 如果讀取失敗，回退到 db.json
-      return moviesFromJson
+      // 如果讀取失敗，回退到 db.json，但也要過濾過期電影
+      return filterExpiredMovies(moviesFromJson)
     }
   } catch {
     return []
   }
 }
 
-// 儲存電影資料（只在生產環境寫入 LocalStorage）
+// 儲存電影資料（寫入 LocalStorage）
 export const saveMovies = (movies: Movie[]): void => {
-  if (import.meta.env.DEV) {
-    // 開發環境：不寫入 LocalStorage（保持 db.json 為唯一來源）
-    return
-  }
-
-  // 生產環境：寫入 LocalStorage
   try {
     localStorage.setItem(STORAGE_KEYS.MOVIES, JSON.stringify(movies))
   } catch {
