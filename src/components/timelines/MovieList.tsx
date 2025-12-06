@@ -12,11 +12,9 @@ interface MovieListProps {
 }
 
 const MovieList = ({ movies, schedules = [] }: MovieListProps) => {
-  // 確保 movies 和 schedules 都是數組
   const safeMovies = Array.isArray(movies) ? movies : []
   const safeSchedules = Array.isArray(schedules) ? schedules : []
 
-  // 計算每個電影的場次數量（以天計算，不區分廳）
   const getShowtimeCount = (movieId: string): number => {
     return safeSchedules.filter((schedule) => schedule.movieId === movieId).length
   }

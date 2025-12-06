@@ -51,8 +51,8 @@ const TheaterScheduleList = ({
     timeSlot: string
   } | null>(null)
 
-  const timeSlotHeight = 24 // 每個時間槽位的高度 (h-6 = 24px)
-  const timeSlotGap = 6 // 間距 (gap-1.5 = 6px)
+  const timeSlotHeight = 24
+  const timeSlotGap = 6
   const slotHeight = timeSlotHeight + timeSlotGap
 
   const timeToMinutes = (time: string): number => {
@@ -64,24 +64,18 @@ const TheaterScheduleList = ({
     const startSlotIndex = timeSlots.findIndex((slot) => slot === startTime)
     if (startSlotIndex === -1) return null
 
-    // 計算結束時間的分鐘數
     const endMinutes = timeToMinutes(endTime)
 
-    // 找到結束時間應該對應的槽位
-    // 如果結束時間不是整點（:00, :15, :30, :45），向上取整到下一個槽位
     let endSlotIndex = timeSlots.findIndex((slot) => {
       const slotMinutes = timeToMinutes(slot)
       return slotMinutes >= endMinutes
     })
 
-    // 如果找不到（結束時間超過所有槽位），使用最後一個槽位
     if (endSlotIndex === -1) {
       endSlotIndex = timeSlots.length
     }
 
-    // 精確對齊：top 位置 = 槽位索引 * (槽位高度 + 間距)
     const top = startSlotIndex * slotHeight
-    // 高度 = (結束槽位索引 - 開始槽位索引) * (槽位高度 + 間距) - 間距
     const height = (endSlotIndex - startSlotIndex) * slotHeight - timeSlotGap
     return { top, height }
   }
@@ -115,39 +109,28 @@ const TheaterScheduleList = ({
     const startMinutes = timeToMinutes(startTime)
     const endMinutes = timeToMinutes(endTime)
 
-    // 找到目標廳的種類
     const targetTheater = theaters.find((t) => t.id === theaterId)
     if (!targetTheater) return false
 
     return schedules.some((schedule) => {
-      // 排除自己（重新拖曳時）
       if (excludeScheduleId && schedule.id === excludeScheduleId) return false
 
       const scheduleStart = timeToMinutes(schedule.startTime)
       const scheduleEnd = timeToMinutes(schedule.endTime)
 
-      // 1. 檢查同一個廳的時間重疊
       if (schedule.theaterId === theaterId) {
-        // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
         return startMinutes < scheduleEnd && endMinutes > scheduleStart
       }
 
-      // 2. 檢查同一部電影在不同廳（同種類）的衝突
-      // 必須是同一部電影
       if (schedule.movieId !== movieId) return false
 
-      // 找到現有排程的廳
       const existingTheater = theaters.find((t) => t.id === schedule.theaterId)
       if (!existingTheater) return false
 
-      // 必須是同種類的廳
       if (existingTheater.type !== targetTheater.type) return false
 
-      // 檢查開始時間間隔：至少需要間隔15分鐘
-      // 計算兩個排程開始時間的差距
       const timeDiff = Math.abs(startMinutes - scheduleStart)
 
-      // 如果開始時間差距小於15分鐘，則衝突
       return timeDiff < 15
     })
   }
@@ -254,7 +237,6 @@ const TheaterScheduleList = ({
                   </div>
                 )
               })}
-              {/* 渲染排程 */}
               {schedules
                 .filter((schedule) => schedule.theaterId === theater.id)
                 .map((schedule) => {
@@ -270,16 +252,13 @@ const TheaterScheduleList = ({
                           ? (e) => {
                               if (e.dataTransfer && e.currentTarget instanceof HTMLElement) {
                                 e.dataTransfer.effectAllowed = "move"
-                                // 直接使用原元素作為拖曳圖像，設置透明度
                                 e.currentTarget.style.opacity = "0.7"
-                                // 使用原元素本身作為拖曳圖像
                                 const rect = e.currentTarget.getBoundingClientRect()
                                 e.dataTransfer.setDragImage(
                                   e.currentTarget,
                                   e.clientX - rect.left,
                                   e.clientY - rect.top
                                 )
-                                // 拖曳結束後恢復透明度
                                 setTimeout(() => {
                                   if (e.currentTarget instanceof HTMLElement) {
                                     e.currentTarget.style.opacity = "1"

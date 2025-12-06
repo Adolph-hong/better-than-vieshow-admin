@@ -68,7 +68,6 @@ const Movie = () => {
         const data = getMovies() as MovieItem[]
         const allMovies = Array.isArray(data) ? data : []
 
-        // 取得今天的日期（只比較年月日，不包含時間）
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
@@ -78,16 +77,13 @@ const Movie = () => {
 
         allMovies.forEach((movie) => {
           if (!movie.endAt) {
-            // 如果沒有下映日，保留
             validMovies.push(movie)
             return
           }
 
-          // 解析下映日
           const endDate = new Date(movie.endAt)
           endDate.setHours(0, 0, 0, 0)
 
-          // 如果下映日小於今天（已過），標記為需要刪除
           if (endDate < today) {
             moviesToDelete.push(movie)
           } else {
@@ -95,21 +91,16 @@ const Movie = () => {
           }
         })
 
-        // 如果有需要刪除的電影，刪除它們的圖片並更新列表
         if (moviesToDelete.length > 0) {
-          // 刪除 Cloudinary 圖片
           const deletePromises = moviesToDelete.map((movie) => {
             if (movie.poster) {
-              return deleteImageFromCloudinary(movie.poster).catch(() => {
-                // 圖片刪除失敗時忽略，繼續處理
-              })
+              return deleteImageFromCloudinary(movie.poster).catch(() => {})
             }
             return Promise.resolve()
           })
 
           await Promise.all(deletePromises)
 
-          // 更新儲存的電影列表（只保留有效的電影）
           saveMovies(validMovies as unknown as never[])
         }
 
@@ -132,31 +123,6 @@ const Movie = () => {
       movie.movieName.toLowerCase().includes(searchQuery.toLowerCase().trim())
     )
   }, [movies, searchQuery])
-
-  const handleDelete = async (e: React.MouseEvent, movieId: string, posterUrl: string | null) => {
-    e.stopPropagation()
-    if (!window.confirm("確定要刪除這部電影嗎？")) return
-
-    try {
-      // 刪除 Cloudinary 圖片
-      if (posterUrl) {
-        await deleteImageFromCloudinary(posterUrl)
-      }
-
-      // 刪除本地電影資料（使用 LocalStorage / db.json）
-      setMovies((prev) => {
-        const updated = prev.filter((movie) => movie.id !== movieId)
-        try {
-          saveMovies(updated as unknown as never[])
-        } catch {
-          // 儲存失敗時先忽略，畫面仍會更新
-        }
-        return updated
-      })
-    } catch (err) {
-      alert("刪除電影失敗，請稍後再試")
-    }
-  }
 
   return (
     <AdminContainer>
@@ -244,19 +210,11 @@ const Movie = () => {
                             {categoryMap[movie.category] || movie.category}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex gap-3">
-                            <span className="body-medium w-20 text-gray-300">播放區間</span>
-                            <span className="body-medium text-[#000000]">
-                              {formatDate(movie.startAt)} - {formatDate(movie.endAt)}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDelete(e, movie.id, movie.poster)}
-                          >
-                            刪除
-                          </button>
+                        <div className="flex gap-3">
+                          <span className="body-medium w-20 text-gray-300">播放區間</span>
+                          <span className="body-medium text-[#000000]">
+                            {formatDate(movie.startAt)} - {formatDate(movie.endAt)}
+                          </span>
                         </div>
                       </section>
                     </div>

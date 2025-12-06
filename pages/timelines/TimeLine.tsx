@@ -40,7 +40,6 @@ interface Schedule {
 }
 
 const parseDateFromFormatted = (formattedDate: string): Date | null => {
-  // 例如 "2025/12/15(日)" -> 取前面的 yyyy/MM/dd
   const match = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
   if (!match) return null
   const [, year, month, day] = match
@@ -109,46 +108,34 @@ const TimeLine = () => {
     return `${dateText}(${weekDay})`
   }, [selectedDate])
 
-  // 讀取當前日期的排程（每次渲染直接讀取最新狀態）
   const schedules = getSchedulesByFormattedDate<Schedule>(formattedSelectedDate)
 
-  // 檢查是否有草稿
   const hasDraftStatus = hasDraft(formattedSelectedDate)
 
-  // 檢查是否已販售
   const isPublished = isDatePublished(formattedSelectedDate)
 
-  // 取得日曆用的草稿 / 販售中日期
   const { draft: draftDates, selling: sellingDates } = getScheduleStatusDates()
 
-  // 處理開始販售
   const handleStartSelling = () => {
     setShowConfirmDialog(true)
   }
 
-  // 確認開始販售
   const handleConfirmSelling = () => {
     markDateAsPublished(formattedSelectedDate)
     setRefreshKey((prev) => prev + 1)
     setShowConfirmDialog(false)
-    // 可以加入成功提示或其他後續處理
   }
 
-  // 取消開始販售
   const handleCancelSelling = () => {
     setShowConfirmDialog(false)
   }
 
-  // 處理複製時刻表
   const handleCopySchedule = () => {
     setCopyError("")
     setShowCopyDialog(true)
   }
 
-  // 確認複製時刻表
   const handleConfirmCopy = (targetDate: string) => {
-    // targetDate 格式是 "yyyy/MM/dd"
-    // 檢查目標日期是否已販售
     const [year, month, day] = targetDate.split("/")
     const targetDateObj = new Date(Number(year), Number(month) - 1, Number(day))
     const weekDay = targetDateObj.toLocaleDateString("zh-TW", { weekday: "narrow" })
@@ -159,7 +146,6 @@ const TimeLine = () => {
       return
     }
 
-    // 解析來源日期：從 formattedSelectedDate 提取 "yyyy/MM/dd" 格式
     const sourceDateMatch = formattedSelectedDate.match(/^(\d{4}\/\d{2}\/\d{2})/)
     if (!sourceDateMatch) {
       setCopyError("錯誤:無法解析來源日期")
@@ -167,24 +153,20 @@ const TimeLine = () => {
     }
     const sourceDate = sourceDateMatch[1]
 
-    // 執行複製
     const success = copySchedules(sourceDate, targetDate)
     if (success) {
       setShowCopyDialog(false)
       setCopyError("")
       setRefreshKey((prev) => prev + 1)
-      // 跳轉到目標日期
       setSelectedDate(targetDateObj)
       if (!isSameMonth(targetDateObj, visibleMonth)) {
         setVisibleMonth(startOfMonth(targetDateObj))
       }
-      // 可以加入成功提示
     } else {
       setCopyError("錯誤:複製失敗，請重試")
     }
   }
 
-  // 取消複製時刻表
   const handleCancelCopy = () => {
     setShowCopyDialog(false)
     setCopyError("")
@@ -194,7 +176,7 @@ const TimeLine = () => {
     <AdminContainer>
       <Header title="時刻表" />
       <TimelineLayout>
-        {/* 左邊日曆和電影列表 */}
+        {/* 左邊排程區 */}
         <div className="flex w-full max-w-67.5 flex-col gap-6">
           <CalendarPanel
             selectedDate={selectedDate}
@@ -227,7 +209,6 @@ const TimeLine = () => {
             onStartSelling={handleStartSelling}
             onDuplicate={handleCopySchedule}
           />
-          {/* 廳次列表（僅預覽，禁止拖曳） */}
           <TheaterScheduleList
             theaters={theaters}
             timeSlots={timeSlots}
