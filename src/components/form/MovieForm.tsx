@@ -190,10 +190,15 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
 
     // 驗證預告片連結：必須是有效的URL
     if (formData.trailerLink) {
+      const trimmedLink = formData.trailerLink.trim()
+      if (!trimmedLink.startsWith("http://") && !trimmedLink.startsWith("https://")) {
+        alert("預告片連結必須以 http:// 或 https:// 開頭")
+        return
+      }
       try {
-        const url = new URL(formData.trailerLink)
+        const url = new URL(trimmedLink)
         if (url.protocol !== "https:" && url.protocol !== "http:") {
-          alert("請輸入有效的網址")
+          alert("預告片連結必須以 http:// 或 https:// 開頭")
           return
         }
       } catch {
