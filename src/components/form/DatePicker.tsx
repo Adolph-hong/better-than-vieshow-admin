@@ -13,7 +13,13 @@ interface DatePickerProps {
   placeholder?: string
 }
 
-const DatePicker = ({ label, value, onChange, error, placeholder = "選擇日期" }: DatePickerProps) => {
+const DatePicker = ({
+  label,
+  value,
+  onChange,
+  error,
+  placeholder = "選擇日期",
+}: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     value ? new Date(value) : undefined
@@ -66,7 +72,7 @@ const DatePicker = ({ label, value, onChange, error, placeholder = "選擇日期
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex h-10 w-full items-center justify-between rounded-lg border border-white bg-white px-3 text-left text-gray-900 ${
+          className={`flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-white bg-white px-3 text-left text-gray-900 ${
             error ? "border-red-500" : ""
           }`}
         >
@@ -106,4 +112,3 @@ const DatePicker = ({ label, value, onChange, error, placeholder = "選擇日期
 }
 
 export default DatePicker
-
