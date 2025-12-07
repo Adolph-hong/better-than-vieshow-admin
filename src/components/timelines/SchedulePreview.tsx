@@ -44,9 +44,7 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
   const previewRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
 
-  // 控制進場動畫
   useEffect(() => {
-    // 下一個 event loop 再切換成顯示，觸發 transition
     const timer = setTimeout(() => {
       setIsVisible(true)
     }, 0)
@@ -54,14 +52,12 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
   }, [])
 
   const handleClose = useCallback(() => {
-    // 先把面板推回去，再在動畫結束後真正關閉
     setIsVisible(false)
     setTimeout(() => {
       onClose()
-    }, 300) // 300ms 是動畫時間
+    }, 300)
   }, [onClose])
 
-  // 點擊外部關閉
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (previewRef.current && !previewRef.current.contains(event.target as Node)) {
@@ -69,7 +65,6 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
       }
     }
 
-    // 延遲一下再綁定，避免立即觸發
     const timer = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside)
     }, 100)
@@ -80,7 +75,6 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
     }
   }, [handleClose])
 
-  // 按種類分組排程
   const schedulesByType = useMemo(() => {
     const grouped: Record<TheaterType, typeof schedules> = {
       數位: [],
@@ -98,7 +92,6 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
     return grouped
   }, [schedules])
 
-  // 按種類和電影分組，每個電影+種類組合為一個項目
   const movieTypeList = useMemo(() => {
     const types: TheaterType[] = ["數位", "3DX", "IMAX"]
     const result: Array<{
@@ -109,7 +102,6 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
 
     types.forEach((type) => {
       const typeSchedules = schedulesByType[type]
-      // 按電影分組
       const movieGroups = typeSchedules.reduce(
         (acc, schedule) => {
           if (!acc[schedule.movieId]) {
@@ -133,7 +125,6 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
         >
       )
 
-      // 將每個電影+種類組合加入結果
       Object.values(movieGroups).forEach((group) => {
         result.push({
           movie: group.movie,

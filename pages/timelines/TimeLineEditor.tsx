@@ -17,6 +17,8 @@ interface Movie {
   movieName: string
   duration: string
   poster: string
+  startAt?: string
+  endAt?: string
 }
 
 interface Schedule {
@@ -43,7 +45,6 @@ const TimeLineEditor = () => {
   }, [locationState])
 
   const [schedules, setSchedules] = useState<Schedule[]>(() => {
-    // 初始化時從 LocalStorage 讀取該日期的排程
     return getSchedulesByFormattedDate<Schedule>(formattedDate)
   })
   const [draggedItem, setDraggedItem] = useState<
@@ -79,12 +80,9 @@ const TimeLineEditor = () => {
     setDraggedItem({ type: "movie", movie })
     if (e.dataTransfer && e.currentTarget instanceof HTMLElement) {
       e.dataTransfer.effectAllowed = "move"
-      // 直接使用原元素作為拖曳圖像，設置透明度
       e.currentTarget.style.opacity = "0.7"
-      // 使用原元素本身作為拖曳圖像
       const rect = e.currentTarget.getBoundingClientRect()
       e.dataTransfer.setDragImage(e.currentTarget, e.clientX - rect.left, e.clientY - rect.top)
-      // 拖曳結束後恢復透明度
       setTimeout(() => {
         if (e.currentTarget instanceof HTMLElement) {
           e.currentTarget.style.opacity = "1"
@@ -97,12 +95,9 @@ const TimeLineEditor = () => {
     setDraggedItem({ type: "schedule", schedule })
     if (e.dataTransfer && e.currentTarget instanceof HTMLElement) {
       e.dataTransfer.effectAllowed = "move"
-      // 直接使用原元素作為拖曳圖像，設置透明度
       e.currentTarget.style.opacity = "0.7"
-      // 使用原元素本身作為拖曳圖像
       const rect = e.currentTarget.getBoundingClientRect()
       e.dataTransfer.setDragImage(e.currentTarget, e.clientX - rect.left, e.clientY - rect.top)
-      // 拖曳結束後恢復透明度
       setTimeout(() => {
         if (e.currentTarget instanceof HTMLElement) {
           e.currentTarget.style.opacity = "1"
@@ -126,39 +121,28 @@ const TimeLineEditor = () => {
     const startMinutes = timeToMinutes(startTime)
     const endMinutes = timeToMinutes(endTime)
 
-    // 找到目標廳的種類
     const targetTheater = theaters.find((t) => t.id === theaterId)
     if (!targetTheater) return false
 
     return schedules.some((schedule) => {
-      // 排除自己（重新拖曳時）
       if (excludeScheduleId && schedule.id === excludeScheduleId) return false
 
       const scheduleStart = timeToMinutes(schedule.startTime)
       const scheduleEnd = timeToMinutes(schedule.endTime)
 
-      // 1. 檢查同一個廳的時間重疊
       if (schedule.theaterId === theaterId) {
-        // 衝突條件：新排程的開始時間 < 現有排程的結束時間 且 新排程的結束時間 > 現有排程的開始時間
         return startMinutes < scheduleEnd && endMinutes > scheduleStart
       }
 
-      // 2. 檢查同一部電影在不同廳（同種類）的衝突
-      // 必須是同一部電影
       if (schedule.movieId !== movieId) return false
 
-      // 找到現有排程的廳
       const existingTheater = theaters.find((t) => t.id === schedule.theaterId)
       if (!existingTheater) return false
 
-      // 必須是同種類的廳
       if (existingTheater.type !== targetTheater.type) return false
 
-      // 檢查開始時間間隔：至少需要間隔15分鐘
-      // 計算兩個排程開始時間的差距
       const timeDiff = Math.abs(startMinutes - scheduleStart)
 
-      // 如果開始時間差距小於15分鐘，則衝突
       return timeDiff < 15
     })
   }
@@ -167,14 +151,33 @@ const TimeLineEditor = () => {
     if (!draggedItem) return
 
     if (draggedItem.type === "movie") {
-      // 從左邊拖曳電影過來
+      const currentDate = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+      if (currentDate && draggedItem.movie.startAt && draggedItem.movie.endAt) {
+        const [, year, month, day] = currentDate
+        const currentDateObj = new Date(Number(year), Number(month) - 1, Number(day))
+        currentDateObj.setHours(0, 0, 0, 0)
+
+        const startDate = new Date(draggedItem.movie.startAt)
+        startDate.setHours(0, 0, 0, 0)
+
+        const endDate = new Date(draggedItem.movie.endAt)
+        endDate.setHours(0, 0, 0, 0)
+
+        if (currentDateObj < startDate || currentDateObj > endDate) {
+          alert(
+            `此電影的上映期間為 ${format(new Date(draggedItem.movie.startAt), "yyyy/MM/dd")} 至 ${format(new Date(draggedItem.movie.endAt), "yyyy/MM/dd")}，無法排在此日期`
+          )
+          setDraggedItem(null)
+          return
+        }
+      }
+
       const durationMinutes = parseInt(draggedItem.movie.duration, 10)
       const endTime = calculateEndTime(timeSlot, durationMinutes)
 
-      // 檢查衝突
       if (checkConflict(theaterId, timeSlot, endTime, draggedItem.movie.id)) {
         setDraggedItem(null)
-        return // 如果有衝突，不執行放置
+        return
       }
 
       const newSchedule: Schedule = {
@@ -192,11 +195,9 @@ const TimeLineEditor = () => {
         return updated
       })
     } else if (draggedItem.type === "schedule") {
-      // 重新拖曳已存在的排程
       const durationMinutes = parseInt(draggedItem.schedule.movie.duration, 10)
       const endTime = calculateEndTime(timeSlot, durationMinutes)
 
-      // 檢查衝突（排除自己）
       if (
         checkConflict(
           theaterId,
@@ -207,7 +208,7 @@ const TimeLineEditor = () => {
         )
       ) {
         setDraggedItem(null)
-        return // 如果有衝突，不執行放置
+        return
       }
 
       setSchedules((prev) => {
@@ -230,11 +231,9 @@ const TimeLineEditor = () => {
   }
 
   const handleDragEnd = (e: React.DragEvent) => {
-    // 恢復拖曳元素的透明度
     if (e.currentTarget instanceof HTMLElement) {
       e.currentTarget.style.opacity = "1"
     }
-    // 如果拖曳結束時沒有成功放置，就刪除（拖到外面）
     if (draggedItem?.type === "schedule") {
       setSchedules((prev) => {
         const updated = prev.filter((s) => s.id !== draggedItem.schedule.id)
@@ -246,9 +245,7 @@ const TimeLineEditor = () => {
   }
 
   const handleSave = () => {
-    // 儲存排程
     saveSchedulesByFormattedDate(schedules, formattedDate)
-    // 導航回 TimeLine 頁面
     navigate("/timelines", { state: { formattedDate } })
   }
 

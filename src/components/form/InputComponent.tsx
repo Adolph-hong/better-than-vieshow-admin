@@ -1,4 +1,4 @@
-import type { FieldPath, FieldValues, UseFormRegister } from "react-hook-form"
+import type { FieldPath, FieldValues, RegisterOptions, UseFormRegister } from "react-hook-form"
 
 interface InputComponentProps<T extends FieldValues> {
   label: string
@@ -9,6 +9,7 @@ interface InputComponentProps<T extends FieldValues> {
   error?: string
   suffix?: string
   as?: "input" | "textarea"
+  validation?: RegisterOptions<T, FieldPath<T>>
 }
 
 const InputComponent = <T extends FieldValues>({
@@ -20,6 +21,7 @@ const InputComponent = <T extends FieldValues>({
   error,
   suffix,
   as = "input",
+  validation,
 }: InputComponentProps<T>) => {
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
@@ -30,7 +32,7 @@ const InputComponent = <T extends FieldValues>({
             className={`h-[118px] w-full rounded-lg border border-white bg-white p-3 pr-${suffix ? "[52px]" : "3"} resize-none text-gray-900`}
             id={registerName}
             placeholder={placeholder}
-            {...register(registerName)}
+            {...register(registerName, validation)}
           />
         ) : (
           <input
@@ -38,7 +40,7 @@ const InputComponent = <T extends FieldValues>({
             placeholder={placeholder}
             className={`h-10 w-full rounded-lg border border-white bg-white px-3 pr-${suffix ? "[52px]" : "3"} text-gray-900`}
             type={type}
-            {...register(registerName)}
+            {...register(registerName, validation)}
           />
         )}
 
