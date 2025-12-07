@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { X } from "lucide-react"
 import { useForm, Controller } from "react-hook-form"
 import Select from "react-select"
-import { uploadImageToCloudinary, deleteImageFromCloudinary } from "@/utils/cloudinary"
+import { uploadImageToCloudinary } from "@/utils/cloudinary"
 import { getMovies, saveMovies, type Movie } from "@/utils/storage"
 import CustomSelect from "./CustomSelect"
 import DatePicker from "./DatePicker"
@@ -618,35 +618,6 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
               )}
             />
           </div>
-          {isEditMode && (
-            <button
-              type="button"
-              onClick={async () => {
-                if (!movieId) return
-                if (!window.confirm("確定要刪除這部電影嗎？")) return
-
-                try {
-                  if (originalPosterUrl) {
-                    await deleteImageFromCloudinary(originalPosterUrl)
-                  }
-
-                  const res = await fetch(`http://localhost:3001/movies/${movieId}`, {
-                    method: "DELETE",
-                  })
-
-                  if (!res.ok) {
-                    throw new Error("刪除失敗")
-                  }
-
-                  navigate("/movies")
-                } catch (error) {
-                  alert("刪除電影失敗，請稍後再試")
-                }
-              }}
-            >
-              刪除
-            </button>
-          )}
         </div>
       </section>
       {/* 送出 */}
