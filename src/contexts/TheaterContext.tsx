@@ -5,6 +5,7 @@ import type { SeatCell } from "@/components/theater-builder/SeatingChart"
 export type TheaterData = {
   id: string
   name: string
+  type: string
   isActive: boolean
   normalSeats: number
   accessibleSeats: number

@@ -19,6 +19,7 @@ const NewTheater = () => {
   const [rows, setRows] = useState<number>(8)
   const [columns, setColumns] = useState<number>(16)
   const [theaterName, setTheaterName] = useState<string>("")
+  const [theaterType, setTheaterType] = useState<string>("general")
   const [seatMapData, setSeatMapData] = useState<SeatCell[][]>([])
   const [seatStats, setSeatStats] = useState<SeatStats>({
     normalSeats: 0,
@@ -37,6 +38,7 @@ const NewTheater = () => {
       id: crypto.randomUUID(),
       name: trimmedName,
       isActive: true,
+      type: theaterType,
       normalSeats: seatStats.normalSeats,
       accessibleSeats: seatStats.accessibleSeats,
       seatMap: seatMapData,
@@ -93,11 +95,12 @@ const NewTheater = () => {
                   <select
                     id="theaterType"
                     className="w-[194px] appearance-none rounded-md border border-gray-200 bg-white px-4 py-3 pr-10"
-                    defaultValue="general"
+                    value={theaterType}
+                    onChange={(e) => setTheaterType(e.target.value)}
                   >
                     <option value="general">一般數位</option>
-                    <option value="imax">4DX</option>
-                    <option value="4dx">IMAX</option>
+                    <option value="4dx">4DX</option>
+                    <option value="imax">IMAX</option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
                 </div>
