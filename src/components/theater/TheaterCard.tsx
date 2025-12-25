@@ -39,9 +39,11 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   return (
     <div className="relative rounded-xl bg-white p-6">
       <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-normal text-gray-700">{theater.name}</h1>
-          <span className="rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <h1 className="truncate text-2xl" title={theater.name}>
+            {theater.name}
+          </h1>
+          <span className="shrink-0 rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
             {theater.type}
           </span>
         </div>

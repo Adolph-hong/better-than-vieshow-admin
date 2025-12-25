@@ -30,10 +30,21 @@ const Theaters = () => {
     fetchTheaters()
   }, [])
 
-  const handleDelete = (id: string) => {
-    // 暫時僅作提示，之後需串接 DELETE API
-    // eslint-disable-next-line no-alert
-    alert(`刪除功能尚未實作 (ID: ${id})`)
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await sendAPI(`/api/admin/Theaters/${id}`, "DELETE")
+
+      if (!response.ok) {
+        throw new Error(`刪除失敗! status: ${response.status}`)
+      }
+
+      setTheaters((prev) => prev.filter((theater) => theater.id !== id))
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("刪除影廳失敗:", error)
+      // eslint-disable-next-line no-alert
+      alert("刪除失敗，請稍後再試")
+    }
   }
 
   return (
@@ -42,7 +53,7 @@ const Theaters = () => {
       {theaters.length === 0 ? (
         <EmptyContent title="一間影廳都還沒有" description="點擊「建立影廳」來新增第一間吧" />
       ) : (
-        <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 px-6 md:grid-cols-2 lg:grid-cols-3">
           {theaters.map((theater) => (
             <TheaterCard key={theater.id} theater={theater} onDelete={handleDelete} />
           ))}
