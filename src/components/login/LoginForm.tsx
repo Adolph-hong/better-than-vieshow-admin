@@ -1,13 +1,66 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { EyeClosedIcon, Eye, CheckIcon } from "lucide-react"
+import sendAPI from "@/utils/sendAPI"
 
 type LoginFormProps = {
   className?: string
 }
 
 const LoginForm = ({ className }: LoginFormProps) => {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }))
+  }
+
+  const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    try {
+      const response = await sendAPI(`/api/Auth/login`, "POST", formData)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        const errorMessage = errorData?.message || "登入失敗，請稍後再試"
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+
+      const token = data.token || data.accessToken || data?.data?.token
+
+      if (token) {
+        localStorage.setItem("token", token)
+
+        const userName = data.name || data.user?.name || data?.data?.name
+        if (userName) {
+          localStorage.setItem("user", userName)
+        }
+      } else {
+        console.warn("後端未回傳 token")
+      }
+
+      alert("登入成功！")
+      navigate("/")
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message)
+      } else {
+        alert("發生未知錯誤")
+      }
+    }
+  }
+
   return (
     <section
       className={`min-w-[485px] rounded-[10px] bg-white px-12 py-[64.5px] ${className || ""}`}
@@ -27,6 +80,8 @@ const LoginForm = ({ className }: LoginFormProps) => {
             <input
               id="email"
               type="email"
+              value={formData.email}
+              onChange={handleInputChange}
               placeholder="輸入信箱"
               className="w-full outline-none placeholder:text-[#A0A1B6]"
             />
@@ -39,6 +94,8 @@ const LoginForm = ({ className }: LoginFormProps) => {
             <input
               id="password"
               type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={handleInputChange}
               placeholder="輸入密碼"
               className="w-full outline-none placeholder:text-[#A0A1B6]"
             />
@@ -71,6 +128,7 @@ const LoginForm = ({ className }: LoginFormProps) => {
 
         <button
           type="submit"
+          onClick={handleLogin}
           className="mt-4 h-[48px] cursor-pointer rounded-[10px] bg-[#5365AC] font-medium text-white transition hover:bg-[#48529a]"
         >
           登入
