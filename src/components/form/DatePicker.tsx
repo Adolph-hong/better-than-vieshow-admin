@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react"
-import { DayPicker, getDefaultClassNames } from "react-day-picker"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale"
 import { CalendarDays } from "lucide-react"
+import { DayPicker, getDefaultClassNames } from "react-day-picker"
 import "react-day-picker/dist/style.css"
 
 interface DatePickerProps {
@@ -65,11 +65,14 @@ const DatePicker = ({
 
   const displayValue = selectedDate ? format(selectedDate, "yyyy/MM/dd") : ""
 
+  const buttonId = `datepicker-${label.replace(/\s+/g, "-").toLowerCase()}`
+
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
-      <label>{label}</label>
+      <label htmlFor={buttonId}>{label}</label>
       <div className="relative" ref={containerRef}>
         <button
+          id={buttonId}
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={`flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-white bg-white px-3 text-left text-gray-900 ${
