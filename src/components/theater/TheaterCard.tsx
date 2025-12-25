@@ -41,12 +41,8 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-normal text-gray-700">{theater.name}</h1>
-          <span
-            className={`rounded-full px-3 py-1 text-sm font-normal ${
-              theater.isActive ? "bg-[#69BDCE] text-white" : "bg-gray-200 text-gray-600"
-            }`}
-          >
-            {theater.isActive ? "使用中" : "未使用"}
+          <span className="rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
+            {theater.type}
           </span>
         </div>
         <div className="flex gap-5">

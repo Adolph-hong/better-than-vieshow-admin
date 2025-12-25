@@ -9,6 +9,7 @@ export type TheaterData = {
   normalSeats: number
   accessibleSeats: number
   seatMap: SeatCell[][]
+  type: string
 }
 
 type TheaterContextType = {
