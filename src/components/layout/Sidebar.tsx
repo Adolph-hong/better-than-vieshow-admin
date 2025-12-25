@@ -33,7 +33,7 @@ const Sidebar = ({ borderColor = "border-white" }: SidebarProps) => {
       className={`flex min-h-screen w-[239px] shrink-0 flex-col border-r bg-white py-6 ${borderColor}`}
     >
       {/* 上方logo與主題文字 */}
-      <section className="mb-11 ml-4 flex text-[#333333]">
+      <section className="mb-6 ml-4 flex text-[#333333]">
         <img src={adminLogo} alt="logo" />
         <div className="flex flex-col items-center py-1.5">
           <span className="font-family-inter text-sm leading-[1.2] font-bold">Better Than</span>
