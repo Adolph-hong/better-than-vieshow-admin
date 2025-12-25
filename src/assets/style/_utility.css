@@ -1,0 +1,41 @@
+@utility header-1 {
+  font-family: var(--font-family-inter);
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 150%;
+}
+
+@utility header-2 {
+  font-family: var(--font-family-inter);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 150%;
+}
+
+@utility header-3 {
+  font-family: var(--font-family-inter);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 150%;
+}
+
+@utility body-large {
+  font-family: var(--font-family-inter);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 120%;
+}
+
+@utility body-medium {
+  font-family: var(--font-family-inter);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 120%;
+}
+
+@utility body-small {
+  font-family: var(--font-family-inter);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 120%;
+}
