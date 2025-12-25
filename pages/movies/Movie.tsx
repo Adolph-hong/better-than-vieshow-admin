@@ -4,8 +4,7 @@ import { Search } from "lucide-react"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
-import { deleteImageFromCloudinary } from "@/utils/cloudinary"
-import { getMovies, saveMovies } from "@/utils/storage"
+import { getMovies } from "@/utils/storage"
 
 interface MovieItem {
   id: string
@@ -63,7 +62,7 @@ const Movie = () => {
   const [isInputFocused, setIsInputFocused] = useState(false)
 
   useEffect(() => {
-    const loadMovies = async () => {
+    const loadMovies = () => {
       try {
         const data = getMovies() as MovieItem[]
         const allMovies = Array.isArray(data) ? data : []
@@ -71,40 +70,21 @@ const Movie = () => {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
-        // 過濾出需要刪除的電影（下映日已過）
-        const moviesToDelete: MovieItem[] = []
-        const validMovies: MovieItem[] = []
-
-        allMovies.forEach((movie) => {
+        // 只過濾顯示（不刪除資料），下映日已過的電影不顯示在列表上
+        const displayMovies = allMovies.filter((movie) => {
           if (!movie.endAt) {
-            validMovies.push(movie)
-            return
+            // 如果沒有下映日，顯示
+            return true
           }
 
           const endDate = new Date(movie.endAt)
           endDate.setHours(0, 0, 0, 0)
 
-          if (endDate < today) {
-            moviesToDelete.push(movie)
-          } else {
-            validMovies.push(movie)
-          }
+          // 如果下映日 >= 今天，顯示（下映日當天還會顯示）
+          return endDate >= today
         })
 
-        if (moviesToDelete.length > 0) {
-          const deletePromises = moviesToDelete.map((movie) => {
-            if (movie.poster) {
-              return deleteImageFromCloudinary(movie.poster).catch(() => {})
-            }
-            return Promise.resolve()
-          })
-
-          await Promise.all(deletePromises)
-
-          saveMovies(validMovies as unknown as never[])
-        }
-
-        setMovies(validMovies)
+        setMovies(displayMovies)
       } catch {
         setError("讀取電影列表時發生錯誤")
       } finally {
