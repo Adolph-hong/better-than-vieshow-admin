@@ -1,0 +1,4 @@
+/* react-select 自訂樣式 */
+.react-select-container .react-select__value-container {
+  gap: 0.5rem; /* gap-2 */
+}

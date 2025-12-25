@@ -29,7 +29,6 @@ const ScheduleNav = ({
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // 點擊外部關閉選單
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -104,7 +103,6 @@ const ScheduleNav = ({
                   預覽
                 </button>
 
-                {/* 已販售：只顯示「複製時刻表」 */}
                 {isPublished ? (
                   <button
                     type="button"

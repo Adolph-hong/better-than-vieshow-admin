@@ -40,7 +40,7 @@ const CustomSelect = <T extends FieldValues>({
               <button
                 type="button"
                 id={name}
-                className="h-10 w-full rounded-lg border border-white bg-white px-3 text-left text-gray-900"
+                className="h-10 w-full cursor-pointer rounded-lg border border-white bg-white px-3 text-left text-gray-900"
                 onClick={() => setOpen((v) => !v)}
               >
                 {selected ? selected.label : placeholder || "請選擇"}

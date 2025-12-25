@@ -23,7 +23,6 @@ const CopyScheduleDialog = ({
 }: CopyScheduleDialogProps) => {
   const defaultClassNames = getDefaultClassNames()
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
-    // 預設為明天
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
     return tomorrow
@@ -32,7 +31,6 @@ const CopyScheduleDialog = ({
   const calendarRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // 點擊外部關閉日曆
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -157,7 +155,6 @@ const CopyScheduleDialog = ({
           <div className="font-roboto font-normal text-[#E70012] uppercase">{errorMessage}</div>
         )}
 
-        {/* 按鈕 */}
         <div className="flex h-10 justify-between">
           <button
             type="button"
