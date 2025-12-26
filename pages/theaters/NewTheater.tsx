@@ -19,7 +19,7 @@ const NewTheater = () => {
   const [columns, setColumns] = useState<number>(16)
   const [theaterName, setTheaterName] = useState<string>("")
 
-  const [floor, setFloor] = useState<number>(1)
+  const [floor, setFloor] = useState<number | "">("")
   const [theaterType, setTheaterType] = useState<string>("一般數位")
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
 
@@ -33,7 +33,7 @@ const NewTheater = () => {
 
   const handleCreateTheater = async () => {
     const trimmedName = theaterName.trim()
-    if (!trimmedName || seatStats.totalAssigned === 0) {
+    if (!trimmedName || seatStats.totalAssigned === 0 || floor === "") {
       return
     }
 
@@ -89,7 +89,7 @@ const NewTheater = () => {
           <h1 className="text-2xl font-bold">基本資訊</h1>
           <div className="mt-4 flex gap-6">
             <div className="flex flex-col gap-2">
-              <label htmlFor="theaterName" className="flex flex-col text-sm font-normal">
+              <label htmlFor="theaterName" className="flex flex-col">
                 <span>影廳名稱</span>
                 <input
                   id="theaterName"
@@ -97,12 +97,12 @@ const NewTheater = () => {
                   placeholder="影廳名稱"
                   value={theaterName}
                   onChange={(event) => setTheaterName(event.target.value)}
-                  className="mt-2 w-[320px] rounded-md border border-white bg-white px-4 py-3 text-gray-700 placeholder:text-[#999999]"
+                  className="mt-2 w-[320px] rounded-lg border border-white bg-white px-3 py-[10.5px] text-gray-700 placeholder:text-[#999999]"
                 />
               </label>
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="floorCount" className="flex flex-col text-sm font-normal">
+              <label htmlFor="floorCount" className="flex flex-col font-normal">
                 <span>樓層數</span>
                 <input
                   id="floorCount"
@@ -110,19 +110,22 @@ const NewTheater = () => {
                   min={1}
                   placeholder="樓層數"
                   value={floor}
-                  onChange={(e) => setFloor(Number(e.target.value))}
-                  className="mt-2 w-[129px] rounded-md border border-white bg-white px-4 py-3 text-gray-700 placeholder:text-[#999999]"
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setFloor(val === "" ? "" : Number(val))
+                  }}
+                  className="mt-2 w-[129px] rounded-lg border border-white bg-white px-3 py-[10.5px] placeholder:text-[#999999]"
                 />
               </label>
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="theaterType" className="text-sm font-normal">
-                <span className="font-normal">類型</span>
+              <label htmlFor="theaterType">
+                <span>類型</span>
                 <div className="relative mt-2">
                   <button
                     type="button"
                     onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                    className="flex w-[194px] cursor-pointer items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-3 text-left"
+                    className="flex w-[194px] cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-[10.5px] text-left"
                   >
                     <span>{theaterType}</span>
                     <ChevronDown className="h-4 w-4 text-gray-500" />
