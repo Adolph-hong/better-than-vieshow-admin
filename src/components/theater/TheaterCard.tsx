@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from "react"
 import { Fullscreen, EllipsisVertical, Trash2 } from "lucide-react"
 import Modal from "@/components/theater/Modal"
 import SeatingChartView from "@/components/theater/SeatingChartView"
+import type { SeatCell } from "@/components/theater-builder/SeatingChart"
 import type { TheaterData } from "@/contexts/TheaterContext"
+import sendAPI from "@/utils/sendAPI"
 
 type TheaterCardProps = {
   theater: TheaterData
@@ -13,6 +15,8 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   const [showMenu, setShowMenu] = useState(false)
   const [showSeatingChart, setShowSeatingChart] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const [previewSeatMap, setPreviewSeatMap] = useState<SeatCell[][]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   // 點擊外部關閉選單
   useEffect(() => {
@@ -36,17 +40,127 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
     setShowMenu(false)
   }
 
+  const transformSeatMap = (rawSeats: string[][]): SeatCell[][] => {
+    return rawSeats.map((row, rowIndex) => {
+      const rowLabel = String.fromCharCode(65 + rowIndex) // A, B, C...
+      return row.map((seatType, colIndex) => {
+        const colNumber = colIndex + 1
+        const baseCell = {
+          row: rowLabel,
+          column: colNumber,
+        }
+
+        switch (seatType) {
+          case "一般座位":
+            return {
+              ...baseCell,
+              type: "seat",
+              seatKind: "normal",
+            } as SeatCell
+          case "殘障座位":
+            return {
+              ...baseCell,
+              type: "seat",
+              seatKind: "accessible",
+            } as SeatCell
+          case "走道":
+            return {
+              ...baseCell,
+              type: "aisle",
+            } as SeatCell
+          default:
+            return {
+              ...baseCell,
+              type: "empty",
+            } as SeatCell
+        }
+      })
+    })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const transformObjectSeatMap = (rawSeats: any[][]): SeatCell[][] => {
+    return rawSeats.map((row) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return row.map((cell: any) => {
+        const baseCell = {
+          row: cell.rowName,
+          column: cell.columnNumber,
+        }
+
+        switch (cell.seatType) {
+          case "一般座位":
+            return {
+              ...baseCell,
+              type: "seat",
+              seatKind: "normal",
+            } as SeatCell
+          case "殘障座位":
+            return {
+              ...baseCell,
+              type: "seat",
+              seatKind: "accessible",
+            } as SeatCell
+          case "走道":
+            return {
+              ...baseCell,
+              type: "aisle",
+            } as SeatCell
+          default:
+            return {
+              ...baseCell,
+              type: "empty",
+            } as SeatCell
+        }
+      })
+    })
+  }
+
+  const handleShowSeatingChart = async () => {
+    setShowSeatingChart(true)
+    setIsLoading(true)
+    try {
+      const response = await sendAPI(`/api/admin/Theaters/${theater.id}`, "GET")
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+
+      // 這裡假設後端回傳的 data 結構中包含 seatMap 陣列
+      // API 回傳結構: { data: { seatMap: [...] } }
+      const seatsData = data.data?.seatMap || data.seatMap || []
+
+      if (Array.isArray(seatsData)) {
+        // 檢查第一列第一個元素是否為字串，來決定是否需要轉換
+        const isStringData =
+          seatsData.length > 0 && seatsData[0].length > 0 && typeof seatsData[0][0] === "string"
+
+        if (isStringData) {
+          const transformedMap = transformSeatMap(seatsData as string[][])
+          setPreviewSeatMap(transformedMap)
+        } else {
+          // 如果是物件格式 (例如 { rowName: 'A', ... })，使用新的轉換函式
+          const transformedMap = transformObjectSeatMap(seatsData)
+          setPreviewSeatMap(transformedMap)
+        }
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("獲取影廳詳情失敗:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="relative rounded-xl bg-white p-6">
       <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-normal text-gray-700">{theater.name}</h1>
-          <span
-            className={`rounded-full px-3 py-1 text-sm font-normal ${
-              theater.isActive ? "bg-[#69BDCE] text-white" : "bg-gray-200 text-gray-600"
-            }`}
-          >
-            {theater.isActive ? "使用中" : "未使用"}
+        <div className="flex items-center gap-3 overflow-hidden">
+          <h1 className="truncate text-2xl" title={theater.name}>
+            {theater.name}
+          </h1>
+          <span className="shrink-0 rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
+            {theater.type}
           </span>
         </div>
         <div className="flex gap-5">
@@ -54,7 +168,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
             type="button"
             className="hover:cursor-pointer"
             aria-label="全屏"
-            onClick={() => setShowSeatingChart(true)}
+            onClick={handleShowSeatingChart}
           >
             <Fullscreen />
           </button>
@@ -94,11 +208,17 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
         </div>
       </div>
       <Modal isOpen={showSeatingChart} onClose={() => setShowSeatingChart(false)}>
-        <SeatingChartView
-          seatMap={theater.seatMap}
-          title={`${theater.name} 座位表`}
-          onClose={() => setShowSeatingChart(false)}
-        />
+        {isLoading ? (
+          <div className="flex h-64 w-full items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500" />
+          </div>
+        ) : (
+          <SeatingChartView
+            seatMap={previewSeatMap.length > 0 ? previewSeatMap : theater.seatMap || []}
+            title={`${theater.name} 座位表`}
+            onClose={() => setShowSeatingChart(false)}
+          />
+        )}
       </Modal>
     </div>
   )
