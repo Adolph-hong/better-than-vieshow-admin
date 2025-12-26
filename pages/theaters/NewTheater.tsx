@@ -182,7 +182,7 @@ const NewTheater = () => {
               columns={columns}
               setColumns={setColumns}
             />
-            <div className="mt-13 max-w-full min-w-0 flex-1 overflow-scroll">
+            <div className="mt-13 max-w-full min-w-0 flex-1 overflow-scroll pb-10">
               <SeatingChart
                 selectedTool={selectedTool}
                 rowsCount={rows}
