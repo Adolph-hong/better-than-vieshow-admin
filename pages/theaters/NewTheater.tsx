@@ -21,6 +21,7 @@ const NewTheater = () => {
 
   const [floor, setFloor] = useState<number>(1)
   const [theaterType, setTheaterType] = useState<string>("一般數位")
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
 
   const [seatMapData, setSeatMapData] = useState<SeatCell[][]>([])
   const [seatStats, setSeatStats] = useState<SeatStats>({
@@ -118,17 +119,52 @@ const NewTheater = () => {
               <label htmlFor="theaterType" className="text-sm font-normal">
                 <span className="font-normal">類型</span>
                 <div className="relative mt-2">
-                  <select
-                    id="theaterType"
-                    className="w-[194px] appearance-none rounded-md border border-gray-200 bg-white px-4 py-3 pr-10"
-                    value={theaterType}
-                    onChange={(e) => setTheaterType(e.target.value)}
+                  <button
+                    type="button"
+                    onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                    className="flex w-[194px] cursor-pointer items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-3 text-left"
                   >
-                    <option value="一般數位">一般數位</option>
-                    <option value="IMAX">IMAX</option>
-                    <option value="4DX">4DX</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
+                    <span>{theaterType}</span>
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  </button>
+
+                  {isTypeDropdownOpen && (
+                    <>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Close dropdown"
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsTypeDropdownOpen(false)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") setIsTypeDropdownOpen(false)
+                        }}
+                      />
+                      <ul className="absolute z-20 w-[194px] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                        {["一般數位", "IMAX", "4DX"].map((type) => (
+                          <li
+                            key={type}
+                            role="option"
+                            aria-selected={theaterType === type}
+                            tabIndex={0}
+                            onClick={() => {
+                              setTheaterType(type)
+                              setIsTypeDropdownOpen(false)
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                setTheaterType(type)
+                                setIsTypeDropdownOpen(false)
+                              }
+                            }}
+                            className="cursor-pointer px-4 py-2"
+                          >
+                            {type}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </div>
               </label>
             </div>
@@ -144,7 +180,7 @@ const NewTheater = () => {
               columns={columns}
               setColumns={setColumns}
             />
-            <div className="mt-7 max-w-full min-w-0 flex-1 overflow-scroll">
+            <div className="mt-13 max-w-full min-w-0 flex-1 overflow-scroll">
               <SeatingChart
                 selectedTool={selectedTool}
                 rowsCount={rows}

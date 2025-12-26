@@ -23,9 +23,6 @@ const SidebarToolbox = ({
   columns,
   setColumns,
 }: SidebarToolboxProps) => {
-  const tabBase =
-    "flex items-center justify-center w-full h-full text-sm rounded-md transition-colors"
-
   return (
     <div>
       <h1 className="header-3 mb-4">座位表</h1>
@@ -40,13 +37,13 @@ const SidebarToolbox = ({
           <div className="relative z-10 grid h-full grid-cols-2">
             <button
               onClick={() => setActiveTab("tools")}
-              className={`${tabBase} hover:cursor-pointer`}
+              className="font-medium hover:cursor-pointer"
             >
               工具箱
             </button>
             <button
               onClick={() => setActiveTab("seats")}
-              className={`${tabBase} hover:cursor-pointer`}
+              className="font-medium hover:cursor-pointer"
             >
               座位數量
             </button>
