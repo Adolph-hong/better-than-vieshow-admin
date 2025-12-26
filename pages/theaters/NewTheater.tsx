@@ -119,60 +119,59 @@ const NewTheater = () => {
               </label>
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="theaterType">
-                <span>類型</span>
-                <div className="relative mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                    className="flex w-[194px] cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-[10.5px] text-left"
-                  >
-                    <span>{theaterType}</span>
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
-                  </button>
+              <span className="text-base font-normal">類型</span>
+              <div className="relative">
+                <button
+                  type="button"
+                  id="theaterType"
+                  onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                  className="flex w-[194px] cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-[10.5px] text-left"
+                >
+                  <span>{theaterType}</span>
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                </button>
 
-                  {isTypeDropdownOpen && (
-                    <>
-                      <div
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Close dropdown"
-                        className="fixed inset-0 z-10"
-                        onClick={() => setIsTypeDropdownOpen(false)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") setIsTypeDropdownOpen(false)
-                        }}
-                      />
-                      <ul className="absolute z-20 w-[194px] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg">
-                        {["一般數位", "IMAX", "4DX"].map((type) => (
-                          <li
-                            key={type}
-                            role="option"
-                            aria-selected={theaterType === type}
-                            tabIndex={0}
-                            onClick={() => {
+                {isTypeDropdownOpen && (
+                  <>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Close dropdown"
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsTypeDropdownOpen(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") setIsTypeDropdownOpen(false)
+                      }}
+                    />
+                    <ul className="absolute z-20 w-[194px] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                      {["一般數位", "IMAX", "4DX"].map((type) => (
+                        <li
+                          key={type}
+                          role="option"
+                          aria-selected={theaterType === type}
+                          tabIndex={0}
+                          onClick={() => {
+                            setTheaterType(type)
+                            setIsTypeDropdownOpen(false)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
                               setTheaterType(type)
                               setIsTypeDropdownOpen(false)
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                setTheaterType(type)
-                                setIsTypeDropdownOpen(false)
-                              }
-                            }}
-                            className="cursor-pointer px-4 py-2"
-                          >
-                            {type}
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                </div>
-              </label>
+                            }
+                          }}
+                          className="cursor-pointer px-4 py-2"
+                        >
+                          {type}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-          <div className="mt-6 flex gap-6">
+          <div className="mt-[26px] flex gap-6">
             <SidebarToolbox
               activeTab={activeTab}
               setActiveTab={setActiveTab}
