@@ -75,18 +75,19 @@ const NewTheater = () => {
 
   return (
     <AdminContainer>
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
+      <main className="flex min-w-0 flex-1 flex-col gap-3">
         <header className="flex items-center gap-2 bg-[#E7E8EF] px-6 py-6">
           <button
             type="button"
             className="cursor-pointer transition-transform hover:scale-125 hover:cursor-pointer"
+            aria-label="返回影廳列表"
           >
             <ArrowLeft className="h-10 w-10" onClick={() => navigate("/theaters")} />
           </button>
           <h1 className="text-[40px] font-bold">新增影廳</h1>
         </header>
         <section className="px-6">
-          <h1 className="text-2xl font-bold">基本資訊</h1>
+          <h2 className="text-2xl font-bold">基本資訊</h2>
           <div className="mt-4 flex gap-6">
             <div className="flex flex-col gap-2">
               <label htmlFor="theaterName" className="flex flex-col">
@@ -119,11 +120,16 @@ const NewTheater = () => {
               </label>
             </div>
             <div className="flex flex-col gap-2">
-              <span className="text-base font-normal">類型</span>
+              <span id="theater-type-label" className="text-base font-normal">
+                類型
+              </span>
               <div className="relative">
                 <button
                   type="button"
                   id="theaterType"
+                  aria-haspopup="listbox"
+                  aria-expanded={isTypeDropdownOpen}
+                  aria-labelledby="theater-type-label"
                   onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
                   className="flex w-[194px] cursor-pointer items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-[10.5px] text-left"
                 >
@@ -143,7 +149,11 @@ const NewTheater = () => {
                         if (e.key === "Enter" || e.key === " ") setIsTypeDropdownOpen(false)
                       }}
                     />
-                    <ul className="absolute z-20 w-[194px] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                    <ul
+                      role="listbox"
+                      aria-labelledby="theater-type-label"
+                      className="absolute z-20 w-[194px] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
+                    >
                       {["一般數位", "IMAX", "4DX"].map((type) => (
                         <li
                           key={type}
@@ -171,7 +181,7 @@ const NewTheater = () => {
               </div>
             </div>
           </div>
-          <div className="mt-[26px] flex gap-6">
+          <section aria-label="座位配置" className="mt-[26px] flex gap-6">
             <SidebarToolbox
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -191,9 +201,9 @@ const NewTheater = () => {
                 onSeatMapChange={setSeatMapData}
               />
             </div>
-          </div>
+          </section>
         </section>
-      </div>
+      </main>
       <TheatersFooter
         normalSeatCount={seatStats.normalSeats}
         accessibleSeatCount={seatStats.accessibleSeats}
