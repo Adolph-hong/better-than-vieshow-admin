@@ -72,7 +72,7 @@ const SidebarToolbox = ({
                 </div>
               </fieldset>
 
-              <fieldset className="mb-[247px] space-y-4">
+              <fieldset className="mb-[239px] space-y-4">
                 <legend className="mb-4 text-lg font-bold">列數（寬度）</legend>
                 <div className="flex items-center justify-center gap-9">
                   <button

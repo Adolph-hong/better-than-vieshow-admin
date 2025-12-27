@@ -39,15 +39,6 @@ const SeatingChart = ({
   const [isDragging, setIsDragging] = useState(false)
   const processedSeatsRef = useRef<Set<string>>(new Set())
 
-  const screenWidth = useMemo(() => {
-    const seatWidth = 40
-    const seatGap = 8
-    const cols = Math.max(columnsCount, 1)
-    const totalSeatWidth = cols * seatWidth
-    const totalGapWidth = Math.max(cols - 1, 0) * seatGap
-    return totalSeatWidth + totalGapWidth
-  }, [columnsCount])
-
   const rows: RowLabel[] = useMemo(() => {
     return Array.from({ length: rowsCount }, (_, i) => String.fromCharCode(65 + i))
   }, [rowsCount])
@@ -158,7 +149,7 @@ const SeatingChart = ({
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
           >
-            <Accessibility className="h-5 w-5 text-white" aria-hidden="true" />
+            <Accessibility className="h-6 w-6 text-white" aria-hidden="true" />
           </button>
         )
       case "aisle":
@@ -166,7 +157,7 @@ const SeatingChart = ({
           <button
             id={seatId}
             type="button"
-            className={`${baseClasses} border-white bg-gray-200`}
+            className={`${baseClasses} border-white bg-[#F2F2F2]`}
             title={`${row}${col} - 走道`}
             aria-label={`位置 ${row}${col}，走道`}
             aria-pressed="true"
@@ -174,7 +165,7 @@ const SeatingChart = ({
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
           >
-            <Minus className="h-4 w-4 text-gray-300" aria-hidden="true" />
+            <Minus className="h-6 w-6 text-[#838495]" aria-hidden="true" />
           </button>
         )
       case "empty":
@@ -206,7 +197,7 @@ const SeatingChart = ({
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
           >
-            <Armchair className="h-5 w-5 text-white" aria-hidden="true" />
+            <Armchair className="h-6 w-6 text-white" aria-hidden="true" />
           </button>
         )
     }
@@ -306,14 +297,9 @@ const SeatingChart = ({
       <div className="flex w-full max-w-6xl justify-start">
         <article className="flex flex-1 flex-col items-start">
           <div className="rounded-sm bg-white p-4">
-            <figure className="flex w-full justify-center px-4" style={{ marginBottom: "19px" }}>
-              <div
-                className="flex flex-col items-center gap-2"
-                style={{ width: `${screenWidth}px` }}
-              >
-                <figcaption className="text-sm font-normal">螢幕</figcaption>
-                <div className="h-1 w-full bg-[#243B97]" aria-hidden="true" />
-              </div>
+            <figure className="flex flex-col items-center gap-2" style={{ marginBottom: "19px" }}>
+              <figcaption className="text-sm font-normal">螢幕</figcaption>
+              <div className="h-1 w-full bg-[#243B97]" aria-hidden="true" />
             </figure>
 
             <table
