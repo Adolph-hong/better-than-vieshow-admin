@@ -153,12 +153,15 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   }
 
   return (
-    <div className="relative rounded-xl bg-white p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <article
+      className="relative rounded-xl bg-white p-6"
+      aria-labelledby={`theater-title-${theater.id}`}
+    >
+      <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3 overflow-hidden">
-          <h1 className="truncate text-2xl" title={theater.name}>
+          <h3 id={`theater-title-${theater.id}`} className="truncate text-2xl" title={theater.name}>
             {theater.name}
-          </h1>
+          </h3>
           <span className="shrink-0 rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
             {theater.type}
           </span>
@@ -178,15 +181,21 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
               className="flex items-center hover:cursor-pointer"
               onClick={() => setShowMenu(!showMenu)}
               aria-label="更多選項"
+              aria-haspopup="true"
+              aria-expanded={showMenu}
             >
               <EllipsisVertical />
             </button>
             {showMenu && (
-              <div className="absolute top-8 right-0 min-w-[143px] rounded-sm border border-gray-200 bg-white shadow-sm">
+              <div
+                className="absolute top-8 right-0 min-w-[143px] rounded-sm border border-gray-200 bg-white shadow-sm"
+                role="menu"
+              >
                 <button
                   type="button"
                   className="flex w-full items-center gap-3 px-4 py-2 text-left hover:cursor-pointer"
                   onClick={handleDelete}
+                  role="menuitem"
                 >
                   <Trash2 className="h-[18px] w-[18px] text-[#575867]" />
                   刪除
@@ -195,18 +204,18 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
             )}
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="flex gap-8">
-        <div className="flex flex-col">
-          <span className="text-[32px] font-semibold">{theater.normalSeats}</span>
-          <span className="text-xl font-medium text-[#646464]">一般座位</span>
+      <dl className="flex gap-8">
+        <div className="flex flex-col-reverse">
+          <dt className="text-xl font-medium text-[#646464]">一般座位</dt>
+          <dd className="text-[32px] font-semibold">{theater.normalSeats}</dd>
         </div>
-        <div className="flex flex-col">
-          <span className="text-[32px] font-semibold">{theater.accessibleSeats}</span>
-          <span className="text-xl font-medium text-[#646464]">殘障座位</span>
+        <div className="flex flex-col-reverse">
+          <dt className="text-xl font-medium text-[#646464]">殘障座位</dt>
+          <dd className="text-[32px] font-semibold">{theater.accessibleSeats}</dd>
         </div>
-      </div>
+      </dl>
       <Modal isOpen={showSeatingChart} onClose={() => setShowSeatingChart(false)}>
         {isLoading ? (
           <div className="flex h-64 w-full items-center justify-center">
@@ -220,7 +229,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           />
         )}
       </Modal>
-    </div>
+    </article>
   )
 }
 
