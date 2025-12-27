@@ -34,7 +34,7 @@ const SidebarToolbox = ({
             }`}
           />
 
-          <div className="relative z-10 grid h-full grid-cols-2">
+          <nav className="relative z-10 grid h-full grid-cols-2">
             <button
               onClick={() => setActiveTab("tools")}
               className="font-medium hover:cursor-pointer"
@@ -47,14 +47,14 @@ const SidebarToolbox = ({
             >
               座位數量
             </button>
-          </div>
+          </nav>
         </div>
 
         <div className="flex flex-col">
           {activeTab === "seats" ? (
-            <div className="space-y-[18px]">
-              <div className="space-y-4">
-                <h3>排數（深度）</h3>
+            <section className="space-y-[18px]">
+              <fieldset className="space-y-4">
+                <legend className="mb-4 text-lg font-bold">排數（深度）</legend>
                 <div className="flex items-center justify-center gap-9">
                   <button
                     onClick={() => setRows(Math.max(1, rows - 1))}
@@ -70,10 +70,10 @@ const SidebarToolbox = ({
                     <Plus />
                   </button>
                 </div>
-              </div>
+              </fieldset>
 
-              <div className="mb-[247px] space-y-4">
-                <h3>列數（寬度）</h3>
+              <fieldset className="mb-[247px] space-y-4">
+                <legend className="mb-4 text-lg font-bold">列數（寬度）</legend>
                 <div className="flex items-center justify-center gap-9">
                   <button
                     onClick={() => setColumns(Math.max(1, columns - 1))}
@@ -91,8 +91,8 @@ const SidebarToolbox = ({
                     <Plus />
                   </button>
                 </div>
-              </div>
-            </div>
+              </fieldset>
+            </section>
           ) : (
             <div className="space-y-4">
               <section className="mt-3 flex flex-col gap-3">
