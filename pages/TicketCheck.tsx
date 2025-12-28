@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale"
+import scanBg from "@/assets/icon/scan-bg.png"
 import ticketIcon from "@/assets/icon/ticket-icon.svg"
 import moviesData from "@/components/form/db.json"
 import QrScanner from "@/components/ticket/QrScanner"
@@ -11,6 +13,7 @@ import type { Movie } from "@/utils/storage"
 const TARGET_MOVIE_ID = "9879baaf-2c45-4ace-8193-82af637e06a9"
 
 const TicketCheck = () => {
+  const navigate = useNavigate()
   const [scanned, setScanned] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -33,8 +36,8 @@ const TicketCheck = () => {
     console.log("🎯 scanned 已設置為 true")
   }
 
-  const handleManualScan = () => {
-    setScanned(true)
+  const handleBack = () => {
+    navigate("/")
   }
 
   const handleConfirm = () => {
@@ -81,7 +84,16 @@ const TicketCheck = () => {
               }}
             />
           )}
-          {/* 移除黑色遮罩，讓掃描畫面完整顯示 */}
+          {scanned && (
+            <>
+              <img
+                src={scanBg}
+                alt="scan background"
+                className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+              />
+              <div className="pointer-events-none absolute inset-0 z-10 bg-black/50" />
+            </>
+          )}
           <p className="font-family-inter pointer-events-none absolute top-4 left-4 z-20 text-xl leading-[1.2] font-bold text-white">
             掃描 QR Code 驗票
           </p>
@@ -89,10 +101,10 @@ const TicketCheck = () => {
         {!scanned && (
           <button
             type="button"
-            onClick={handleManualScan}
+            onClick={handleBack}
             className="absolute bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-lg bg-[#5365AC] px-6 py-2 text-white"
           >
-            測試掃描
+            返回
           </button>
         )}
         {scanned && movie && (
