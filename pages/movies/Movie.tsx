@@ -4,7 +4,7 @@ import { Search } from "lucide-react"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
-import { deleteImageFromCloudinary } from "@/utils/cloudinary"
+import { getMovies } from "@/utils/storage"
 
 interface MovieItem {
   id: string
@@ -59,29 +59,40 @@ const Movie = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isInputFocused, setIsInputFocused] = useState(false)
 
   useEffect(() => {
-    const controller = new AbortController()
-    const fetchMovies = async () => {
+    const loadMovies = () => {
       try {
-        const res = await fetch("http://localhost:3001/movies", {
-          signal: controller.signal,
+        const data = getMovies() as MovieItem[]
+        const allMovies = Array.isArray(data) ? data : []
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        // 只過濾顯示（不刪除資料），下映日已過的電影不顯示在列表上
+        const displayMovies = allMovies.filter((movie) => {
+          if (!movie.endAt) {
+            // 如果沒有下映日，顯示
+            return true
+          }
+
+          const endDate = new Date(movie.endAt)
+          endDate.setHours(0, 0, 0, 0)
+
+          // 如果下映日 >= 今天，顯示（下映日當天還會顯示）
+          return endDate >= today
         })
-        if (!res.ok) {
-          throw new Error("無法取得電影資料")
-        }
-        const data: MovieItem[] = await res.json()
-        setMovies(data)
-      } catch (err) {
-        if ((err as DOMException).name !== "AbortError") {
-          setError("讀取電影列表時發生錯誤")
-        }
+
+        setMovies(displayMovies)
+      } catch {
+        setError("讀取電影列表時發生錯誤")
       } finally {
         setIsLoading(false)
       }
     }
-    fetchMovies()
-    return () => controller.abort()
+
+    loadMovies()
   }, [])
 
   const filteredMovies = useMemo(() => {
@@ -93,44 +104,31 @@ const Movie = () => {
     )
   }, [movies, searchQuery])
 
-  const handleDelete = async (e: React.MouseEvent, movieId: string, posterUrl: string | null) => {
-    e.stopPropagation()
-    if (!window.confirm("確定要刪除這部電影嗎？")) return
-
-    try {
-      // 刪除 Cloudinary 圖片
-      if (posterUrl) {
-        await deleteImageFromCloudinary(posterUrl)
-      }
-
-      // 刪除 JSON 資料
-      const res = await fetch(`http://localhost:3001/movies/${movieId}`, {
-        method: "DELETE",
-      })
-
-      if (!res.ok) {
-        throw new Error("刪除失敗")
-      }
-
-      setMovies((prev) => prev.filter((movie) => movie.id !== movieId))
-    } catch (err) {
-      alert("刪除電影失敗，請稍後再試")
-    }
-  }
-
   return (
     <AdminContainer>
       <Header title="電影" buttonText="建立電影" onClick={() => navigate("/movies/create")} />
       <div className="px-6 pb-6">
-        <div className="relative w-full">
-          <Search className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-300" />
-          <input
-            type="text"
-            placeholder="|  搜尋電影名稱"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="body-medium w-[calc(50%-12px)] rounded-lg border border-gray-200 bg-white py-3 pr-4 pl-12 text-[#000000] placeholder:text-gray-400 focus:placeholder-transparent focus:outline-none"
-          />
+        <div className="flex w-[calc(50%-12px)] items-center gap-3 rounded-lg border border-gray-200 bg-white px-4">
+          <div className="flex h-6 w-6 items-center justify-center">
+            <Search className="h-4.5 w-4.5 text-gray-300" />
+          </div>
+          <div className="flex w-full">
+            {!isInputFocused && (
+              <div className="item-center flex py-3">
+                <span className="item-center body-medium flex shrink-0 border-l border-gray-300 pl-3 text-gray-300">
+                  搜尋電影名稱
+                </span>
+              </div>
+            )}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+              className="body-medium w-full rounded-lg bg-transparent py-3 text-[#000000] placeholder:text-gray-400 focus:placeholder-transparent focus:outline-none"
+            />
+          </div>
         </div>
       </div>
       {isLoading && <EmptyContent title="資料載入中" description="請稍候，我們正在取得電影列表" />}
@@ -171,8 +169,10 @@ const Movie = () => {
                     <div className="flex flex-1 flex-col py-4.5">
                       {/* 標題 */}
                       <section className="mb-[26px] flex justify-between">
-                        <h1 className="body-large text-[#000000]">{movie.movieName}</h1>
-                        <div className="body-small flex h-[28px] items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
+                        <h1 className="body-large line-clamp-1 break-all text-[#000000]">
+                          {movie.movieName}
+                        </h1>
+                        <div className="body-small flex h-[28px] shrink-0 items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
                           上映中
                         </div>
                       </section>
@@ -190,19 +190,11 @@ const Movie = () => {
                             {categoryMap[movie.category] || movie.category}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex gap-3">
-                            <span className="body-medium w-20 text-gray-300">播放區間</span>
-                            <span className="body-medium text-[#000000]">
-                              {formatDate(movie.startAt)} - {formatDate(movie.endAt)}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDelete(e, movie.id, movie.poster)}
-                          >
-                            刪除
-                          </button>
+                        <div className="flex gap-3">
+                          <span className="body-medium w-20 text-gray-300">播放區間</span>
+                          <span className="body-medium text-[#000000]">
+                            {formatDate(movie.startAt)} - {formatDate(movie.endAt)}
+                          </span>
                         </div>
                       </section>
                     </div>

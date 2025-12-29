@@ -1,5 +1,7 @@
 @theme {
   --font-family-inter: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-family-noto-serif: "Noto Serif", ui-serif, Georgia, serif;
+  --font-family-roboto: "Roboto", ui-sans-serif, system-ui, sans-serif;
 
   --color-primary-100: #bec9f5;
   --color-primary-300: #7d8fda;

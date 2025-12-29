@@ -1,3 +1,5 @@
 @import "tailwindcss";
 @import "@/assets/style/_utility.css";
 @import "@/assets/style/_theme.css";
+@import "@/assets/style/_react-select.css";
+@import "react-day-picker/dist/style.css";
