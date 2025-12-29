@@ -68,7 +68,7 @@ const NewTheater = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("新增影廳失敗:", error)
-      alert("新增影廳失敗，請稍後再試")
+      alert("新增影廳失敗，請稍後再試啦")
     }
   }
 
