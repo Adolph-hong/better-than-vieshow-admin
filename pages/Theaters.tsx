@@ -14,7 +14,7 @@ const Theaters = () => {
   useEffect(() => {
     const fetchTheaters = async () => {
       try {
-        const response = await sendAPI("/api/admin/Theaters", "GET")
+        const response = await sendAPI("/api/admin/theaters", "GET")
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -32,7 +32,7 @@ const Theaters = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await sendAPI(`/api/admin/Theaters/${id}`, "DELETE")
+      const response = await sendAPI(`/api/admin/theaters/${id}`, "DELETE")
 
       if (!response.ok) {
         throw new Error(`刪除失敗! status: ${response.status}`)
