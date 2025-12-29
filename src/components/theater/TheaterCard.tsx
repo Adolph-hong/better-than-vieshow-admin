@@ -51,19 +51,19 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
         }
 
         switch (seatType) {
-          case "一般座位":
+          case "Standard":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "normal",
             } as SeatCell
-          case "殘障座位":
+          case "Wheelchair":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "accessible",
             } as SeatCell
-          case "走道":
+          case "Aisle":
             return {
               ...baseCell,
               type: "aisle",
@@ -89,19 +89,19 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
         }
 
         switch (cell.seatType) {
-          case "一般座位":
+          case "Standard":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "normal",
             } as SeatCell
-          case "殘障座位":
+          case "Wheelchair":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "accessible",
             } as SeatCell
-          case "走道":
+          case "Aisle":
             return {
               ...baseCell,
               type: "aisle",
@@ -120,7 +120,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
     setShowSeatingChart(true)
     setIsLoading(true)
     try {
-      const response = await sendAPI(`/api/admin/Theaters/${theater.id}`, "GET")
+      const response = await sendAPI(`/api/admin/theaters/${theater.id}`, "GET")
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

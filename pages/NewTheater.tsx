@@ -39,10 +39,10 @@ const NewTheater = () => {
     const formattedSeats = seatMapData.map((row) =>
       row.map((cell) => {
         if (cell.type === "seat") {
-          return cell.seatKind === "accessible" ? "殘障座位" : "一般座位"
+          return cell.seatKind === "accessible" ? "Wheelchair" : "Standard"
         }
         if (cell.type === "aisle") {
-          return "走道"
+          return "Aisle"
         }
         return "Empty"
       })
