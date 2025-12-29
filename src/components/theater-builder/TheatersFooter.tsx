@@ -16,17 +16,19 @@ const TheatersFooter = (props: TheatersFooterProps) => {
       <div className="h-[88px]" />
       <footer className="fixed right-0 bottom-0 left-60 z-10 h-[88px] w-auto border-t border-[#E5E5E5] bg-white">
         <div className="mx-auto flex h-full w-full items-center justify-between">
-          <div
+          <dl
             className="ml-6 flex items-center gap-8 text-base font-medium text-[#353642]"
             style={{ marginTop: "34.5px", marginBottom: "34.5px" }}
           >
-            <p>
-              一般座位：<span className="body-medium">{normalSeatCount}</span>
-            </p>
-            <p>
-              殘障座位：<span className="body-medium">{accessibleSeatCount}</span>
-            </p>
-          </div>
+            <div className="flex items-center">
+              <dt>一般座位：</dt>
+              <dd className="body-medium">{normalSeatCount}</dd>
+            </div>
+            <div className="flex items-center">
+              <dt>殘障座位：</dt>
+              <dd className="body-medium">{accessibleSeatCount}</dd>
+            </div>
+          </dl>
           <button
             type="button"
             onClick={onCreate}
