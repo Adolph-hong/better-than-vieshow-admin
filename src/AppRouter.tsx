@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom"
 import TheaterLayout from "@/components/layout/TheaterLayout"
-import AdminLogin from "../pages/AdminLogin"
 import Home from "../pages/Home"
+import AdminLogin from "../pages/login/AdminLogin"
 import CreateMovie from "../pages/movies/CreateMovie"
 import EditMovie from "../pages/movies/EditMovie"
 import Movie from "../pages/movies/Movie"
