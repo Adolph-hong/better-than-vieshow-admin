@@ -18,7 +18,7 @@ const TheaterBasicInfoForm = ({
   onTypeChange,
 }: TheaterBasicInfoFormProps) => {
   return (
-    <section className="px-6">
+    <section>
       <h2 className="text-2xl font-bold">基本資訊</h2>
       <div className="mt-4 flex gap-6">
         <div className="flex flex-col gap-2">
