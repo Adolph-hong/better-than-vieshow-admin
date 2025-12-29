@@ -7,7 +7,6 @@ import {
   getMovieById,
   updateMovie,
   type CreateMovieRequest,
-  type CreateMovieResponse,
   MovieAPIError,
 } from "@/services/movieAPI"
 
@@ -269,8 +268,7 @@ export const useMovieForm = (movieId?: string) => {
       return
     }
 
-    const formData = { ...data }
-    const { poster, ...rest } = formData
+    const { poster } = data
 
     let posterUrl = ""
     if (poster instanceof File) {
