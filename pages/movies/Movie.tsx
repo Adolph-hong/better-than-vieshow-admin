@@ -4,7 +4,7 @@ import { Search } from "lucide-react"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
-import { getMovies } from "@/utils/storage"
+import { fetchMovies, MovieAPIError } from "@/services/movieAPI"
 
 interface MovieItem {
   id: string
@@ -23,6 +23,10 @@ interface MovieItem {
 
 const categoryMap: Record<string, string> = {
   G: "普遍級",
+  P: "保護級",
+  PG: "輔導級",
+  R: "限制級",
+  // 保留舊格式的對應（向後相容）
   "PG-12": "輔導級",
   "R-18": "限制級",
 }
@@ -62,9 +66,12 @@ const Movie = () => {
   const [isInputFocused, setIsInputFocused] = useState(false)
 
   useEffect(() => {
-    const loadMovies = () => {
+    const loadMovies = async () => {
       try {
-        const data = getMovies() as MovieItem[]
+        setIsLoading(true)
+        setError(null)
+
+        const data = await fetchMovies()
         const allMovies = Array.isArray(data) ? data : []
 
         const today = new Date()
@@ -85,8 +92,32 @@ const Movie = () => {
         })
 
         setMovies(displayMovies)
-      } catch {
-        setError("讀取電影列表時發生錯誤")
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load movies:", err)
+
+        // 處理不同的錯誤類型
+        if (err instanceof MovieAPIError) {
+          if (err.errorType === "UNAUTHORIZED") {
+            // 401: 未授權，導向登入頁
+            setError("未授權，請重新登入")
+            // 可以選擇清除 token 並導向登入頁
+            localStorage.removeItem("token")
+            // navigate("/login") // 如果有登入頁的話
+          } else if (err.errorType === "FORBIDDEN") {
+            // 403: 權限不足
+            setError("權限不足，需要 Admin 角色")
+          } else if (err.errorType === "SERVER_ERROR") {
+            // 500: 伺服器錯誤
+            setError("伺服器發生錯誤，請稍後再試")
+          } else {
+            // 其他錯誤
+            setError(err.message || "讀取電影列表時發生錯誤，請稍後再試")
+          }
+        } else {
+          // 非 API 錯誤（網路錯誤等）
+          setError("讀取電影列表時發生錯誤，請稍後再試")
+        }
       } finally {
         setIsLoading(false)
       }
