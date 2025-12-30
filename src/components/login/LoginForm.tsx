@@ -18,6 +18,11 @@ const LoginForm = ({ className }: LoginFormProps) => {
     email: "",
     password: "",
   })
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  })
+  const [shakeField, setShakeField] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
@@ -25,6 +30,18 @@ const LoginForm = ({ className }: LoginFormProps) => {
       ...prev,
       [id]: value,
     }))
+    // 當用戶開始輸入時，清除該欄位的錯誤
+    if (errors[id as keyof typeof errors]) {
+      setErrors((prev) => ({
+        ...prev,
+        [id]: "",
+      }))
+    }
+  }
+
+  const triggerShake = (field: string) => {
+    setShakeField(field)
+    setTimeout(() => setShakeField(null), 400)
   }
 
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -35,8 +52,31 @@ const LoginForm = ({ className }: LoginFormProps) => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
+        const errorCode = errorData?.code || errorData?.error
         const errorMessage = errorData?.message || "登入失敗，請稍後再試"
-        throw new Error(errorMessage)
+
+        // 根據錯誤類型設定對應欄位的錯誤訊息
+        if (
+          errorCode === "EMAIL_NOT_FOUND" ||
+          errorMessage.includes("信箱") ||
+          errorMessage.includes("email") ||
+          errorMessage.includes("用戶不存在")
+        ) {
+          setErrors((prev) => ({ ...prev, email: "信箱不存在" }))
+          triggerShake("email")
+        } else if (
+          errorCode === "WRONG_PASSWORD" ||
+          errorMessage.includes("密碼") ||
+          errorMessage.includes("password")
+        ) {
+          setErrors((prev) => ({ ...prev, password: "密碼錯誤" }))
+          triggerShake("password")
+        } else {
+          // 預設顯示在密碼欄位
+          setErrors((prev) => ({ ...prev, password: errorMessage }))
+          triggerShake("password")
+        }
+        return
       }
 
       const data = await response.json()
@@ -82,7 +122,11 @@ const LoginForm = ({ className }: LoginFormProps) => {
       <form className="flex flex-col gap-6">
         <label htmlFor="email" className="flex flex-col gap-2">
           <span className="body-medium">信箱</span>
-          <div className="flex h-[56px] items-center rounded-[10px] border border-[#CCCEE1] px-4">
+          <div
+            className={`flex h-[56px] items-center rounded-[10px] border px-4 ${
+              errors.email ? "border-[#D82828]" : "border-[#CCCEE1]"
+            } ${shakeField === "email" ? "animate-shake" : ""}`}
+          >
             <input
               id="email"
               type="email"
@@ -92,11 +136,16 @@ const LoginForm = ({ className }: LoginFormProps) => {
               className="w-full outline-none placeholder:text-[#A0A1B6]"
             />
           </div>
+          {errors.email && <span className="text-[#D82828]">{errors.email}</span>}
         </label>
 
         <label htmlFor="password" className="flex flex-col gap-2">
           <span className="body-medium">密碼</span>
-          <div className="relative flex h-[56px] rounded-[10px] border border-[#CCCEE1] px-4">
+          <div
+            className={`relative flex h-[56px] items-center rounded-[10px] border px-4 ${
+              errors.password ? "border-[#D82828]" : "border-[#CCCEE1]"
+            } ${shakeField === "password" ? "animate-shake" : ""}`}
+          >
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -114,6 +163,7 @@ const LoginForm = ({ className }: LoginFormProps) => {
               {showPassword ? <Eye /> : <EyeClosedIcon />}
             </button>
           </div>
+          {errors.password && <span className="text-[#D82828]">{errors.password}</span>}
         </label>
 
         <label htmlFor="remember" className="flex cursor-pointer items-center gap-2">
