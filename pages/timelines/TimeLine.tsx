@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { format, isSameMonth, startOfMonth } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
@@ -18,9 +18,9 @@ import {
   hasDraft,
   markDateAsPublished,
   isDatePublished,
-  getScheduleStatusDates,
   copySchedules,
 } from "@/utils/storage"
+import { getMonthOverview, TimelineAPIError } from "@/services/timelineAPI"
 
 interface Movie {
   id: string
@@ -63,6 +63,9 @@ const TimeLine = () => {
   const [showCopyDialog, setShowCopyDialog] = useState(false)
   const [copyError, setCopyError] = useState<string>("")
   const [, setRefreshKey] = useState(0)
+  const [draftDates, setDraftDates] = useState<Date[]>([])
+  const [sellingDates, setSellingDates] = useState<Date[]>([])
+  const [isLoadingCalendar, setIsLoadingCalendar] = useState(false)
 
 
   const handleSelectDate = (date?: Date) => {
@@ -109,7 +112,54 @@ const TimeLine = () => {
 
   const isPublished = isDatePublished(formattedSelectedDate)
 
-  const { draft: draftDates, selling: sellingDates } = getScheduleStatusDates()
+  // 當月份改變時，從 API 獲取月曆概覽
+  useEffect(() => {
+    const loadMonthOverview = async () => {
+      try {
+        setIsLoadingCalendar(true)
+        const year = visibleMonth.getFullYear()
+        const month = visibleMonth.getMonth() + 1 // getMonth() 返回 0-11，API 需要 1-12
+
+        const overview = await getMonthOverview(year, month)
+
+        // 將 API 返回的日期字串轉換為 Date 對象
+        const draftDatesArray: Date[] = []
+        const sellingDatesArray: Date[] = []
+
+        overview.dates.forEach((item) => {
+          const date = new Date(item.date)
+          date.setHours(0, 0, 0, 0) // 確保時間為 00:00:00
+
+          if (item.status === "Draft") {
+            draftDatesArray.push(date)
+          } else if (item.status === "OnSale") {
+            sellingDatesArray.push(date)
+          }
+        })
+
+        setDraftDates(draftDatesArray)
+        setSellingDates(sellingDatesArray)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load month overview:", error)
+        if (error instanceof TimelineAPIError) {
+          if (error.errorType === "UNAUTHORIZED") {
+            // 未授權時，可以選擇清除狀態或顯示錯誤訊息
+            setDraftDates([])
+            setSellingDates([])
+          }
+        } else {
+          // 其他錯誤時，保持空陣列
+          setDraftDates([])
+          setSellingDates([])
+        }
+      } finally {
+        setIsLoadingCalendar(false)
+      }
+    }
+
+    loadMonthOverview()
+  }, [visibleMonth])
 
   const handleStartSelling = () => {
     setShowConfirmDialog(true)
