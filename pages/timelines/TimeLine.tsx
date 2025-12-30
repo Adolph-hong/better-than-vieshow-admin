@@ -15,9 +15,6 @@ import { timeSlots, type Theater } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
 import sendAPI from "@/utils/sendAPI"
 import {
-  hasDraft,
-} from "@/utils/storage"
-import {
   getMonthOverview,
   getDailySchedule,
   getGroupedSchedule,
@@ -67,19 +64,14 @@ const TimeLine = () => {
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(selectedDate))
   const [showPreview, setShowPreview] = useState(false)
   const [groupedSchedule, setGroupedSchedule] = useState<GroupedScheduleResponse | null>(null)
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showCopyDialog, setShowCopyDialog] = useState(false)
   const [copyError, setCopyError] = useState<string>("")
-  const [, setRefreshKey] = useState(0)
   const [draftDates, setDraftDates] = useState<Date[]>([])
   const [sellingDates, setSellingDates] = useState<Date[]>([])
-  const [isLoadingCalendar, setIsLoadingCalendar] = useState(false)
   const [schedules, setSchedules] = useState<Schedule[]>([])
-  const [isLoadingSchedule, setIsLoadingSchedule] = useState(false)
   const [scheduleStatus, setScheduleStatus] = useState<"OnSale" | "Draft" | null>(null)
   const [theaters, setTheaters] = useState<Theater[]>([])
-  const [isLoadingTheaters, setIsLoadingTheaters] = useState(true)
   const [movies, setMovies] = useState<Array<{ id: string; movieName: string; poster: string }>>([])
 
   // 將 API 的影廳類型映射到前端使用的類型
@@ -96,7 +88,6 @@ const TimeLine = () => {
   useEffect(() => {
     const loadTheaters = async () => {
       try {
-        setIsLoadingTheaters(true)
         const response = await sendAPI("/api/admin/theaters", "GET")
 
         if (!response.ok) {
@@ -129,8 +120,6 @@ const TimeLine = () => {
         console.error("Failed to load theaters:", error)
         // 如果載入失敗，使用空陣列
         setTheaters([])
-      } finally {
-        setIsLoadingTheaters(false)
       }
     }
 
@@ -206,7 +195,6 @@ const TimeLine = () => {
       }
 
       try {
-        setIsLoadingSchedule(true)
         // 將日期轉換為 YYYY-MM-DD 格式
         const dateStr = format(selectedDate, "yyyy-MM-dd")
 
@@ -259,8 +247,6 @@ const TimeLine = () => {
           setSchedules([])
           setScheduleStatus(null)
         }
-      } finally {
-        setIsLoadingSchedule(false)
       }
     }
 
@@ -279,7 +265,6 @@ const TimeLine = () => {
   useEffect(() => {
     const loadMonthOverview = async () => {
       try {
-        setIsLoadingCalendar(true)
         const year = visibleMonth.getFullYear()
         const month = visibleMonth.getMonth() + 1 // getMonth() 返回 0-11，API 需要 1-12
 
@@ -316,8 +301,6 @@ const TimeLine = () => {
           setDraftDates([])
           setSellingDates([])
         }
-      } finally {
-        setIsLoadingCalendar(false)
       }
     }
 
@@ -572,7 +555,6 @@ const TimeLine = () => {
             }
             onPreview={async () => {
               try {
-                setIsLoadingPreview(true)
                 const dateStr = format(selectedDate, "yyyy-MM-dd")
                 const groupedData = await getGroupedSchedule(dateStr)
                 setGroupedSchedule(groupedData)
@@ -589,8 +571,6 @@ const TimeLine = () => {
                 } else {
                   alert("載入預覽失敗，請稍後再試")
                 }
-              } finally {
-                setIsLoadingPreview(false)
               }
             }}
             onStartSelling={handleStartSelling}
