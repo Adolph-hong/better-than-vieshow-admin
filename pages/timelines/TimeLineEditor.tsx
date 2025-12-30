@@ -4,7 +4,7 @@ import { format } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TheaterScheduleList from "@/components/timelines/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/timelines/timelineData"
+import { timeSlots, type Theater } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
 import { fetchMovies } from "@/services/movieAPI"
 import {
@@ -14,6 +14,7 @@ import {
   type ShowtimeItem,
 } from "@/services/timelineAPI"
 import filterMoviesByDate from "@/utils/movieFilter"
+import sendAPI from "@/utils/sendAPI"
 
 interface Movie {
   id: string
@@ -55,6 +56,72 @@ const TimeLineEditor = () => {
   const [draggedItem, setDraggedItem] = useState<
     { type: "movie"; movie: Movie } | { type: "schedule"; schedule: Schedule } | null
   >(null)
+  const [theaters, setTheaters] = useState<Theater[]>([])
+  // 建立前端 theater.id (字串) 到 API theaterId (數字) 的映射表
+  const [theaterIdMap, setTheaterIdMap] = useState<Map<string, number>>(new Map())
+
+  // 將 API 的影廳類型映射到前端使用的類型
+  const mapTheaterTypeToFrontend = (apiType: string): Theater["type"] => {
+    const typeMap: Record<string, Theater["type"]> = {
+      Digital: "一般數位",
+      "4DX": "4DX",
+      IMAX: "IMAX",
+    }
+    return typeMap[apiType] || "一般數位"
+  }
+
+  // 從 API 獲取影廳列表
+  useEffect(() => {
+    const loadTheaters = async () => {
+      try {
+        const response = await sendAPI("/api/admin/theaters", "GET")
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        const theaterList = Array.isArray(data) ? data : data.data || []
+
+        // 轉換為前端使用的 Theater 格式
+        interface TheaterFromAPI {
+          id: number | string
+          name: string
+          type: string
+          normalSeats?: number
+          accessibleSeats?: number
+        }
+
+        const formattedTheaters: Theater[] = theaterList.map((theater: TheaterFromAPI) => ({
+          id: String(theater.id), // API 的 id 可能是數字，轉為字串
+          name: theater.name,
+          type: mapTheaterTypeToFrontend(theater.type), // 映射影廳類型
+          generalSeats: theater.normalSeats || 0,
+          disabledSeats: theater.accessibleSeats || 0,
+        }))
+
+        setTheaters(formattedTheaters)
+
+        // 建立映射表：前端 theater.id (字串) -> API theaterId (數字)
+        const newTheaterIdMap = new Map<string, number>()
+        theaterList.forEach((theater: TheaterFromAPI) => {
+          const frontendId = String(theater.id)
+          const apiId = typeof theater.id === "number" ? theater.id : Number(theater.id)
+          if (!Number.isNaN(apiId)) {
+            newTheaterIdMap.set(frontendId, apiId)
+          }
+        })
+        setTheaterIdMap(newTheaterIdMap)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load theaters:", error)
+        // 如果載入失敗，使用空陣列
+        setTheaters([])
+      }
+    }
+
+    loadTheaters()
+  }, [])
 
   // 從 API 獲取電影列表
   useEffect(() => {
@@ -114,10 +181,44 @@ const TimeLineEditor = () => {
 
         const dailySchedule = await getDailySchedule(dateStr)
 
+        // 更新映射表：根據 API 返回的資料更新映射關係
+        setTheaterIdMap((prevMap) => {
+          const updatedMap = new Map(prevMap)
+          dailySchedule.showtimes.forEach((showtime) => {
+            // 根據 theaterId 找到對應的前端 theater
+            const frontendTheater = Array.from(prevMap.entries()).find(
+              ([, apiId]) => apiId === showtime.theaterId
+            )
+            // 如果找不到，嘗試根據 theaterName 匹配
+            if (!frontendTheater) {
+              const matchedTheater = theaters.find((t) => {
+                const apiName = showtime.theaterName.trim()
+                const frontendName = t.name.trim()
+                return (
+                  apiName === frontendName ||
+                  apiName.includes(frontendName) ||
+                  frontendName.includes(apiName)
+                )
+              })
+              if (matchedTheater) {
+                updatedMap.set(matchedTheater.id, showtime.theaterId)
+              }
+            } else {
+              updatedMap.set(frontendTheater[0], showtime.theaterId)
+            }
+          })
+          return updatedMap
+        })
+
         // 轉換 API 資料為前端使用的 Schedule 格式
         const convertedSchedules: Schedule[] = dailySchedule.showtimes.map((showtime) => {
-          // 暫時使用 API 返回的 theaterId 作為字串（之後需要建立映射）
-          const frontendTheaterId = String(showtime.theaterId)
+          // 根據 API 的 theaterId 找到對應的前端 theater.id
+          const frontendTheater = Array.from(theaterIdMap.entries()).find(
+            ([, apiId]) => apiId === showtime.theaterId
+          )
+          const frontendTheaterId = frontendTheater
+            ? frontendTheater[0]
+            : String(showtime.theaterId)
 
           // 需要找到對應的電影資料
           const movie = movies.find((m) => m.id === String(showtime.movieId))
@@ -171,11 +272,11 @@ const TimeLineEditor = () => {
       }
     }
 
-    // 等待電影列表載入完成後再載入時刻表
-    if (!isLoadingMovies) {
+    // 等待影廳列表載入完成後再載入時刻表
+    if (theaters.length > 0) {
       loadSchedule()
     }
-  }, [formattedDate, isLoadingMovies, movies])
+  }, [formattedDate, theaters, theaterIdMap, movies])
 
   const formatDuration = (minutes: string) => {
     const totalMinutes = parseInt(minutes, 10)
@@ -378,13 +479,32 @@ const TimeLineEditor = () => {
       const dateStr = `${year}-${month}-${day}`
 
       // 將 schedules 轉換為 API 需要的格式
-      // 注意：需要將前端的 theaterId (字串) 轉換為 API 需要的數字
-      // 暫時先使用直接轉換，之後需要建立映射表
-      const showtimes: ShowtimeItem[] = schedules.map((schedule) => ({
-        movieId: Number(schedule.movieId),
-        theaterId: Number(schedule.theaterId), // 暫時直接轉換，之後需要映射
-        startTime: schedule.startTime,
-      }))
+      // 使用映射表將前端的 theater.id (字串) 轉換為 API 的 theaterId (數字)
+      const showtimes: ShowtimeItem[] = schedules
+        .map((schedule) => {
+          const apiTheaterId = theaterIdMap.get(schedule.theaterId)
+          if (!apiTheaterId) {
+            // 如果映射表中沒有，顯示錯誤
+            alert(`錯誤：找不到影廳 ${schedule.theaterId} 的對應關係，請重新載入頁面`)
+            // eslint-disable-next-line no-console
+            console.error(
+              `找不到影廳 ${schedule.theaterId}，映射表:`,
+              Array.from(theaterIdMap.entries())
+            )
+            return null
+          }
+
+          return {
+            movieId: Number(schedule.movieId),
+            theaterId: apiTheaterId,
+            startTime: schedule.startTime,
+          }
+        })
+        .filter((item): item is ShowtimeItem => item !== null)
+
+      // 調試：輸出要發送的資料
+      // eslint-disable-next-line no-console
+      console.log("準備發送的 showtimes:", showtimes)
 
       await saveDailySchedule(dateStr, showtimes)
       alert("時刻表儲存成功")

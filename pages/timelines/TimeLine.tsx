@@ -11,8 +11,9 @@ import MovieList from "@/components/timelines/MovieList"
 import ScheduleNav from "@/components/timelines/ScheduleNav"
 import SchedulePreview from "@/components/timelines/SchedulePreview"
 import TheaterScheduleList from "@/components/timelines/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/timelines/timelineData"
+import { timeSlots, type Theater } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
+import sendAPI from "@/utils/sendAPI"
 import {
   hasDraft,
   markDateAsPublished,
@@ -25,6 +26,7 @@ import {
   TimelineAPIError,
   type ShowtimeResponse,
 } from "@/services/timelineAPI"
+import { fetchMovies } from "@/services/movieAPI"
 
 interface Movie {
   id: string
@@ -73,7 +75,64 @@ const TimeLine = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false)
   const [scheduleStatus, setScheduleStatus] = useState<"OnSale" | "Draft" | null>(null)
+  const [theaters, setTheaters] = useState<Theater[]>([])
+  const [isLoadingTheaters, setIsLoadingTheaters] = useState(true)
+  const [movies, setMovies] = useState<Array<{ id: string; movieName: string; poster: string }>>([])
 
+  // 將 API 的影廳類型映射到前端使用的類型
+  const mapTheaterTypeToFrontend = (apiType: string): Theater["type"] => {
+    const typeMap: Record<string, Theater["type"]> = {
+      Digital: "一般數位",
+      "4DX": "4DX",
+      IMAX: "IMAX",
+    }
+    return typeMap[apiType] || "一般數位"
+  }
+
+  // 從 API 獲取影廳列表
+  useEffect(() => {
+    const loadTheaters = async () => {
+      try {
+        setIsLoadingTheaters(true)
+        const response = await sendAPI("/api/admin/theaters", "GET")
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        const theaterList = Array.isArray(data) ? data : data.data || []
+
+        // 轉換為前端使用的 Theater 格式
+        interface TheaterFromAPI {
+          id: number | string
+          name: string
+          type: string
+          normalSeats?: number
+          accessibleSeats?: number
+        }
+
+        const formattedTheaters: Theater[] = theaterList.map((theater: TheaterFromAPI) => ({
+          id: String(theater.id), // API 的 id 可能是數字，轉為字串
+          name: theater.name,
+          type: mapTheaterTypeToFrontend(theater.type), // 映射影廳類型
+          generalSeats: theater.normalSeats || 0,
+          disabledSeats: theater.accessibleSeats || 0,
+        }))
+
+        setTheaters(formattedTheaters)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load theaters:", error)
+        // 如果載入失敗，使用空陣列
+        setTheaters([])
+      } finally {
+        setIsLoadingTheaters(false)
+      }
+    }
+
+    loadTheaters()
+  }, [])
 
   const handleSelectDate = (date?: Date) => {
     if (!date) return
@@ -113,6 +172,27 @@ const TimeLine = () => {
     return `${dateText}(${weekDay})`
   }, [selectedDate])
 
+  // 載入電影列表（用於獲取電影海報）
+  useEffect(() => {
+    const loadMovies = async () => {
+      try {
+        const data = await fetchMovies()
+        const movieList = data.map((movie) => ({
+          id: movie.id,
+          movieName: movie.movieName,
+          poster: movie.poster || "",
+        }))
+        setMovies(movieList)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load movies:", error)
+        setMovies([])
+      }
+    }
+
+    loadMovies()
+  }, [])
+
   // 當選中日期改變時，從 API 獲取每日時刻表
   useEffect(() => {
     const loadDailySchedule = async () => {
@@ -131,19 +211,23 @@ const TimeLine = () => {
 
         // 轉換 API 資料為前端使用的 Schedule 格式
         const convertedSchedules: Schedule[] = dailySchedule.showtimes.map(
-          (showtime: ShowtimeResponse) => ({
-            id: String(showtime.id),
-            movieId: String(showtime.movieId),
-            theaterId: String(showtime.theaterId),
-            startTime: showtime.startTime,
-            endTime: showtime.endTime,
-            movie: {
-              id: String(showtime.movieId),
-              movieName: showtime.movieTitle,
-              duration: String(showtime.movieDuration),
-              poster: "", // API 沒有提供 poster，暫時留空
-            },
-          })
+          (showtime: ShowtimeResponse) => {
+            // 從電影列表中查找對應的電影，取得 poster
+            const movieData = movies.find((m) => m.id === String(showtime.movieId))
+            return {
+              id: String(showtime.id),
+              movieId: String(showtime.movieId),
+              theaterId: String(showtime.theaterId),
+              startTime: showtime.startTime,
+              endTime: showtime.endTime,
+              movie: {
+                id: String(showtime.movieId),
+                movieName: showtime.movieTitle,
+                duration: String(showtime.movieDuration),
+                poster: movieData?.poster || "", // 從電影列表取得 poster
+              },
+            }
+          }
         )
 
         setSchedules(convertedSchedules)
@@ -177,8 +261,11 @@ const TimeLine = () => {
       }
     }
 
-    loadDailySchedule()
-  }, [selectedDate])
+    // 等待電影列表載入完成後再載入時刻表
+    if (movies.length > 0 || selectedDate) {
+      loadDailySchedule()
+    }
+  }, [selectedDate, movies])
 
   // 根據 API 返回的狀態判斷
   const hasDraftStatus = scheduleStatus === "Draft"
