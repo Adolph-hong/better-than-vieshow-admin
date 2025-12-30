@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom"
+import { ClipLoader } from "react-spinners"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TheaterCard from "@/components/theater/TheaterCard"
 import EmptyContent from "@/components/ui/EmptyContent"
@@ -11,7 +12,11 @@ const Theaters = () => {
 
   const renderContent = () => {
     if (isLoading) {
-      return <p className="p-6 text-center text-gray-500">載入中...</p>
+      return (
+        <div className="flex flex-1 items-center justify-center p-6">
+          <ClipLoader color="#5365AC" size={40} />
+        </div>
+      )
     }
 
     if (error) {

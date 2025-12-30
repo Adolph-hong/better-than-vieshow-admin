@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { EyeClosedIcon, Eye, CheckIcon } from "lucide-react"
+import toast from "react-hot-toast"
+import { ClipLoader } from "react-spinners"
 import sendAPI from "@/utils/sendAPI"
 
 type LoginFormProps = {
@@ -11,6 +13,7 @@ const LoginForm = ({ className }: LoginFormProps) => {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,6 +29,7 @@ const LoginForm = ({ className }: LoginFormProps) => {
 
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
+    setIsLoading(true)
     try {
       const response = await sendAPI(`/api/Auth/login`, "POST", formData)
 
@@ -47,17 +51,19 @@ const LoginForm = ({ className }: LoginFormProps) => {
           localStorage.setItem("user", userName)
         }
       } else {
+        // eslint-disable-next-line no-console
         console.warn("後端未回傳 token")
       }
 
-      alert("登入成功！")
       navigate("/")
     } catch (error) {
       if (error instanceof Error) {
-        alert(error.message)
+        toast.error(error.message)
       } else {
-        alert("發生未知錯誤")
+        toast.error("發生未知錯誤")
       }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -129,9 +135,12 @@ const LoginForm = ({ className }: LoginFormProps) => {
         <button
           type="submit"
           onClick={handleLogin}
-          className="mt-4 h-[48px] cursor-pointer rounded-[10px] bg-[#5365AC] font-medium text-white transition hover:bg-[#48529a]"
+          disabled={isLoading}
+          className={`mt-4 flex h-[48px] items-center justify-center rounded-[10px] bg-[#5365AC] font-medium text-white transition ${
+            isLoading ? "cursor-not-allowed opacity-70" : "cursor-pointer hover:bg-[#48529a]"
+          }`}
         >
-          登入
+          {isLoading ? <ClipLoader color="#ffffff" size={20} /> : "登入"}
         </button>
       </form>
     </section>

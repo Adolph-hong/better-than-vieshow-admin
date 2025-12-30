@@ -31,7 +31,7 @@ const useTheaters = () => {
     fetchTheaters()
   }, [])
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): Promise<boolean> => {
     try {
       const response = await sendAPI(`/api/admin/theaters/${id}`, "DELETE")
 
@@ -40,11 +40,11 @@ const useTheaters = () => {
       }
 
       setTheaters((prev) => prev.filter((theater) => theater.id !== id))
+      return true
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("刪除影廳失敗:", err)
-      // eslint-disable-next-line no-alert
-      alert("刪除失敗，請稍後再試")
+      return false
     }
   }
 

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Fullscreen, EllipsisVertical, Trash2 } from "lucide-react"
+import toast from "react-hot-toast"
+import { ClipLoader } from "react-spinners"
 import Modal from "@/components/theater/Modal"
 import SeatingChartView from "@/components/theater/SeatingChartView"
 import type { SeatCell } from "@/components/theater-builder/SeatingChart"
@@ -8,12 +10,14 @@ import sendAPI from "@/utils/sendAPI"
 
 type TheaterCardProps = {
   theater: TheaterData
-  onDelete: (id: string) => void
+  onDelete: (id: string) => Promise<boolean>
 }
 
 const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   const [showMenu, setShowMenu] = useState(false)
   const [showSeatingChart, setShowSeatingChart] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const [previewSeatMap, setPreviewSeatMap] = useState<SeatCell[][]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -35,9 +39,22 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
     }
   }, [showMenu])
 
-  const handleDelete = () => {
-    onDelete(theater.id)
+  const handleDeleteClick = () => {
     setShowMenu(false)
+    setShowDeleteConfirm(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true)
+    const success = await onDelete(theater.id)
+    setIsDeleting(false)
+
+    if (success) {
+      toast.success("刪除成功")
+      setShowDeleteConfirm(false)
+    } else {
+      toast.error("刪除失敗，請稍後再試")
+    }
   }
 
   const transformSeatMap = (rawSeats: string[][]): SeatCell[][] => {
@@ -194,7 +211,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
                 <button
                   type="button"
                   className="flex w-full items-center gap-3 px-4 py-2 text-left hover:cursor-pointer"
-                  onClick={handleDelete}
+                  onClick={handleDeleteClick}
                   role="menuitem"
                 >
                   <Trash2 className="h-[18px] w-[18px] text-[#575867]" />
@@ -219,7 +236,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
       <Modal isOpen={showSeatingChart} onClose={() => setShowSeatingChart(false)}>
         {isLoading ? (
           <div className="flex h-64 w-full items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500" />
+            <ClipLoader color="#5365AC" size={32} />
           </div>
         ) : (
           <SeatingChartView
@@ -228,6 +245,31 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
             onClose={() => setShowSeatingChart(false)}
           />
         )}
+      </Modal>
+
+      <Modal isOpen={showDeleteConfirm} onClose={() => !isDeleting && setShowDeleteConfirm(false)}>
+        <div className="w-[400px] p-6">
+          <h2 className="mb-4 text-xl font-bold">確定要刪除嗎？</h2>
+          <p className="mb-6 text-gray-600">即將刪除「{theater.name}」，此操作無法復原。</p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="flex min-w-[80px] items-center justify-center rounded-lg bg-red-500 px-4 py-2 text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isDeleting ? <ClipLoader color="#ffffff" size={20} /> : "刪除"}
+            </button>
+          </div>
+        </div>
       </Modal>
     </article>
   )
