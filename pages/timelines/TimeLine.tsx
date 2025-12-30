@@ -23,8 +23,10 @@ import {
 import {
   getMonthOverview,
   getDailySchedule,
+  getGroupedSchedule,
   TimelineAPIError,
   type ShowtimeResponse,
+  type GroupedScheduleResponse,
 } from "@/services/timelineAPI"
 import { fetchMovies } from "@/services/movieAPI"
 
@@ -65,6 +67,8 @@ const TimeLine = () => {
   })
   const [visibleMonth, setVisibleMonth] = useState<Date>(() => startOfMonth(selectedDate))
   const [showPreview, setShowPreview] = useState(false)
+  const [groupedSchedule, setGroupedSchedule] = useState<GroupedScheduleResponse | null>(null)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [showCopyDialog, setShowCopyDialog] = useState(false)
   const [copyError, setCopyError] = useState<string>("")
@@ -407,8 +411,28 @@ const TimeLine = () => {
                 state: { formattedDate: formattedSelectedDate },
               })
             }
-            onPreview={() => {
-              setShowPreview(true)
+            onPreview={async () => {
+              try {
+                setIsLoadingPreview(true)
+                const dateStr = format(selectedDate, "yyyy-MM-dd")
+                const groupedData = await getGroupedSchedule(dateStr)
+                setGroupedSchedule(groupedData)
+                setShowPreview(true)
+              } catch (error) {
+                if (error instanceof TimelineAPIError) {
+                  if (error.errorType === "NOT_FOUND") {
+                    alert("該日期沒有時刻表記錄")
+                  } else if (error.errorType === "UNAUTHORIZED") {
+                    alert("未授權，請重新登入")
+                  } else {
+                    alert(`載入預覽失敗：${error.message}`)
+                  }
+                } else {
+                  alert("載入預覽失敗，請稍後再試")
+                }
+              } finally {
+                setIsLoadingPreview(false)
+              }
             }}
             onStartSelling={handleStartSelling}
             onDuplicate={handleCopySchedule}
@@ -422,11 +446,14 @@ const TimeLine = () => {
         </div>
       </TimelineLayout>
       {/* 預覽視窗 */}
-      {showPreview && (
+      {showPreview && groupedSchedule && (
         <SchedulePreview
           formattedDate={formattedSelectedDate}
-          schedules={schedules}
-          onClose={() => setShowPreview(false)}
+          groupedSchedule={groupedSchedule}
+          onClose={() => {
+            setShowPreview(false)
+            setGroupedSchedule(null)
+          }}
         />
       )}
       {/* 開始販售確認對話框 */}

@@ -63,11 +63,7 @@ export const saveDailySchedule = async (
 
     if (response.status === 409) {
       const errorData = (await response.json()) as UnauthorizedError
-      throw new TimelineAPIError(
-        errorData.detail || "場次時間衝突",
-        409,
-        "VALIDATION_ERROR"
-      )
+      throw new TimelineAPIError(errorData.detail || "場次時間衝突", 409, "VALIDATION_ERROR")
     }
 
     if (!response.ok) {
@@ -94,4 +90,3 @@ export const saveDailySchedule = async (
     )
   }
 }
-

@@ -16,8 +16,13 @@ export {
 } from "./searchTimeline"
 
 // 匯出儲存時刻表 API
+export { saveDailySchedule, type ShowtimeItem, type SaveDailyScheduleRequest } from "./saveTimeline"
+
+// 匯出分組時刻表 API
 export {
-  saveDailySchedule,
-  type ShowtimeItem,
-  type SaveDailyScheduleRequest,
-} from "./saveTimeline"
+  getGroupedSchedule,
+  type GroupedScheduleResponse,
+  type MovieShowtimeGroup,
+  type TheaterTypeGroup,
+  type GroupedShowtimeItem,
+} from "./groupedSchedule"
