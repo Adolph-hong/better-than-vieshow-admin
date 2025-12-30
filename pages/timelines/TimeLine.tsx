@@ -13,7 +13,7 @@ import SchedulePreview from "@/components/timelines/SchedulePreview"
 import TheaterScheduleList from "@/components/timelines/TheaterScheduleList"
 import { timeSlots, type Theater } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
-import sendAPI from "@/utils/sendAPI"
+import { fetchMovies } from "@/services/movieAPI"
 import {
   getMonthOverview,
   getDailySchedule,
@@ -24,7 +24,7 @@ import {
   type ShowtimeResponse,
   type GroupedScheduleResponse,
 } from "@/services/timelineAPI"
-import { fetchMovies } from "@/services/movieAPI"
+import sendAPI from "@/utils/sendAPI"
 
 interface Movie {
   id: string
@@ -371,11 +371,17 @@ const TimeLine = () => {
       // 更新月曆中的日期狀態
       const selectedDateObj = new Date(selectedDate)
       setSellingDates((prev) => {
-        const newDates = prev.filter((d) => !isSameMonth(d, selectedDateObj) || d.getDate() !== selectedDateObj.getDate())
+        const newDates = prev.filter(
+          (d) => !isSameMonth(d, selectedDateObj) || d.getDate() !== selectedDateObj.getDate()
+        )
         newDates.push(selectedDateObj)
         return newDates
       })
-      setDraftDates((prev) => prev.filter((d) => !isSameMonth(d, selectedDateObj) || d.getDate() !== selectedDateObj.getDate()))
+      setDraftDates((prev) =>
+        prev.filter(
+          (d) => !isSameMonth(d, selectedDateObj) || d.getDate() !== selectedDateObj.getDate()
+        )
+      )
     } catch (error) {
       if (error instanceof TimelineAPIError) {
         if (error.errorType === "NOT_FOUND") {
@@ -446,7 +452,9 @@ const TimeLine = () => {
 
       // 顯示成功訊息
       if (result.message) {
-        alert(`複製成功！${result.message}\n成功複製 ${result.copiedCount} 個場次，略過 ${result.skippedCount} 個場次`)
+        alert(
+          `複製成功！${result.message}\n成功複製 ${result.copiedCount} 個場次，略過 ${result.skippedCount} 個場次`
+        )
       } else {
         alert(`複製成功！成功複製 ${result.copiedCount} 個場次`)
       }
