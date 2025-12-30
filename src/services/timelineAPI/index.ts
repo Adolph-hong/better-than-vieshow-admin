@@ -14,3 +14,10 @@ export {
   type ShowtimeResponse,
   type DailyScheduleResponse,
 } from "./searchTimeline"
+
+// 匯出儲存時刻表 API
+export {
+  saveDailySchedule,
+  type ShowtimeItem,
+  type SaveDailyScheduleRequest,
+} from "./saveTimeline"
