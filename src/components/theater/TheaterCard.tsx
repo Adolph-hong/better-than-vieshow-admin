@@ -257,7 +257,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
               type="button"
               onClick={() => setShowDeleteConfirm(false)}
               disabled={isDeleting}
-              className="rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2"
             >
               取消
             </button>
@@ -265,7 +265,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
               type="button"
               onClick={handleConfirmDelete}
               disabled={isDeleting}
-              className="flex min-w-[80px] items-center justify-center rounded-lg bg-red-500 px-4 py-2 text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-70"
+              className="flex cursor-pointer items-center rounded-lg bg-[#5365AC] px-4 py-2 text-white"
             >
               {isDeleting ? <ClipLoader color="#ffffff" size={20} /> : "刪除"}
             </button>
