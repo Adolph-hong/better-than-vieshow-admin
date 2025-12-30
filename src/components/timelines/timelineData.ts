@@ -19,7 +19,7 @@ export function createTimeSlots(start: string, end: string, stepMinutes: number)
   return result
 }
 
-export type TheaterType = "數位" | "3DX" | "IMAX"
+export type TheaterType = "一般數位" | "4DX" | "IMAX"
 
 export interface Theater {
   id: string
@@ -33,14 +33,14 @@ export const theaters: Theater[] = [
   {
     id: "dragon",
     name: "龍廳",
-    type: "數位",
+    type: "一般數位",
     generalSeats: 240,
     disabledSeats: 6,
   },
   {
     id: "phoenix",
     name: "鳳廳",
-    type: "3DX",
+    type: "4DX",
     generalSeats: 240,
     disabledSeats: 6,
   },
@@ -54,21 +54,21 @@ export const theaters: Theater[] = [
   {
     id: "husky",
     name: "哈士奇廳",
-    type: "數位",
+    type: "一般數位",
     generalSeats: 160,
     disabledSeats: 4,
   },
   {
     id: "tiger",
     name: "虎廳",
-    type: "3DX",
+    type: "4DX",
     generalSeats: 200,
     disabledSeats: 5,
   },
   {
     id: "lion",
     name: "獅廳",
-    type: "數位",
+    type: "一般數位",
     generalSeats: 180,
     disabledSeats: 5,
   },
@@ -82,14 +82,14 @@ export const theaters: Theater[] = [
   {
     id: "bear",
     name: "熊廳",
-    type: "3DX",
+    type: "4DX",
     generalSeats: 220,
     disabledSeats: 6,
   },
   {
     id: "wolf",
     name: "狼廳",
-    type: "數位",
+    type: "一般數位",
     generalSeats: 190,
     disabledSeats: 5,
   },
@@ -103,7 +103,7 @@ export const theaters: Theater[] = [
   {
     id: "rabbit",
     name: "兔廳",
-    type: "3DX",
+    type: "4DX",
     generalSeats: 170,
     disabledSeats: 5,
   },

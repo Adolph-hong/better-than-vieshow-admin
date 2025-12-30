@@ -77,8 +77,8 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
 
   const schedulesByType = useMemo(() => {
     const grouped: Record<TheaterType, typeof schedules> = {
-      數位: [],
-      "3DX": [],
+      一般數位: [],
+      "4DX": [],
       IMAX: [],
     }
 
@@ -93,7 +93,7 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
   }, [schedules])
 
   const movieTypeList = useMemo(() => {
-    const types: TheaterType[] = ["數位", "3DX", "IMAX"]
+    const types: TheaterType[] = ["一般數位", "4DX", "IMAX"]
     const result: Array<{
       movie: Movie
       type: TheaterType
