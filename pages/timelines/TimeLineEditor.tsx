@@ -1,16 +1,20 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TheaterScheduleList from "@/components/timelines/TheaterScheduleList"
-import { theaters, timeSlots } from "@/components/timelines/timelineData"
+import { timeSlots, type Theater } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
+import { fetchMovies } from "@/services/movieAPI"
 import {
-  getMovies,
-  getSchedulesByFormattedDate,
-  saveSchedulesByFormattedDate,
-} from "@/utils/storage"
+  saveDailySchedule,
+  getDailySchedule,
+  TimelineAPIError,
+  type ShowtimeItem,
+} from "@/services/timelineAPI"
+import filterMoviesByDate from "@/utils/movieFilter"
+import sendAPI from "@/utils/sendAPI"
 
 interface Movie {
   id: string
@@ -44,16 +48,249 @@ const TimeLineEditor = () => {
     return `${dateText}(${weekDay})`
   }, [locationState])
 
-  const [schedules, setSchedules] = useState<Schedule[]>(() => {
-    return getSchedulesByFormattedDate<Schedule>(formattedDate)
-  })
+  const [schedules, setSchedules] = useState<Schedule[]>([])
+  const [movies, setMovies] = useState<Movie[]>([])
+  const [isLoadingMovies, setIsLoadingMovies] = useState(true)
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [draggedItem, setDraggedItem] = useState<
     { type: "movie"; movie: Movie } | { type: "schedule"; schedule: Schedule } | null
   >(null)
+  const [theaters, setTheaters] = useState<Theater[]>([])
+  // 建立前端 theater.id (字串) 到 API theaterId (數字) 的映射表
+  const [theaterIdMap, setTheaterIdMap] = useState<Map<string, number>>(new Map())
+  // 使用 ref 來避免 useEffect 依賴造成的無限循環
+  const theaterIdMapRef = useRef<Map<string, number>>(new Map())
 
-  const movies = useMemo(() => {
-    return getMovies()
+  // 將 API 的影廳類型映射到前端使用的類型
+  const mapTheaterTypeToFrontend = (apiType: string): Theater["type"] => {
+    const typeMap: Record<string, Theater["type"]> = {
+      Digital: "一般數位",
+      "4DX": "4DX",
+      IMAX: "IMAX",
+    }
+    return typeMap[apiType] || "一般數位"
+  }
+
+  // 從 API 獲取影廳列表
+  useEffect(() => {
+    const loadTheaters = async () => {
+      try {
+        const response = await sendAPI("/api/admin/theaters", "GET")
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        const theaterList = Array.isArray(data) ? data : data.data || []
+
+        // 轉換為前端使用的 Theater 格式
+        interface TheaterFromAPI {
+          id: number | string
+          name: string
+          type: string
+          normalSeats?: number
+          accessibleSeats?: number
+        }
+
+        const formattedTheaters: Theater[] = theaterList.map((theater: TheaterFromAPI) => ({
+          id: String(theater.id), // API 的 id 可能是數字，轉為字串
+          name: theater.name,
+          type: mapTheaterTypeToFrontend(theater.type), // 映射影廳類型
+          generalSeats: theater.normalSeats || 0,
+          disabledSeats: theater.accessibleSeats || 0,
+        }))
+
+        setTheaters(formattedTheaters)
+
+        // 建立映射表：前端 theater.id (字串) -> API theaterId (數字)
+        const newTheaterIdMap = new Map<string, number>()
+        theaterList.forEach((theater: TheaterFromAPI) => {
+          const frontendId = String(theater.id)
+          const apiId = typeof theater.id === "number" ? theater.id : Number(theater.id)
+          if (!Number.isNaN(apiId)) {
+            newTheaterIdMap.set(frontendId, apiId)
+          }
+        })
+        setTheaterIdMap(newTheaterIdMap)
+        theaterIdMapRef.current = newTheaterIdMap
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load theaters:", error)
+        // 如果載入失敗，使用空陣列
+        setTheaters([])
+      }
+    }
+
+    loadTheaters()
   }, [])
+
+  // 從 API 獲取電影列表
+  useEffect(() => {
+    const loadMovies = async () => {
+      try {
+        setIsLoadingMovies(true)
+        const data = await fetchMovies()
+
+        // 解析選中的日期
+        const dateMatch = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+        let selectedDate: Date | undefined
+        if (dateMatch) {
+          const [, year, month, day] = dateMatch
+          selectedDate = new Date(Number(year), Number(month) - 1, Number(day))
+        }
+
+        // 使用共用過濾函數，根據選中日期過濾
+        // 確保只顯示在該日期已經上映且還沒下架的電影
+        const displayMovies = filterMoviesByDate(data, selectedDate)
+
+        // 轉換為編輯頁面使用的格式
+        const formattedMovies: Movie[] = displayMovies.map((movie) => ({
+          id: movie.id,
+          movieName: movie.movieName,
+          duration: movie.duration,
+          poster: movie.poster || "",
+          startAt: movie.startAt,
+          endAt: movie.endAt,
+        }))
+        setMovies(formattedMovies)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load movies:", error)
+        setMovies([])
+      } finally {
+        setIsLoadingMovies(false)
+      }
+    }
+
+    loadMovies()
+  }, [formattedDate])
+
+  // 從 API 獲取該日期的時刻表
+  useEffect(() => {
+    const loadSchedule = async () => {
+      try {
+        setIsLoadingSchedule(true)
+        // 將 formattedDate 轉換為 YYYY-MM-DD 格式
+        const dateMatch = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+        if (!dateMatch) {
+          setSchedules([])
+          return
+        }
+
+        const [, year, month, day] = dateMatch
+        const dateStr = `${year}-${month}-${day}`
+
+        const dailySchedule = await getDailySchedule(dateStr)
+
+        // 建立臨時映射表：根據 API 返回的資料建立映射關係
+        const tempTheaterIdMap = new Map(theaterIdMapRef.current)
+        dailySchedule.showtimes.forEach((showtime) => {
+          // 檢查映射表中是否已有這個 theaterId
+          const existingEntry = Array.from(tempTheaterIdMap.entries()).find(
+            ([, apiId]) => apiId === showtime.theaterId
+          )
+          // 如果沒有，嘗試根據 theaterName 匹配
+          if (!existingEntry) {
+            const matchedTheater = theaters.find((t) => {
+              const apiName = showtime.theaterName.trim()
+              const frontendName = t.name.trim()
+              return (
+                apiName === frontendName ||
+                apiName.includes(frontendName) ||
+                frontendName.includes(apiName)
+              )
+            })
+            if (matchedTheater) {
+              tempTheaterIdMap.set(matchedTheater.id, showtime.theaterId)
+            }
+          }
+        })
+        // 更新映射表（只在有新映射時才更新，避免無限循環）
+        if (tempTheaterIdMap.size > theaterIdMapRef.current.size) {
+          setTheaterIdMap(tempTheaterIdMap)
+          theaterIdMapRef.current = tempTheaterIdMap
+        }
+
+        // 轉換 API 資料為前端使用的 Schedule 格式
+        const convertedSchedules: Schedule[] = dailySchedule.showtimes.map((showtime) => {
+          // 根據 API 的 theaterId 找到對應的前端 theater.id
+          const frontendTheater = Array.from(tempTheaterIdMap.entries()).find(
+            ([, apiId]) => apiId === showtime.theaterId
+          )
+          // 如果映射表中沒有，嘗試根據 theaterName 匹配
+          let frontendTheaterId = frontendTheater ? frontendTheater[0] : null
+          if (!frontendTheaterId) {
+            const matchedTheater = theaters.find((t) => {
+              const apiName = showtime.theaterName.trim()
+              const frontendName = t.name.trim()
+              return (
+                apiName === frontendName ||
+                apiName.includes(frontendName) ||
+                frontendName.includes(apiName)
+              )
+            })
+            frontendTheaterId = matchedTheater?.id || String(showtime.theaterId)
+          }
+
+          // 需要找到對應的電影資料
+          const movie = movies.find((m) => m.id === String(showtime.movieId))
+          if (!movie) {
+            // 如果找不到電影，使用 API 返回的資料
+            return {
+              id: String(showtime.id),
+              movieId: String(showtime.movieId),
+              theaterId: frontendTheaterId,
+              startTime: showtime.startTime,
+              endTime: showtime.endTime,
+              movie: {
+                id: String(showtime.movieId),
+                movieName: showtime.movieTitle,
+                duration: String(showtime.movieDuration),
+                poster: "",
+                startAt: showtime.showDate,
+                endAt: showtime.showDate,
+              },
+            }
+          }
+
+          return {
+            id: String(showtime.id),
+            movieId: String(showtime.movieId),
+            theaterId: frontendTheaterId,
+            startTime: showtime.startTime,
+            endTime: showtime.endTime,
+            movie,
+          }
+        })
+
+        setSchedules(convertedSchedules)
+      } catch (error) {
+        if (error instanceof TimelineAPIError) {
+          if (error.errorType === "NOT_FOUND") {
+            // 該日期沒有時刻表記錄，返回空陣列
+            setSchedules([])
+          } else {
+            // eslint-disable-next-line no-console
+            console.error("Failed to load schedule:", error)
+            setSchedules([])
+          }
+        } else {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load schedule:", error)
+          setSchedules([])
+        }
+      } finally {
+        setIsLoadingSchedule(false)
+      }
+    }
+
+    // 等待影廳列表和電影列表載入完成後再載入時刻表
+    if (theaters.length > 0 && movies.length > 0) {
+      loadSchedule()
+    }
+  }, [formattedDate, theaters, movies])
 
   const formatDuration = (minutes: string) => {
     const totalMinutes = parseInt(minutes, 10)
@@ -191,7 +428,6 @@ const TimeLineEditor = () => {
 
       setSchedules((prev) => {
         const updated = [...prev, newSchedule]
-        saveSchedulesByFormattedDate(updated, formattedDate)
         return updated
       })
     } else if (draggedItem.type === "schedule") {
@@ -222,7 +458,6 @@ const TimeLineEditor = () => {
               }
             : schedule
         )
-        saveSchedulesByFormattedDate(updated, formattedDate)
         return updated
       })
     }
@@ -237,16 +472,76 @@ const TimeLineEditor = () => {
     if (draggedItem?.type === "schedule") {
       setSchedules((prev) => {
         const updated = prev.filter((s) => s.id !== draggedItem.schedule.id)
-        saveSchedulesByFormattedDate(updated, formattedDate)
         return updated
       })
     }
     setDraggedItem(null)
   }
 
-  const handleSave = () => {
-    saveSchedulesByFormattedDate(schedules, formattedDate)
-    navigate("/timelines", { state: { formattedDate } })
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+
+      // 將 formattedDate 轉換為 YYYY-MM-DD 格式
+      const dateMatch = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+      if (!dateMatch) {
+        alert("日期格式錯誤")
+        return
+      }
+
+      const [, year, month, day] = dateMatch
+      const dateStr = `${year}-${month}-${day}`
+
+      // 將 schedules 轉換為 API 需要的格式
+      // 使用映射表將前端的 theater.id (字串) 轉換為 API 的 theaterId (數字)
+      const showtimes: ShowtimeItem[] = schedules
+        .map((schedule) => {
+          const apiTheaterId = theaterIdMapRef.current.get(schedule.theaterId)
+          if (!apiTheaterId) {
+            // 如果映射表中沒有，顯示錯誤
+            alert(`錯誤：找不到影廳 ${schedule.theaterId} 的對應關係，請重新載入頁面`)
+            // eslint-disable-next-line no-console
+            console.error(
+              `找不到影廳 ${schedule.theaterId}，映射表:`,
+              Array.from(theaterIdMap.entries())
+            )
+            return null
+          }
+
+          return {
+            movieId: Number(schedule.movieId),
+            theaterId: apiTheaterId,
+            startTime: schedule.startTime,
+          }
+        })
+        .filter((item): item is ShowtimeItem => item !== null)
+
+      // 調試：輸出要發送的資料
+      // eslint-disable-next-line no-console
+      console.log("準備發送的 showtimes:", showtimes)
+
+      await saveDailySchedule(dateStr, showtimes)
+      alert("時刻表儲存成功")
+      navigate("/timelines", { state: { formattedDate } })
+    } catch (error) {
+      if (error instanceof TimelineAPIError) {
+        if (error.errorType === "VALIDATION_ERROR") {
+          alert(`儲存失敗：${error.message}`)
+        } else if (error.statusCode === 403) {
+          alert("該日期已開始販售，無法修改")
+        } else if (error.statusCode === 409) {
+          alert("場次時間衝突，請檢查時刻表")
+        } else if (error.errorType === "UNAUTHORIZED") {
+          alert("未授權，請重新登入")
+        } else {
+          alert(`儲存失敗：${error.message}`)
+        }
+      } else {
+        alert("儲存失敗，請稍後再試")
+      }
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -260,33 +555,45 @@ const TimeLineEditor = () => {
               電影
             </h1>
             <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {movies.map((movie) => (
-                <div
-                  key={movie.id}
-                  draggable
-                  onDragStart={(e) => handleDragStartMovie(movie, e)}
-                  onDragEnd={(e) => {
-                    if (e.currentTarget instanceof HTMLElement) {
-                      e.currentTarget.style.opacity = "1"
-                    }
-                  }}
-                  className="flex cursor-move items-center gap-3 rounded-[10px] bg-gray-900 p-1"
-                >
-                  <div className="flex w-full max-w-44.5 flex-col gap-1 px-2">
-                    <span className="body-medium line-clamp-1 break-all text-white">
-                      {movie.movieName}
-                    </span>
-                    <span className="font-family-inter line-clamp-1 text-xs font-normal break-all text-gray-50">
-                      {formatDuration(movie.duration)}
-                    </span>
-                  </div>
-                  <img
-                    className="h-15 w-12 rounded-[10px] object-cover"
-                    src={movie.poster}
-                    alt={movie.movieName}
-                  />
+              {isLoadingMovies && (
+                <div className="flex items-center justify-center py-8 text-gray-400">載入中...</div>
+              )}
+              {!isLoadingMovies && movies.length === 0 && (
+                <div className="flex items-center justify-center py-8 text-gray-400">
+                  尚無電影資料
                 </div>
-              ))}
+              )}
+              {!isLoadingMovies && movies.length > 0 && (
+                <>
+                  {movies.map((movie) => (
+                    <div
+                      key={movie.id}
+                      draggable
+                      onDragStart={(e) => handleDragStartMovie(movie, e)}
+                      onDragEnd={(e) => {
+                        if (e.currentTarget instanceof HTMLElement) {
+                          e.currentTarget.style.opacity = "1"
+                        }
+                      }}
+                      className="flex cursor-move items-center gap-3 rounded-[10px] bg-gray-900 p-1"
+                    >
+                      <div className="flex w-full max-w-44.5 flex-col gap-1 px-2">
+                        <span className="body-medium line-clamp-1 break-all text-white">
+                          {movie.movieName}
+                        </span>
+                        <span className="font-family-inter line-clamp-1 text-xs font-normal break-all text-gray-50">
+                          {formatDuration(movie.duration)}
+                        </span>
+                      </div>
+                      <img
+                        className="h-15 w-12 rounded-[10px] object-cover"
+                        src={movie.poster}
+                        alt={movie.movieName}
+                      />
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
           {/* 右邊時刻表 */}
@@ -307,9 +614,10 @@ const TimeLineEditor = () => {
           <button
             type="button"
             onClick={handleSave}
-            className="bg-primary-500 body-medium flex cursor-pointer rounded-[10px] px-4 py-2.5 text-white"
+            disabled={isSaving || isLoadingSchedule}
+            className="bg-primary-500 body-medium flex cursor-pointer rounded-[10px] px-4 py-2.5 text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            儲存時刻表
+            {isSaving ? "儲存中..." : "儲存時刻表"}
           </button>
         </div>
       </div>
