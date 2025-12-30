@@ -1,15 +1,17 @@
+import { ClipLoader } from "react-spinners"
+
 type TheatersFooterProps = {
   normalSeatCount: number
   accessibleSeatCount: number
   onCreate?: () => void
   isCreateDisabled?: boolean
+  isLoading?: boolean
 }
 
 const TheatersFooter = (props: TheatersFooterProps) => {
-  const { normalSeatCount, accessibleSeatCount, onCreate, isCreateDisabled } = props
+  const { normalSeatCount, accessibleSeatCount, onCreate, isCreateDisabled, isLoading } = props
 
-  const buttonLabel = "建立影廳"
-  const disabled = isCreateDisabled ?? false
+  const disabled = (isCreateDisabled ?? false) || isLoading
 
   return (
     <>
@@ -33,13 +35,13 @@ const TheatersFooter = (props: TheatersFooterProps) => {
             type="button"
             onClick={onCreate}
             disabled={disabled}
-            className={`body-medium mt-6 mr-6 mb-6 flex h-11 items-center justify-center rounded-[10px] px-4 py-[10.5px] text-white transition-colors ${
+            className={`body-medium mt-6 mr-6 mb-6 flex h-11 min-w-[100px] items-center justify-center rounded-[10px] px-4 py-[10.5px] text-white transition-colors ${
               disabled
-                ? "bg-primary-500 opacity-[60%]"
+                ? "bg-primary-500 cursor-not-allowed opacity-[60%]"
                 : "bg-primary-500 cursor-pointer hover:cursor-pointer"
             }`}
           >
-            {buttonLabel}
+            {isLoading ? <ClipLoader color="#ffffff" size={20} /> : "建立影廳"}
           </button>
         </div>
       </footer>
@@ -50,6 +52,7 @@ const TheatersFooter = (props: TheatersFooterProps) => {
 TheatersFooter.defaultProps = {
   onCreate: undefined,
   isCreateDisabled: false,
+  isLoading: false,
 }
 
 export default TheatersFooter

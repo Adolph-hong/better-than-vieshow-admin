@@ -28,6 +28,7 @@ const NewTheater = () => {
     seatStats,
     setSeatStats,
     handleCreateTheater,
+    isSubmitting,
     isCreateDisabled,
   } = useNewTheaterForm()
 
@@ -83,6 +84,7 @@ const NewTheater = () => {
         accessibleSeatCount={seatStats.accessibleSeats}
         onCreate={handleCreateTheater}
         isCreateDisabled={isCreateDisabled}
+        isLoading={isSubmitting}
       />
     </AdminContainer>
   )
