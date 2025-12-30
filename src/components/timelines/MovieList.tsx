@@ -27,8 +27,26 @@ const MovieList = ({ schedules = [] }: MovieListProps) => {
         setError(null)
 
         const data = await fetchMovies()
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        // 只過濾顯示（不刪除資料），下映日已過的電影不顯示在列表上
+        const displayMovies = data.filter((movie) => {
+          if (!movie.endAt) {
+            // 如果沒有下映日，顯示
+            return true
+          }
+
+          const endDate = new Date(movie.endAt)
+          endDate.setHours(0, 0, 0, 0)
+
+          // 如果下映日 >= 今天，顯示（下映日當天還會顯示）
+          return endDate >= today
+        })
+
         // 轉換為 MovieList 需要的格式
-        const formattedMovies = data.map((movie) => ({
+        const formattedMovies = displayMovies.map((movie) => ({
           id: movie.id,
           movieName: movie.movieName,
         }))
