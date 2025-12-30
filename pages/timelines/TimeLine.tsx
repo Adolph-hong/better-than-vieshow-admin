@@ -16,14 +16,13 @@ import Header from "@/components/ui/Header"
 import sendAPI from "@/utils/sendAPI"
 import {
   hasDraft,
-  isDatePublished,
-  copySchedules,
 } from "@/utils/storage"
 import {
   getMonthOverview,
   getDailySchedule,
   getGroupedSchedule,
   publishDailySchedule,
+  copyDailySchedule,
   TimelineAPIError,
   type ShowtimeResponse,
   type GroupedScheduleResponse,
@@ -418,35 +417,120 @@ const TimeLine = () => {
     setShowCopyDialog(true)
   }
 
-  const handleConfirmCopy = (targetDate: string) => {
-    const [year, month, day] = targetDate.split("/")
-    const targetDateObj = new Date(Number(year), Number(month) - 1, Number(day))
-    const weekDay = targetDateObj.toLocaleDateString("zh-TW", { weekday: "narrow" })
-    const targetFormattedDateWithWeekday = `${targetDate}(${weekDay})`
+  const handleConfirmCopy = async (targetDate: string) => {
+    try {
+      setCopyError("")
 
-    if (isDatePublished(targetFormattedDateWithWeekday)) {
-      setCopyError("錯誤：該日已經開始販售了, 請選擇其他日期")
-      return
-    }
+      // 將日期格式從 "yyyy/MM/dd" 轉換為 "yyyy-MM-dd"
+      const [year, month, day] = targetDate.split("/")
+      const targetDateStr = `${year}-${month}-${day}`
+      const targetDateObj = new Date(Number(year), Number(month) - 1, Number(day))
 
-    const sourceDateMatch = formattedSelectedDate.match(/^(\d{4}\/\d{2}\/\d{2})/)
-    if (!sourceDateMatch) {
-      setCopyError("錯誤:無法解析來源日期")
-      return
-    }
-    const sourceDate = sourceDateMatch[1]
+      // 檢查目標日期狀態（只能複製到草稿狀態的日期，如果沒有時刻表記錄也可以）
+      try {
+        const targetSchedule = await getDailySchedule(targetDateStr)
+        if (targetSchedule.status !== "Draft") {
+          setCopyError("錯誤：只能複製到草稿狀態的日期，該日期已經開始販售")
+          return
+        }
+      } catch (error) {
+        // 如果目標日期沒有時刻表記錄（404），這是允許的，會創建新的草稿
+        if (error instanceof TimelineAPIError && error.errorType === "NOT_FOUND") {
+          // 允許繼續，會創建新的草稿
+        } else {
+          throw error
+        }
+      }
 
-    const success = copySchedules(sourceDate, targetDate)
-    if (success) {
+      // 將來源日期格式從 "yyyy/MM/dd" 轉換為 "yyyy-MM-dd"
+      const sourceDateMatch = formattedSelectedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+      if (!sourceDateMatch) {
+        setCopyError("錯誤：無法解析來源日期")
+        return
+      }
+      const [, sourceYear, sourceMonth, sourceDay] = sourceDateMatch
+      const sourceDateStr = `${sourceYear}-${sourceMonth}-${sourceDay}`
+
+      // 檢查來源日期是否為販售中狀態（只能複製販售中的時刻表）
+      const sourceSchedule = await getDailySchedule(sourceDateStr)
+      if (sourceSchedule.status !== "OnSale") {
+        setCopyError("錯誤：只能複製販售中狀態的時刻表")
+        return
+      }
+
+      // 呼叫複製 API
+      const result = await copyDailySchedule(sourceDateStr, targetDateStr)
+
+      // 顯示成功訊息
+      if (result.message) {
+        alert(`複製成功！${result.message}\n成功複製 ${result.copiedCount} 個場次，略過 ${result.skippedCount} 個場次`)
+      } else {
+        alert(`複製成功！成功複製 ${result.copiedCount} 個場次`)
+      }
+
+      // 關閉對話框並更新狀態
       setShowCopyDialog(false)
       setCopyError("")
-      setRefreshKey((prev) => prev + 1)
+
+      // 重新載入月曆資料（更新日期狀態）
+      const yearNum = visibleMonth.getFullYear()
+      const monthNum = visibleMonth.getMonth() + 1
+      const overview = await getMonthOverview(yearNum, monthNum)
+      const newDraftDates: Date[] = []
+      const newSellingDates: Date[] = []
+      overview.dates.forEach((dailyStatus) => {
+        const date = new Date(dailyStatus.date)
+        if (dailyStatus.status === "Draft") {
+          newDraftDates.push(date)
+        } else if (dailyStatus.status === "OnSale") {
+          newSellingDates.push(date)
+        }
+      })
+      setDraftDates(newDraftDates)
+      setSellingDates(newSellingDates)
+
+      // 切換到目標日期並重新載入該日期的時刻表
       setSelectedDate(targetDateObj)
       if (!isSameMonth(targetDateObj, visibleMonth)) {
         setVisibleMonth(startOfMonth(targetDateObj))
       }
-    } else {
-      setCopyError("錯誤:複製失敗，請重試")
+
+      // 載入目標日期的時刻表
+      const updatedTargetSchedule = await getDailySchedule(targetDateStr)
+      const convertedSchedules: Schedule[] = updatedTargetSchedule.showtimes.map(
+        (showtime: ShowtimeResponse) => {
+          const movieData = movies.find((m) => m.id === String(showtime.movieId))
+          return {
+            id: String(showtime.id),
+            movieId: String(showtime.movieId),
+            theaterId: String(showtime.theaterId),
+            startTime: showtime.startTime,
+            endTime: showtime.endTime,
+            movie: {
+              id: String(showtime.movieId),
+              movieName: showtime.movieTitle,
+              duration: String(showtime.movieDuration),
+              poster: movieData?.poster || "",
+            },
+          }
+        }
+      )
+      setSchedules(convertedSchedules)
+      setScheduleStatus(updatedTargetSchedule.status)
+    } catch (error) {
+      if (error instanceof TimelineAPIError) {
+        if (error.errorType === "VALIDATION_ERROR") {
+          setCopyError(`錯誤：${error.message}`)
+        } else if (error.errorType === "NOT_FOUND") {
+          setCopyError("錯誤：來源日期沒有時刻表記錄")
+        } else if (error.errorType === "UNAUTHORIZED") {
+          setCopyError("錯誤：未授權，請重新登入")
+        } else {
+          setCopyError(`錯誤：${error.message}`)
+        }
+      } else {
+        setCopyError("錯誤：複製失敗，請稍後再試")
+      }
     }
   }
 
