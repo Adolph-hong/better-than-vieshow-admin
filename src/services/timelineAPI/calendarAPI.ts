@@ -1,53 +1,5 @@
 import sendAPI from "@/utils/sendAPI"
-
-// API 標準回應格式
-interface APIResponse<T> {
-  success: boolean
-  message: string | null
-  data: T | null
-  errors: unknown | null
-}
-
-// 401 錯誤回應格式
-interface UnauthorizedError {
-  detail: string | null
-  instance: string | null
-  status: number | null
-  title: string | null
-  type: string | null
-  // 可能還有其他未知屬性
-  [key: string]: unknown
-}
-
-// 400 錯誤回應格式（參數錯誤）
-interface ValidationError {
-  type: string | null
-  title: string | null
-  status: number | null
-  detail: string | null
-  instance: string | null
-  [key: string]: unknown
-}
-
-/**
- * 自訂錯誤類別
- */
-export class TimelineAPIError extends Error {
-  statusCode?: number
-
-  errorType?: "UNAUTHORIZED" | "VALIDATION_ERROR" | "SERVER_ERROR" | "UNKNOWN"
-
-  constructor(
-    message: string,
-    statusCode?: number,
-    errorType?: "UNAUTHORIZED" | "VALIDATION_ERROR" | "SERVER_ERROR" | "UNKNOWN"
-  ) {
-    super(message)
-    this.name = "TimelineAPIError"
-    this.statusCode = statusCode
-    this.errorType = errorType
-  }
-}
+import { TimelineAPIError, type UnauthorizedError, type ValidationError } from "./types"
 
 // 月曆概覽回應資料結構
 export interface DailyScheduleStatus {
@@ -125,3 +77,4 @@ export const getMonthOverview = async (
     )
   }
 }
+

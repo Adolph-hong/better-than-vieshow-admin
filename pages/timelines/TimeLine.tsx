@@ -14,13 +14,17 @@ import TheaterScheduleList from "@/components/timelines/TheaterScheduleList"
 import { theaters, timeSlots } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
 import {
-  getSchedulesByFormattedDate,
   hasDraft,
   markDateAsPublished,
   isDatePublished,
   copySchedules,
 } from "@/utils/storage"
-import { getMonthOverview, TimelineAPIError } from "@/services/timelineAPI"
+import {
+  getMonthOverview,
+  getDailySchedule,
+  TimelineAPIError,
+  type ShowtimeResponse,
+} from "@/services/timelineAPI"
 
 interface Movie {
   id: string
@@ -66,6 +70,9 @@ const TimeLine = () => {
   const [draftDates, setDraftDates] = useState<Date[]>([])
   const [sellingDates, setSellingDates] = useState<Date[]>([])
   const [isLoadingCalendar, setIsLoadingCalendar] = useState(false)
+  const [schedules, setSchedules] = useState<Schedule[]>([])
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(false)
+  const [scheduleStatus, setScheduleStatus] = useState<"OnSale" | "Draft" | null>(null)
 
 
   const handleSelectDate = (date?: Date) => {
@@ -106,11 +113,76 @@ const TimeLine = () => {
     return `${dateText}(${weekDay})`
   }, [selectedDate])
 
-  const schedules = getSchedulesByFormattedDate<Schedule>(formattedSelectedDate)
+  // 當選中日期改變時，從 API 獲取每日時刻表
+  useEffect(() => {
+    const loadDailySchedule = async () => {
+      if (!selectedDate) {
+        setSchedules([])
+        setScheduleStatus(null)
+        return
+      }
 
-  const hasDraftStatus = hasDraft(formattedSelectedDate)
+      try {
+        setIsLoadingSchedule(true)
+        // 將日期轉換為 YYYY-MM-DD 格式
+        const dateStr = format(selectedDate, "yyyy-MM-dd")
 
-  const isPublished = isDatePublished(formattedSelectedDate)
+        const dailySchedule = await getDailySchedule(dateStr)
+
+        // 轉換 API 資料為前端使用的 Schedule 格式
+        const convertedSchedules: Schedule[] = dailySchedule.showtimes.map(
+          (showtime: ShowtimeResponse) => ({
+            id: String(showtime.id),
+            movieId: String(showtime.movieId),
+            theaterId: String(showtime.theaterId),
+            startTime: showtime.startTime,
+            endTime: showtime.endTime,
+            movie: {
+              id: String(showtime.movieId),
+              movieName: showtime.movieTitle,
+              duration: String(showtime.movieDuration),
+              poster: "", // API 沒有提供 poster，暫時留空
+            },
+          })
+        )
+
+        setSchedules(convertedSchedules)
+        setScheduleStatus(dailySchedule.status)
+      } catch (error) {
+        if (error instanceof TimelineAPIError) {
+          if (error.errorType === "NOT_FOUND") {
+            // 該日期沒有時刻表記錄，返回空陣列
+            setSchedules([])
+            setScheduleStatus(null)
+          } else if (error.errorType === "UNAUTHORIZED") {
+            // 未授權，清除資料
+            setSchedules([])
+            setScheduleStatus(null)
+            // 可以選擇顯示錯誤訊息或重新導向登入頁
+          } else {
+            // 其他錯誤
+            // eslint-disable-next-line no-console
+            console.error("Failed to load daily schedule:", error)
+            setSchedules([])
+            setScheduleStatus(null)
+          }
+        } else {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load daily schedule:", error)
+          setSchedules([])
+          setScheduleStatus(null)
+        }
+      } finally {
+        setIsLoadingSchedule(false)
+      }
+    }
+
+    loadDailySchedule()
+  }, [selectedDate])
+
+  // 根據 API 返回的狀態判斷
+  const hasDraftStatus = scheduleStatus === "Draft"
+  const isPublished = scheduleStatus === "OnSale"
 
   // 當月份改變時，從 API 獲取月曆概覽
   useEffect(() => {
