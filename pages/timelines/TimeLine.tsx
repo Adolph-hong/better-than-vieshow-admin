@@ -16,7 +16,6 @@ import Header from "@/components/ui/Header"
 import sendAPI from "@/utils/sendAPI"
 import {
   hasDraft,
-  markDateAsPublished,
   isDatePublished,
   copySchedules,
 } from "@/utils/storage"
@@ -24,6 +23,7 @@ import {
   getMonthOverview,
   getDailySchedule,
   getGroupedSchedule,
+  publishDailySchedule,
   TimelineAPIError,
   type ShowtimeResponse,
   type GroupedScheduleResponse,
@@ -272,7 +272,8 @@ const TimeLine = () => {
   }, [selectedDate, movies])
 
   // 根據 API 返回的狀態判斷
-  const hasDraftStatus = scheduleStatus === "Draft"
+  // hasDraftStatus: 有狀態時（Draft 或 OnSale）顯示狀態標籤和三個點點
+  const hasDraftStatus = scheduleStatus !== null
   const isPublished = scheduleStatus === "OnSale"
 
   // 當月份改變時，從 API 獲取月曆概覽
@@ -328,10 +329,84 @@ const TimeLine = () => {
     setShowConfirmDialog(true)
   }
 
-  const handleConfirmSelling = () => {
-    markDateAsPublished(formattedSelectedDate)
-    setRefreshKey((prev) => prev + 1)
-    setShowConfirmDialog(false)
+  const handleConfirmSelling = async () => {
+    try {
+      // 將 formattedDate 轉換為 YYYY-MM-DD 格式
+      const dateMatch = formattedSelectedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+      if (!dateMatch) {
+        alert("日期格式錯誤")
+        return
+      }
+
+      const [, year, month, day] = dateMatch
+      const dateStr = `${year}-${month}-${day}`
+
+      await publishDailySchedule(dateStr)
+      alert("開始販售成功")
+      setShowConfirmDialog(false)
+
+      // 重新載入月曆資料（更新日期狀態）
+      const yearNum = visibleMonth.getFullYear()
+      const monthNum = visibleMonth.getMonth() + 1
+      const overview = await getMonthOverview(yearNum, monthNum)
+      const newDraftDates: Date[] = []
+      const newSellingDates: Date[] = []
+      overview.dates.forEach((dailyStatus) => {
+        const date = new Date(dailyStatus.date)
+        if (dailyStatus.status === "Draft") {
+          newDraftDates.push(date)
+        } else if (dailyStatus.status === "OnSale") {
+          newSellingDates.push(date)
+        }
+      })
+      setDraftDates(newDraftDates)
+      setSellingDates(newSellingDates)
+
+      // 重新載入當前的時刻表（更新狀態為 OnSale）
+      const dateStr2 = format(selectedDate, "yyyy-MM-dd")
+      const dailySchedule = await getDailySchedule(dateStr2)
+      const convertedSchedules: Schedule[] = dailySchedule.showtimes.map(
+        (showtime: ShowtimeResponse) => {
+          const movieData = movies.find((m) => m.id === String(showtime.movieId))
+          return {
+            id: String(showtime.id),
+            movieId: String(showtime.movieId),
+            theaterId: String(showtime.theaterId),
+            startTime: showtime.startTime,
+            endTime: showtime.endTime,
+            movie: {
+              id: String(showtime.movieId),
+              movieName: showtime.movieTitle,
+              duration: String(showtime.movieDuration),
+              poster: movieData?.poster || "",
+            },
+          }
+        }
+      )
+      setSchedules(convertedSchedules)
+      setScheduleStatus(dailySchedule.status)
+
+      // 更新月曆中的日期狀態
+      const selectedDateObj = new Date(selectedDate)
+      setSellingDates((prev) => {
+        const newDates = prev.filter((d) => !isSameMonth(d, selectedDateObj) || d.getDate() !== selectedDateObj.getDate())
+        newDates.push(selectedDateObj)
+        return newDates
+      })
+      setDraftDates((prev) => prev.filter((d) => !isSameMonth(d, selectedDateObj) || d.getDate() !== selectedDateObj.getDate()))
+    } catch (error) {
+      if (error instanceof TimelineAPIError) {
+        if (error.errorType === "NOT_FOUND") {
+          alert("該日期沒有時刻表記錄")
+        } else if (error.errorType === "UNAUTHORIZED") {
+          alert("未授權，請重新登入")
+        } else {
+          alert(`開始販售失敗：${error.message}`)
+        }
+      } else {
+        alert("開始販售失敗，請稍後再試")
+      }
+    }
   }
 
   const handleCancelSelling = () => {

@@ -66,11 +66,7 @@ export const getGroupedSchedule = async (date: string): Promise<GroupedScheduleR
 
     if (response.status === 404) {
       const errorData = (await response.json()) as UnauthorizedError
-      throw new TimelineAPIError(
-        errorData.detail || "該日期沒有時刻表記錄",
-        404,
-        "NOT_FOUND"
-      )
+      throw new TimelineAPIError(errorData.detail || "該日期沒有時刻表記錄", 404, "NOT_FOUND")
     }
 
     if (!response.ok) {
@@ -97,4 +93,3 @@ export const getGroupedSchedule = async (date: string): Promise<GroupedScheduleR
     )
   }
 }
-

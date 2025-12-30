@@ -26,3 +26,6 @@ export {
   type TheaterTypeGroup,
   type GroupedShowtimeItem,
 } from "./groupedSchedule"
+
+// 匯出開始販售時刻表 API
+export { default as publishDailySchedule } from "./publishSchedule"

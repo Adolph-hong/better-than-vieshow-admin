@@ -1,38 +1,14 @@
 import sendAPI from "@/utils/sendAPI"
 import { TimelineAPIError, type UnauthorizedError, type ValidationError } from "./types"
-
-// 每日時刻表場次回應資料結構
-export interface ShowtimeResponse {
-  id: number
-  movieId: number
-  movieTitle: string
-  movieDuration: number
-  theaterId: number
-  theaterName: string
-  theaterType: string // "Digital", "4DX", "IMAX" 等
-  showDate: string // ISO 8601 date-time 格式
-  startTime: string // 格式: "10:00"
-  endTime: string // 格式: "13:12"
-  scheduleStatus: "OnSale" | "Draft"
-  createdAt: string // ISO 8601 date-time 格式
-}
-
-// 每日時刻表回應資料結構
-export interface DailyScheduleResponse {
-  scheduleDate: string // ISO 8601 date-time 格式
-  status: "OnSale" | "Draft"
-  showtimes: ShowtimeResponse[]
-  createdAt?: string // ISO 8601 date-time 格式
-  updatedAt?: string // ISO 8601 date-time 格式
-}
+import type { DailyScheduleResponse } from "./searchTimeline"
 
 /**
- * 查詢每日時刻表
+ * 開始販售時刻表（將狀態從 Draft 轉為 OnSale）
  * @param date 日期，格式: YYYY-MM-DD (例如: "2025-12-30")
  * @returns 每日時刻表資料
  * @throws {TimelineAPIError} 當 API 呼叫失敗時
  */
-export const getDailySchedule = async (date: string): Promise<DailyScheduleResponse> => {
+const publishDailySchedule = async (date: string): Promise<DailyScheduleResponse> => {
   try {
     // 驗證日期格式 (YYYY-MM-DD)
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/
@@ -40,7 +16,7 @@ export const getDailySchedule = async (date: string): Promise<DailyScheduleRespo
       throw new TimelineAPIError("日期格式錯誤，必須為 YYYY-MM-DD 格式", 400, "VALIDATION_ERROR")
     }
 
-    const response = await sendAPI(`/api/admin/daily-schedules/${date}`, "GET")
+    const response = await sendAPI(`/api/admin/daily-schedules/${date}/publish`, "POST")
 
     // 處理不同的 HTTP 狀態碼
     if (response.status === 400) {
@@ -74,11 +50,13 @@ export const getDailySchedule = async (date: string): Promise<DailyScheduleRespo
       throw error
     }
     // eslint-disable-next-line no-console
-    console.error("Failed to get daily schedule:", error)
+    console.error("Failed to publish daily schedule:", error)
     throw new TimelineAPIError(
-      error instanceof Error ? error.message : "查詢每日時刻表時發生未知錯誤",
+      error instanceof Error ? error.message : "開始販售時刻表時發生未知錯誤",
       undefined,
       "UNKNOWN"
     )
   }
 }
+
+export default publishDailySchedule
