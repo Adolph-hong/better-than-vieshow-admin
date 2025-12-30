@@ -14,7 +14,6 @@ import TheaterScheduleList from "@/components/timelines/TheaterScheduleList"
 import { theaters, timeSlots } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
 import {
-  getMovies,
   getSchedulesByFormattedDate,
   hasDraft,
   markDateAsPublished,
@@ -65,10 +64,6 @@ const TimeLine = () => {
   const [copyError, setCopyError] = useState<string>("")
   const [, setRefreshKey] = useState(0)
 
-  const movies = useMemo(() => {
-    const moviesData = getMovies()
-    return Array.isArray(moviesData) ? moviesData : []
-  }, [])
 
   const handleSelectDate = (date?: Date) => {
     if (!date) return
@@ -186,7 +181,7 @@ const TimeLine = () => {
             onSelectDate={handleSelectDate}
             onMonthChange={handleMonthChange}
           />
-          <MovieList movies={movies} schedules={schedules} />
+          <MovieList schedules={schedules} />
         </div>
         {/* 右邊排程區 */}
         <div className="flex flex-1 flex-col gap-6 overflow-hidden">
