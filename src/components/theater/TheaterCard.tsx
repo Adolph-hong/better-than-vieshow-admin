@@ -235,8 +235,9 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
       </dl>
       <Modal isOpen={showSeatingChart} onClose={() => setShowSeatingChart(false)}>
         {isLoading ? (
-          <div className="flex h-64 w-full items-center justify-center">
+          <div className="flex h-64 min-w-[500px] flex-col items-center justify-center gap-4">
             <ClipLoader color="#5365AC" size={32} />
+            <p className="text-gray-500">正在載入座位圖...</p>
           </div>
         ) : (
           <SeatingChartView
