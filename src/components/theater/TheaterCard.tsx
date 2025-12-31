@@ -214,7 +214,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
                   onClick={handleDeleteClick}
                   role="menuitem"
                 >
-                  <Trash2 className="h-[18px] w-[18px] text-[#575867]" />
+                  <Trash2 className="h-[18px] w-[18px] text-gray-500" />
                   刪除
                 </button>
               </div>

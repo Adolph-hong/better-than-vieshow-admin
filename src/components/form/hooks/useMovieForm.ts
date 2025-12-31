@@ -268,8 +268,7 @@ export const useMovieForm = (movieId?: string) => {
       return
     }
 
-    const formData = { ...data }
-    const { poster } = formData
+    const { poster } = data
 
     let posterUrl = ""
     if (poster instanceof File) {
