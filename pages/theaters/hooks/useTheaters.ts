@@ -17,7 +17,15 @@ const useTheaters = () => {
 
         const data = await response.json()
         const theaterList = Array.isArray(data) ? data : data.data || []
-        setTheaters(theaterList)
+        
+        // 將後端回傳的欄位名稱轉換為前端期望的格式
+        const transformedTheaters = theaterList.map((theater: any) => ({
+          ...theater,
+          normalSeats: theater.standard ?? theater.normalSeats ?? 0,
+          accessibleSeats: theater.wheelchair ?? theater.accessibleSeats ?? 0,
+        }))
+        
+        setTheaters(transformedTheaters)
       } catch (err) {
         const message = err instanceof Error ? err.message : "獲取影廳列表失敗"
         setError(message)
