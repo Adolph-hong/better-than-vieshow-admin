@@ -10,7 +10,7 @@ interface Schedule {
   endTime: string
 }
 
-interface MovieListProps {
+export interface MovieListProps {
   schedules?: Schedule[]
 }
 

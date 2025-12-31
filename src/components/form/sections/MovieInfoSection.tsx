@@ -1,9 +1,9 @@
-import type { UseFormRegister, Control, FieldErrors, UseFormSetValue } from "react-hook-form"
-import type { MovieFormValues } from "../hooks/useMovieForm"
 import InputComponent from "../InputComponent"
-import TagInput from "../TagInput"
 import PosterUpload from "../PosterUpload"
+import TagInput from "../TagInput"
 import TitleComponent from "../TitleComponent"
+import type { MovieFormValues } from "../hooks/useMovieForm"
+import type { UseFormRegister, Control, FieldErrors, UseFormSetValue } from "react-hook-form"
 
 interface MovieInfoSectionProps {
   register: UseFormRegister<MovieFormValues>
@@ -68,4 +68,3 @@ const MovieInfoSection = ({
 }
 
 export default MovieInfoSection
-
