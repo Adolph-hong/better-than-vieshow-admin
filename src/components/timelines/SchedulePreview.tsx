@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { X } from "lucide-react"
 import AgeBadge from "@/components/timelines/AgeBadge"
-import type { GroupedScheduleResponse } from "@/services/timelineAPI"
+import type {
+  GroupedScheduleResponse,
+  MovieShowtimeGroup,
+  TheaterTypeGroup,
+  GroupedShowtimeItem,
+} from "@/services/timelineAPI"
 
-interface SchedulePreviewProps {
+export interface SchedulePreviewProps {
   formattedDate: string
   groupedSchedule: GroupedScheduleResponse
   onClose: () => void
@@ -96,9 +101,9 @@ const SchedulePreview = ({ formattedDate, groupedSchedule, onClose }: SchedulePr
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {groupedSchedule.movieShowtimes.flatMap((movieGroup) => {
+                {groupedSchedule.movieShowtimes.flatMap((movieGroup: MovieShowtimeGroup) => {
                   // 遍歷每個影廳類型分組
-                  return movieGroup.theaterTypeGroups.map((theaterTypeGroup) => {
+                  return movieGroup.theaterTypeGroups.map((theaterTypeGroup: TheaterTypeGroup) => {
                     const theaterTypeDisplay = theaterTypeGroup.theaterTypeDisplay || "一般數位"
                     return (
                       <div
@@ -132,7 +137,7 @@ const SchedulePreview = ({ formattedDate, groupedSchedule, onClose }: SchedulePr
                           </div>
                           {/* 場次時間 */}
                           <div className="grid grid-cols-5">
-                            {theaterTypeGroup.showtimes.map((showtime) => (
+                            {theaterTypeGroup.showtimes.map((showtime: GroupedShowtimeItem) => (
                               <span
                                 key={`${showtime.theaterId}-${showtime.startTime}`}
                                 className="header-3 flex text-[#F2F2F2]"

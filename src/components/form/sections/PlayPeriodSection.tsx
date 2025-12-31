@@ -1,8 +1,8 @@
 import { Controller } from "react-hook-form"
-import type { Control, FieldErrors } from "react-hook-form"
-import type { MovieFormValues } from "../hooks/useMovieForm"
 import DatePicker from "../DatePicker"
 import TitleComponent from "../TitleComponent"
+import type { MovieFormValues } from "../hooks/useMovieForm"
+import type { Control, FieldErrors } from "react-hook-form"
 
 interface PlayPeriodSectionProps {
   control: Control<MovieFormValues>
@@ -12,10 +12,7 @@ interface PlayPeriodSectionProps {
 const PlayPeriodSection = ({ control, errors }: PlayPeriodSectionProps) => {
   return (
     <section className="flex justify-between border-t border-gray-100 py-6">
-      <TitleComponent
-        title="播放區間"
-        description="只有在播放區間內的電影可以被排進時刻標中販售"
-      />
+      <TitleComponent title="播放區間" description="只有在播放區間內的電影可以被排進時刻標中販售" />
       <div className="flex w-full max-w-141 items-end gap-6">
         <div className="flex-1">
           <Controller
@@ -53,4 +50,3 @@ const PlayPeriodSection = ({ control, errors }: PlayPeriodSectionProps) => {
 }
 
 export default PlayPeriodSection
-

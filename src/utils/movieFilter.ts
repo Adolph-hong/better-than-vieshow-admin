@@ -34,4 +34,5 @@ const filterMoviesByDate = (movies: MovieItem[], checkDate?: Date): MovieItem[] 
   })
 }
 
+export { filterMoviesByDate }
 export default filterMoviesByDate

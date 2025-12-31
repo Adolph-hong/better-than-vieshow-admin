@@ -77,12 +77,16 @@ const TimeLine = () => {
 
   // 將 API 的影廳類型映射到前端使用的類型
   const mapTheaterTypeToFrontend = (apiType: string): Theater["type"] => {
-    const typeMap: Record<string, Theater["type"]> = {
-      Digital: "一般數位",
-      "4DX": "4DX",
-      IMAX: "IMAX",
+    if (apiType === "Digital") {
+      return "一般數位" as Theater["type"]
     }
-    return typeMap[apiType] || "一般數位"
+    if (apiType === "4DX") {
+      return "4DX" as Theater["type"]
+    }
+    if (apiType === "IMAX") {
+      return "IMAX" as Theater["type"]
+    }
+    return "一般數位" as Theater["type"]
   }
 
   // 從 API 獲取影廳列表
@@ -224,13 +228,14 @@ const TimeLine = () => {
 
         setSchedules(convertedSchedules)
         setScheduleStatus(dailySchedule.status)
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof TimelineAPIError) {
-          if (error.errorType === "NOT_FOUND") {
+          const apiError: TimelineAPIError = error
+          if (apiError.errorType === "NOT_FOUND") {
             // 該日期沒有時刻表記錄，返回空陣列
             setSchedules([])
             setScheduleStatus(null)
-          } else if (error.errorType === "UNAUTHORIZED") {
+          } else if (apiError.errorType === "UNAUTHORIZED") {
             // 未授權，清除資料
             setSchedules([])
             setScheduleStatus(null)
@@ -238,7 +243,7 @@ const TimeLine = () => {
           } else {
             // 其他錯誤
             // eslint-disable-next-line no-console
-            console.error("Failed to load daily schedule:", error)
+            console.error("Failed to load daily schedule:", apiError)
             setSchedules([])
             setScheduleStatus(null)
           }
@@ -275,7 +280,7 @@ const TimeLine = () => {
         const draftDatesArray: Date[] = []
         const sellingDatesArray: Date[] = []
 
-        overview.dates.forEach((item) => {
+        overview.dates.forEach((item: { date: string; status: "OnSale" | "Draft" }) => {
           const date = new Date(item.date)
           date.setHours(0, 0, 0, 0) // 確保時間為 00:00:00
 
@@ -288,11 +293,12 @@ const TimeLine = () => {
 
         setDraftDates(draftDatesArray)
         setSellingDates(sellingDatesArray)
-      } catch (error) {
+      } catch (error: unknown) {
         // eslint-disable-next-line no-console
         console.error("Failed to load month overview:", error)
         if (error instanceof TimelineAPIError) {
-          if (error.errorType === "UNAUTHORIZED") {
+          const apiError: TimelineAPIError = error
+          if (apiError.errorType === "UNAUTHORIZED") {
             // 未授權時，可以選擇清除狀態或顯示錯誤訊息
             setDraftDates([])
             setSellingDates([])
@@ -334,7 +340,7 @@ const TimeLine = () => {
       const overview = await getMonthOverview(yearNum, monthNum)
       const newDraftDates: Date[] = []
       const newSellingDates: Date[] = []
-      overview.dates.forEach((dailyStatus) => {
+      overview.dates.forEach((dailyStatus: { date: string; status: "OnSale" | "Draft" }) => {
         const date = new Date(dailyStatus.date)
         if (dailyStatus.status === "Draft") {
           newDraftDates.push(date)
@@ -383,14 +389,15 @@ const TimeLine = () => {
           (d) => !isSameMonth(d, selectedDateObj) || d.getDate() !== selectedDateObj.getDate()
         )
       )
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof TimelineAPIError) {
-        if (error.errorType === "NOT_FOUND") {
+        const apiError: TimelineAPIError = error
+        if (apiError.errorType === "NOT_FOUND") {
           alert("該日期沒有時刻表記錄")
-        } else if (error.errorType === "UNAUTHORIZED") {
+        } else if (apiError.errorType === "UNAUTHORIZED") {
           alert("未授權，請重新登入")
         } else {
-          alert(`開始販售失敗：${error.message}`)
+          alert(`開始販售失敗：${apiError.message}`)
         }
       } else {
         alert("開始販售失敗，請稍後再試")
@@ -423,10 +430,15 @@ const TimeLine = () => {
           setCopyError("錯誤：只能複製到草稿狀態的日期，該日期已經開始販售")
           return
         }
-      } catch (error) {
+      } catch (error: unknown) {
         // 如果目標日期沒有時刻表記錄（404），這是允許的，會創建新的草稿
-        if (error instanceof TimelineAPIError && error.errorType === "NOT_FOUND") {
-          // 允許繼續，會創建新的草稿
+        if (error instanceof TimelineAPIError) {
+          const apiError: TimelineAPIError = error
+          if (apiError.errorType === "NOT_FOUND") {
+            // 允許繼續，會創建新的草稿
+          } else {
+            throw apiError
+          }
         } else {
           throw error
         }
@@ -470,7 +482,7 @@ const TimeLine = () => {
       const overview = await getMonthOverview(yearNum, monthNum)
       const newDraftDates: Date[] = []
       const newSellingDates: Date[] = []
-      overview.dates.forEach((dailyStatus) => {
+      overview.dates.forEach((dailyStatus: { date: string; status: "OnSale" | "Draft" }) => {
         const date = new Date(dailyStatus.date)
         if (dailyStatus.status === "Draft") {
           newDraftDates.push(date)
@@ -509,16 +521,17 @@ const TimeLine = () => {
       )
       setSchedules(convertedSchedules)
       setScheduleStatus(updatedTargetSchedule.status)
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof TimelineAPIError) {
-        if (error.errorType === "VALIDATION_ERROR") {
-          setCopyError(`錯誤：${error.message}`)
-        } else if (error.errorType === "NOT_FOUND") {
+        const apiError: TimelineAPIError = error
+        if (apiError.errorType === "VALIDATION_ERROR") {
+          setCopyError(`錯誤：${apiError.message}`)
+        } else if (apiError.errorType === "NOT_FOUND") {
           setCopyError("錯誤：來源日期沒有時刻表記錄")
-        } else if (error.errorType === "UNAUTHORIZED") {
+        } else if (apiError.errorType === "UNAUTHORIZED") {
           setCopyError("錯誤：未授權，請重新登入")
         } else {
-          setCopyError(`錯誤：${error.message}`)
+          setCopyError(`錯誤：${apiError.message}`)
         }
       } else {
         setCopyError("錯誤：複製失敗，請稍後再試")
@@ -568,14 +581,15 @@ const TimeLine = () => {
                 const groupedData = await getGroupedSchedule(dateStr)
                 setGroupedSchedule(groupedData)
                 setShowPreview(true)
-              } catch (error) {
+              } catch (error: unknown) {
                 if (error instanceof TimelineAPIError) {
-                  if (error.errorType === "NOT_FOUND") {
+                  const apiError: TimelineAPIError = error
+                  if (apiError.errorType === "NOT_FOUND") {
                     alert("該日期沒有時刻表記錄")
-                  } else if (error.errorType === "UNAUTHORIZED") {
+                  } else if (apiError.errorType === "UNAUTHORIZED") {
                     alert("未授權，請重新登入")
                   } else {
-                    alert(`載入預覽失敗：${error.message}`)
+                    alert(`載入預覽失敗：${apiError.message}`)
                   }
                 } else {
                   alert("載入預覽失敗，請稍後再試")
@@ -594,7 +608,7 @@ const TimeLine = () => {
         </div>
       </TimelineLayout>
       {/* 預覽視窗 */}
-      {showPreview && groupedSchedule && (
+      {showPreview && groupedSchedule !== null && (
         <SchedulePreview
           formattedDate={formattedSelectedDate}
           groupedSchedule={groupedSchedule}
