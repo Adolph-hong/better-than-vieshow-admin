@@ -17,7 +17,15 @@ const useTheaters = () => {
 
         const data = await response.json()
         const theaterList = Array.isArray(data) ? data : data.data || []
-        setTheaters(theaterList)
+        
+        // 將後端回傳的欄位名稱轉換為前端期望的格式
+        const transformedTheaters = theaterList.map((theater: any) => ({
+          ...theater,
+          normalSeats: theater.standard ?? theater.normalSeats ?? 0,
+          accessibleSeats: theater.wheelchair ?? theater.accessibleSeats ?? 0,
+        }))
+        
+        setTheaters(transformedTheaters)
       } catch (err) {
         const message = err instanceof Error ? err.message : "獲取影廳列表失敗"
         setError(message)
@@ -31,7 +39,7 @@ const useTheaters = () => {
     fetchTheaters()
   }, [])
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): Promise<boolean> => {
     try {
       const response = await sendAPI(`/api/admin/theaters/${id}`, "DELETE")
 
@@ -40,11 +48,11 @@ const useTheaters = () => {
       }
 
       setTheaters((prev) => prev.filter((theater) => theater.id !== id))
+      return true
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("刪除影廳失敗:", err)
-      // eslint-disable-next-line no-alert
-      alert("刪除失敗，請稍後再試")
+      return false
     }
   }
 
