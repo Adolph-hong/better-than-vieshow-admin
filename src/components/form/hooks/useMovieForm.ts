@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
-import { uploadImageToCloudinary } from "@/utils/cloudinary"
 import {
   createMovie,
   getMovieById,
   updateMovie,
   type CreateMovieRequest,
-  type CreateMovieResponse,
   MovieAPIError,
 } from "@/services/movieAPI"
+import { uploadImageToCloudinary } from "@/utils/cloudinary"
 
 export interface MovieFormValues {
   movieName: string
@@ -270,7 +269,7 @@ export const useMovieForm = (movieId?: string) => {
     }
 
     const formData = { ...data }
-    const { poster, ...rest } = formData
+    const { poster } = formData
 
     let posterUrl = ""
     if (poster instanceof File) {
@@ -283,21 +282,24 @@ export const useMovieForm = (movieId?: string) => {
     }
 
     // 轉換表單資料為 API 格式
-    const convertToAPIFormat = (formData: MovieFormValues, posterUrlValue: string): CreateMovieRequest => {
+    const convertToAPIFormat = (
+      movieFormData: MovieFormValues,
+      posterUrlValue: string
+    ): CreateMovieRequest => {
       // 將日期轉換為 ISO 8601 date-time 格式
-      const releaseDate = formData.startAt ? `${formData.startAt}T00:00:00` : ""
-      const endDate = formData.endAt ? `${formData.endAt}T00:00:00` : ""
+      const releaseDate = movieFormData.startAt ? `${movieFormData.startAt}T00:00:00` : ""
+      const endDate = movieFormData.endAt ? `${movieFormData.endAt}T00:00:00` : ""
 
       return {
-        title: formData.movieName,
-        description: formData.describe,
-        duration: Number(formData.duration),
-        genre: convertGenreToEnglish(formData.filmType), // 將中文類型轉換為英文代碼
-        rating: convertRatingToAPI(formData.category), // 將前端 rating 值轉換為 API 格式
+        title: movieFormData.movieName,
+        description: movieFormData.describe,
+        duration: Number(movieFormData.duration),
+        genre: convertGenreToEnglish(movieFormData.filmType), // 將中文類型轉換為英文代碼
+        rating: convertRatingToAPI(movieFormData.category), // 將前端 rating 值轉換為 API 格式
         director: directorTags.join(","),
         cast: actorTags.join(","),
         posterUrl: posterUrlValue || "",
-        trailerUrl: formData.trailerLink || "",
+        trailerUrl: movieFormData.trailerLink || "",
         releaseDate,
         endDate,
         canCarousel: false, // API 文件未說明如何設定，先設為 false
