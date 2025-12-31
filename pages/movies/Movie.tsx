@@ -5,6 +5,7 @@ import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
 import { fetchMovies, MovieAPIError } from "@/services/movieAPI"
+import filterMoviesByDate from "@/utils/movieFilter"
 
 interface MovieItem {
   id: string
@@ -74,22 +75,8 @@ const Movie = () => {
         const data = await fetchMovies()
         const allMovies = Array.isArray(data) ? data : []
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-
-        // 只過濾顯示（不刪除資料），下映日已過的電影不顯示在列表上
-        const displayMovies = allMovies.filter((movie) => {
-          if (!movie.endAt) {
-            // 如果沒有下映日，顯示
-            return true
-          }
-
-          const endDate = new Date(movie.endAt)
-          endDate.setHours(0, 0, 0, 0)
-
-          // 如果下映日 >= 今天，顯示（下映日當天還會顯示）
-          return endDate >= today
-        })
+        // 使用共用過濾函數，根據今天日期過濾
+        const displayMovies = filterMoviesByDate(allMovies)
 
         setMovies(displayMovies)
       } catch (err) {
