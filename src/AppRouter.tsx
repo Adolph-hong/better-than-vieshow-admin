@@ -106,7 +106,14 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/ticket-check" element={<TicketCheck />} />
+      <Route
+        path="/ticket-check"
+        element={
+          <ProtectedRoute>
+            <TicketCheck />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }
