@@ -23,6 +23,7 @@ export interface MovieFormValues {
   poster: File | null
   startAt: string
   endAt: string
+  canCarousel: boolean
 }
 
 // 影片類型映射：中文 → 英文代碼
@@ -104,6 +105,7 @@ export const useMovieForm = (movieId?: string) => {
       poster: null,
       startAt: "",
       endAt: "",
+      canCarousel: false,
     },
   })
 
@@ -128,6 +130,7 @@ export const useMovieForm = (movieId?: string) => {
           poster: null,
           startAt: movie.releaseDate ? new Date(movie.releaseDate).toISOString().split("T")[0] : "",
           endAt: movie.endDate ? new Date(movie.endDate).toISOString().split("T")[0] : "",
+          canCarousel: movie.canCarousel || false,
         })
       } catch (error) {
         if (error instanceof MovieAPIError) {
@@ -314,7 +317,7 @@ export const useMovieForm = (movieId?: string) => {
         trailerUrl: movieFormData.trailerLink || "",
         releaseDate,
         endDate,
-        canCarousel: false, // API 文件未說明如何設定，先設為 false
+        canCarousel: movieFormData.canCarousel || false,
       }
     }
 
