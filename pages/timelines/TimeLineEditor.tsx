@@ -6,7 +6,7 @@ import AdminContainer from "@/components/layout/AdminContainer"
 import TheaterScheduleList from "@/components/timelines/TheaterScheduleList"
 import { timeSlots, type Theater } from "@/components/timelines/timelineData"
 import Header from "@/components/ui/Header"
-import { fetchMovies, type MovieItem } from "@/services/movieAPI"
+import { getSchedulableMovies, MovieAPIError } from "@/services/movieAPI"
 import {
   saveDailySchedule,
   getDailySchedule,
@@ -21,8 +21,6 @@ interface Movie {
   movieName: string
   duration: string
   poster: string
-  startAt?: string
-  endAt?: string
 }
 
 interface Schedule {
@@ -130,27 +128,42 @@ const TimeLineEditor = () => {
     loadTheaters()
   }, [])
 
-  // 從 API 獲取電影列表
+  // 從 API 獲取可排程電影列表
   useEffect(() => {
     const loadMovies = async () => {
       try {
         setIsLoadingMovies(true)
-        const data = await fetchMovies()
 
-        // 顯示所有電影，不過濾
+        // 將 formattedDate 轉換為 YYYY-MM-DD 格式
+        const dateMatch = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
+        if (!dateMatch) {
+          setMovies([])
+          return
+        }
+
+        const [, year, month, day] = dateMatch
+        const dateStr = `${year}-${month}-${day}`
+
+        // 使用新的 API 取得可排程電影
+        const data = await getSchedulableMovies(dateStr)
+
         // 轉換為編輯頁面使用的格式
-        const formattedMovies: Movie[] = data.map((movie: MovieItem) => ({
-          id: movie.id,
-          movieName: movie.movieName,
-          duration: movie.duration,
-          poster: movie.poster || "",
-          startAt: movie.startAt,
-          endAt: movie.endAt,
+        const formattedMovies: Movie[] = data.map((movie) => ({
+          id: String(movie.id),
+          movieName: movie.title || "",
+          duration: String(movie.duration),
+          poster: movie.posterUrl || "",
         }))
         setMovies(formattedMovies)
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error("Failed to load movies:", error)
+        if (error instanceof MovieAPIError) {
+          if (error.errorType === "UNAUTHORIZED") {
+            // 可以選擇清除 token 並導向登入頁
+            localStorage.removeItem("token")
+          }
+        }
         setMovies([])
       } finally {
         setIsLoadingMovies(false)
@@ -243,8 +256,6 @@ const TimeLineEditor = () => {
                   movieName: showtime.movieTitle,
                   duration: String(showtime.movieDuration),
                   poster: "",
-                  startAt: showtime.showDate,
-                  endAt: showtime.showDate,
                 },
               }
             }
@@ -384,27 +395,6 @@ const TimeLineEditor = () => {
     if (!draggedItem) return
 
     if (draggedItem.type === "movie") {
-      const currentDate = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
-      if (currentDate && draggedItem.movie.startAt && draggedItem.movie.endAt) {
-        const [, year, month, day] = currentDate
-        const currentDateObj = new Date(Number(year), Number(month) - 1, Number(day))
-        currentDateObj.setHours(0, 0, 0, 0)
-
-        const startDate = new Date(draggedItem.movie.startAt)
-        startDate.setHours(0, 0, 0, 0)
-
-        const endDate = new Date(draggedItem.movie.endAt)
-        endDate.setHours(0, 0, 0, 0)
-
-        if (currentDateObj < startDate || currentDateObj > endDate) {
-          alert(
-            `此電影的上映期間為 ${format(new Date(draggedItem.movie.startAt), "yyyy/MM/dd")} 至 ${format(new Date(draggedItem.movie.endAt), "yyyy/MM/dd")}，無法排在此日期`
-          )
-          setDraggedItem(null)
-          return
-        }
-      }
-
       const durationMinutes = parseInt(draggedItem.movie.duration, 10)
       const endTime = calculateEndTime(timeSlot, durationMinutes)
 
