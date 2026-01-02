@@ -14,7 +14,6 @@ import {
   type ShowtimeItem,
   type ShowtimeResponse,
 } from "@/services/timelineAPI"
-import filterMoviesByDate from "@/utils/movieFilter"
 import sendAPI from "@/utils/sendAPI"
 
 interface Movie {
@@ -138,20 +137,9 @@ const TimeLineEditor = () => {
         setIsLoadingMovies(true)
         const data = await fetchMovies()
 
-        // 解析選中的日期
-        const dateMatch = formattedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
-        let selectedDate: Date | undefined
-        if (dateMatch) {
-          const [, year, month, day] = dateMatch
-          selectedDate = new Date(Number(year), Number(month) - 1, Number(day))
-        }
-
-        // 使用共用過濾函數，根據選中日期過濾
-        // 確保只顯示在該日期已經上映且還沒下架的電影
-        const displayMovies = filterMoviesByDate(data, selectedDate)
-
+        // 顯示所有電影，不過濾
         // 轉換為編輯頁面使用的格式
-        const formattedMovies: Movie[] = displayMovies.map((movie: MovieItem) => ({
+        const formattedMovies: Movie[] = data.map((movie: MovieItem) => ({
           id: movie.id,
           movieName: movie.movieName,
           duration: movie.duration,

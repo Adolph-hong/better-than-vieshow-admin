@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { fetchMovies, MovieAPIError } from "@/services/movieAPI"
-import filterMoviesByDate from "@/utils/movieFilter"
 
 interface Schedule {
   id: string
@@ -29,11 +28,9 @@ const MovieList = ({ schedules = [] }: MovieListProps) => {
 
         const data = await fetchMovies()
 
-        // 使用共用過濾函數，根據今天日期過濾
-        const displayMovies = filterMoviesByDate(data)
-
+        // 顯示所有電影，不過濾
         // 轉換為 MovieList 需要的格式
-        const formattedMovies = displayMovies.map((movie) => ({
+        const formattedMovies = data.map((movie) => ({
           id: movie.id,
           movieName: movie.movieName,
         }))
