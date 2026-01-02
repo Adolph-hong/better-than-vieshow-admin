@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom"
 import adminLogo from "@/assets/icon/admin-logo.png"
 import adminPhoto from "@/assets/icon/admin-photo.svg"
+import logoText from "@/assets/icon/logoText.svg"
 import SIDEBAR_ITEMS from "@/components/layout/sidebarItem"
 
 interface SidebarProps {
@@ -35,10 +36,7 @@ const Sidebar = ({ borderColor = "border-white" }: SidebarProps) => {
       {/* 上方logo與主題文字 */}
       <section className="mb-6 ml-4 flex text-[#333333]">
         <img src={adminLogo} alt="logo" />
-        <div className="flex flex-col items-center py-1.5">
-          <span className="font-family-inter text-sm leading-[1.2] font-bold">Better Than</span>
-          <span className="font-family-noto-serif text-2xl leading-[1.2] font-semibold">威秀</span>
-        </div>
+        <img src={logoText} alt="Better Than 威秀" className="h-14.5" />
       </section>
       {/* 中間選單 */}
       <section className="flex flex-col">
