@@ -38,9 +38,9 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
         (formErrors) => {
           const firstError = Object.values(formErrors)[0]
           if (firstError?.message) {
-            toast.error(firstError.message)
+            toast.error(firstError.message, { id: "validation-form-error" })
           } else {
-            toast.error("請檢查表單欄位是否填寫正確")
+            toast.error("請檢查表單欄位是否填寫正確", { id: "validation-form-error" })
           }
         }
       )}

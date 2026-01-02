@@ -24,7 +24,7 @@ const PosterUpload = ({
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[], event: DropEvent) => {
       if (fileRejections.length > 0) {
-        toast.error("檔案格式不正確，只能上傳 JPG / PNG")
+        toast.error("檔案格式不正確，只能上傳 JPG / PNG", { id: "poster-upload-format-error" })
         return
       }
 
