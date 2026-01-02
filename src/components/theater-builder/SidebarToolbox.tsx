@@ -121,7 +121,7 @@ const SidebarToolbox = ({
                     }`}
                   >
                     <Accessibility size={28} className="shrink-0" />
-                    <span>殘障座位</span>
+                    <span>友善座位</span>
                   </button>
                 </div>
               </section>

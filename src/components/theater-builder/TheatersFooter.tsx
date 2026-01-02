@@ -27,7 +27,7 @@ const TheatersFooter = (props: TheatersFooterProps) => {
               <dd className="body-medium">{normalSeatCount}</dd>
             </div>
             <div className="flex items-center">
-              <dt>殘障座位：</dt>
+              <dt>友善座位：</dt>
               <dd className="body-medium">{accessibleSeatCount}</dd>
             </div>
           </dl>
