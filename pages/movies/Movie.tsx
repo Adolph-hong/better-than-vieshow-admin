@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search } from "lucide-react"
+import { ClipLoader } from "react-spinners"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
@@ -149,7 +150,11 @@ const Movie = () => {
           </div>
         </div>
       </div>
-      {isLoading && <EmptyContent title="資料載入中" description="請稍候，我們正在取得電影列表" />}
+      {isLoading && (
+        <div className="flex flex-1 items-center justify-center p-6">
+          <ClipLoader color="#5365AC" size={40} />
+        </div>
+      )}
       {!isLoading && error && <EmptyContent title="載入失敗" description={error} />}
       {!isLoading && !error && movies.length === 0 && (
         <EmptyContent title="一部電影都還沒有" description="點擊「建立電影」來新增第一部吧" />

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Image } from "lucide-react"
+import toast from "react-hot-toast"
 import { useDropzone } from "react-dropzone"
 import type { DropEvent, FileRejection } from "react-dropzone"
 
@@ -23,7 +24,7 @@ const PosterUpload = ({
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[], event: DropEvent) => {
       if (fileRejections.length > 0) {
-        alert("檔案格式不正確，只能上傳 JPG / PNG")
+        toast.error("檔案格式不正確，只能上傳 JPG / PNG")
         return
       }
 
