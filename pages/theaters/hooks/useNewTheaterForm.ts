@@ -47,6 +47,8 @@ const useNewTheaterForm = () => {
       rowCount: rows,
       columnCount: columns,
       seats: formattedSeats,
+      standard: seatStats.normalSeats,
+      wheelchair: seatStats.accessibleSeats,
     }
 
     setIsSubmitting(true)
