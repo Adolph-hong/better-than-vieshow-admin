@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import { AlertTriangle, CalendarDays } from "lucide-react"
+import { ClipLoader } from "react-spinners"
 import { DayPicker, getDefaultClassNames } from "react-day-picker"
 
 interface CopyScheduleDialogProps {
@@ -11,6 +12,7 @@ interface CopyScheduleDialogProps {
   errorMessage?: string
   draftDates: Date[]
   sellingDates: Date[]
+  isLoading?: boolean
 }
 
 const CopyScheduleDialog = ({
@@ -20,6 +22,7 @@ const CopyScheduleDialog = ({
   errorMessage,
   draftDates,
   sellingDates,
+  isLoading = false,
 }: CopyScheduleDialogProps) => {
   const defaultClassNames = getDefaultClassNames()
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
@@ -159,16 +162,22 @@ const CopyScheduleDialog = ({
           <button
             type="button"
             onClick={onCancel}
-            className="font-roboto h-full cursor-pointer rounded-sm bg-[#000000] px-3 text-white"
+            disabled={isLoading}
+            className={`font-roboto h-full rounded-sm bg-[#000000] px-3 text-white ${
+              isLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            }`}
           >
             取消
           </button>
           <button
             type="button"
             onClick={handleConfirm}
-            className="font-roboto h-full cursor-pointer rounded-sm border border-[#000000] bg-white px-3 text-[#000000]"
+            disabled={isLoading}
+            className={`font-roboto h-full rounded-sm border border-[#000000] bg-white px-3 text-[#000000] ${
+              isLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            }`}
           >
-            確認
+            {isLoading ? <ClipLoader color="#000000" size={16} /> : "確認"}
           </button>
         </div>
       </div>

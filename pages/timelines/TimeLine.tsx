@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { format, isSameMonth, startOfMonth } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
+import toast from "react-hot-toast"
+import { ClipLoader } from "react-spinners"
 import AdminContainer from "@/components/layout/AdminContainer"
 import TimelineLayout from "@/components/layout/TimelineLayout"
 import CalendarPanel from "@/components/timelines/CalendarPanel"
@@ -73,6 +75,13 @@ const TimeLine = () => {
   const [scheduleStatus, setScheduleStatus] = useState<"OnSale" | "Draft" | null>(null)
   const [theaters, setTheaters] = useState<Theater[]>([])
   const [movies, setMovies] = useState<Array<{ id: string; movieName: string; poster: string }>>([])
+  const [isLoadingTheaters, setIsLoadingTheaters] = useState(true)
+  const [isLoadingMovies, setIsLoadingMovies] = useState(true)
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true)
+  const [isLoadingMonthOverview, setIsLoadingMonthOverview] = useState(true)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [isCopying, setIsCopying] = useState(false)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 
   // 將 API 的影廳類型映射到前端使用的類型
   const mapTheaterTypeToFrontend = (apiType: string): Theater["type"] => {
@@ -91,6 +100,7 @@ const TimeLine = () => {
   // 從 API 獲取影廳列表
   useEffect(() => {
     const loadTheaters = async () => {
+      setIsLoadingTheaters(true)
       try {
         const response = await sendAPI("/api/admin/theaters", "GET")
 
@@ -122,8 +132,11 @@ const TimeLine = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error("Failed to load theaters:", error)
+        toast.error("載入影廳列表失敗，請稍後再試", { id: "load-theaters-error" })
         // 如果載入失敗，使用空陣列
         setTheaters([])
+      } finally {
+        setIsLoadingTheaters(false)
       }
     }
 
@@ -171,6 +184,7 @@ const TimeLine = () => {
   // 載入電影列表（用於獲取電影海報）
   useEffect(() => {
     const loadMovies = async () => {
+      setIsLoadingMovies(true)
       try {
         const data = await fetchMovies()
         const movieList = data.map((movie) => ({
@@ -182,7 +196,10 @@ const TimeLine = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error("Failed to load movies:", error)
+        toast.error("載入電影列表失敗，請稍後再試", { id: "load-movies-error" })
         setMovies([])
+      } finally {
+        setIsLoadingMovies(false)
       }
     }
 
@@ -195,9 +212,11 @@ const TimeLine = () => {
       if (!selectedDate) {
         setSchedules([])
         setScheduleStatus(null)
+        setIsLoadingSchedule(false)
         return
       }
 
+      setIsLoadingSchedule(true)
       try {
         // 將日期轉換為 YYYY-MM-DD 格式
         const dateStr = format(selectedDate, "yyyy-MM-dd")
@@ -238,20 +257,24 @@ const TimeLine = () => {
             // 未授權，清除資料
             setSchedules([])
             setScheduleStatus(null)
-            // 可以選擇顯示錯誤訊息或重新導向登入頁
+            toast.error("未授權，請重新登入", { id: "load-schedule-unauthorized" })
           } else {
             // 其他錯誤
             // eslint-disable-next-line no-console
             console.error("Failed to load daily schedule:", apiError)
+            toast.error(`載入時刻表失敗：${apiError.message}`, { id: "load-schedule-error" })
             setSchedules([])
             setScheduleStatus(null)
           }
         } else {
           // eslint-disable-next-line no-console
           console.error("Failed to load daily schedule:", error)
+          toast.error("載入時刻表失敗，請稍後再試", { id: "load-schedule-error" })
           setSchedules([])
           setScheduleStatus(null)
         }
+      } finally {
+        setIsLoadingSchedule(false)
       }
     }
 
@@ -269,6 +292,7 @@ const TimeLine = () => {
   // 當月份改變時，從 API 獲取月曆概覽
   useEffect(() => {
     const loadMonthOverview = async () => {
+      setIsLoadingMonthOverview(true)
       try {
         const year = visibleMonth.getFullYear()
         const month = visibleMonth.getMonth() + 1 // getMonth() 返回 0-11，API 需要 1-12
@@ -299,14 +323,22 @@ const TimeLine = () => {
           const apiError: TimelineAPIError = error
           if (apiError.errorType === "UNAUTHORIZED") {
             // 未授權時，可以選擇清除狀態或顯示錯誤訊息
+            toast.error("未授權，請重新登入", { id: "load-month-overview-unauthorized" })
+            setDraftDates([])
+            setSellingDates([])
+          } else {
+            toast.error(`載入月曆概覽失敗：${apiError.message}`, { id: "load-month-overview-error" })
             setDraftDates([])
             setSellingDates([])
           }
         } else {
           // 其他錯誤時，保持空陣列
+          toast.error("載入月曆概覽失敗，請稍後再試", { id: "load-month-overview-error" })
           setDraftDates([])
           setSellingDates([])
         }
+      } finally {
+        setIsLoadingMonthOverview(false)
       }
     }
 
@@ -318,11 +350,13 @@ const TimeLine = () => {
   }
 
   const handleConfirmSelling = async () => {
+    setIsPublishing(true)
     try {
       // 將 formattedDate 轉換為 YYYY-MM-DD 格式
       const dateMatch = formattedSelectedDate.match(/^(\d{4})\/(\d{2})\/(\d{2})/)
       if (!dateMatch) {
-        alert("日期格式錯誤")
+        toast.error("日期格式錯誤", { id: "publish-date-format-error" })
+        setIsPublishing(false)
         return
       }
 
@@ -330,7 +364,7 @@ const TimeLine = () => {
       const dateStr = `${year}-${month}-${day}`
 
       await publishDailySchedule(dateStr)
-      alert("開始販售成功")
+      toast.success("開始販售成功", { id: "publish-success" })
       setShowConfirmDialog(false)
 
       // 重新載入月曆資料（更新日期狀態）
@@ -392,15 +426,17 @@ const TimeLine = () => {
       if (error instanceof TimelineAPIError) {
         const apiError: TimelineAPIError = error
         if (apiError.errorType === "NOT_FOUND") {
-          alert("該日期沒有時刻表記錄")
+          toast.error("該日期沒有時刻表記錄", { id: "publish-not-found" })
         } else if (apiError.errorType === "UNAUTHORIZED") {
-          alert("未授權，請重新登入")
+          toast.error("未授權，請重新登入", { id: "publish-unauthorized" })
         } else {
-          alert(`開始販售失敗：${apiError.message}`)
+          toast.error(`開始販售失敗：${apiError.message}`, { id: "publish-error" })
         }
       } else {
-        alert("開始販售失敗，請稍後再試")
+        toast.error("開始販售失敗，請稍後再試", { id: "publish-error" })
       }
+    } finally {
+      setIsPublishing(false)
     }
   }
 
@@ -414,6 +450,7 @@ const TimeLine = () => {
   }
 
   const handleConfirmCopy = async (targetDate: string) => {
+    setIsCopying(true)
     try {
       setCopyError("")
 
@@ -464,11 +501,12 @@ const TimeLine = () => {
 
       // 顯示成功訊息
       if (result.message) {
-        alert(
-          `複製成功！${result.message}\n成功複製 ${result.copiedCount} 個場次，略過 ${result.skippedCount} 個場次`
+        toast.success(
+          `複製成功！${result.message}\n成功複製 ${result.copiedCount} 個場次，略過 ${result.skippedCount} 個場次`,
+          { id: "copy-success" }
         )
       } else {
-        alert(`複製成功！成功複製 ${result.copiedCount} 個場次`)
+        toast.success(`複製成功！成功複製 ${result.copiedCount} 個場次`, { id: "copy-success" })
       }
 
       // 關閉對話框並更新狀態
@@ -518,23 +556,30 @@ const TimeLine = () => {
           }
         }
       )
-      setSchedules(convertedSchedules)
-      setScheduleStatus(updatedTargetSchedule.status)
+        setSchedules(convertedSchedules)
+        setScheduleStatus(updatedTargetSchedule.status)
     } catch (error: unknown) {
       if (error instanceof TimelineAPIError) {
         const apiError: TimelineAPIError = error
         if (apiError.errorType === "VALIDATION_ERROR") {
           setCopyError(`錯誤：${apiError.message}`)
+          toast.error(`複製失敗：${apiError.message}`, { id: "copy-validation-error" })
         } else if (apiError.errorType === "NOT_FOUND") {
           setCopyError("錯誤：來源日期沒有時刻表記錄")
+          toast.error("複製失敗：來源日期沒有時刻表記錄", { id: "copy-not-found" })
         } else if (apiError.errorType === "UNAUTHORIZED") {
           setCopyError("錯誤：未授權，請重新登入")
+          toast.error("複製失敗：未授權，請重新登入", { id: "copy-unauthorized" })
         } else {
           setCopyError(`錯誤：${apiError.message}`)
+          toast.error(`複製失敗：${apiError.message}`, { id: "copy-error" })
         }
       } else {
         setCopyError("錯誤：複製失敗，請稍後再試")
+        toast.error("複製失敗，請稍後再試", { id: "copy-error" })
       }
+    } finally {
+      setIsCopying(false)
     }
   }
 
@@ -549,14 +594,20 @@ const TimeLine = () => {
       <TimelineLayout>
         {/* 左邊排程區 */}
         <div className="flex w-full max-w-67.5 flex-col gap-6">
-          <CalendarPanel
-            selectedDate={selectedDate}
-            visibleMonth={visibleMonth}
-            draftDates={draftDates}
-            sellingDates={sellingDates}
-            onSelectDate={handleSelectDate}
-            onMonthChange={handleMonthChange}
-          />
+          {isLoadingMonthOverview ? (
+            <div className="flex items-center justify-center rounded-sm bg-white p-6">
+              <ClipLoader color="#5365AC" size={30} />
+            </div>
+          ) : (
+            <CalendarPanel
+              selectedDate={selectedDate}
+              visibleMonth={visibleMonth}
+              draftDates={draftDates}
+              sellingDates={sellingDates}
+              onSelectDate={handleSelectDate}
+              onMonthChange={handleMonthChange}
+            />
+          )}
           <MovieList schedules={schedules} />
         </div>
         {/* 右邊排程區 */}
@@ -575,6 +626,7 @@ const TimeLine = () => {
               })
             }
             onPreview={async () => {
+              setIsLoadingPreview(true)
               try {
                 const dateStr = format(selectedDate, "yyyy-MM-dd")
                 const groupedData = await getGroupedSchedule(dateStr)
@@ -584,26 +636,35 @@ const TimeLine = () => {
                 if (error instanceof TimelineAPIError) {
                   const apiError: TimelineAPIError = error
                   if (apiError.errorType === "NOT_FOUND") {
-                    alert("該日期沒有時刻表記錄")
+                    toast.error("該日期沒有時刻表記錄", { id: "preview-not-found" })
                   } else if (apiError.errorType === "UNAUTHORIZED") {
-                    alert("未授權，請重新登入")
+                    toast.error("未授權，請重新登入", { id: "preview-unauthorized" })
                   } else {
-                    alert(`載入預覽失敗：${apiError.message}`)
+                    toast.error(`載入預覽失敗：${apiError.message}`, { id: "preview-error" })
                   }
                 } else {
-                  alert("載入預覽失敗，請稍後再試")
+                  toast.error("載入預覽失敗，請稍後再試", { id: "preview-error" })
                 }
+              } finally {
+                setIsLoadingPreview(false)
               }
             }}
+            isLoadingPreview={isLoadingPreview}
             onStartSelling={handleStartSelling}
             onDuplicate={handleCopySchedule}
           />
-          <TheaterScheduleList
-            theaters={theaters}
-            timeSlots={timeSlots}
-            schedules={schedules}
-            isInteractive={false}
-          />
+          {isLoadingSchedule ? (
+            <div className="flex flex-1 items-center justify-center">
+              <ClipLoader color="#5365AC" size={40} />
+            </div>
+          ) : (
+            <TheaterScheduleList
+              theaters={theaters}
+              timeSlots={timeSlots}
+              schedules={schedules}
+              isInteractive={false}
+            />
+          )}
         </div>
       </TimelineLayout>
       {/* 預覽視窗 */}
@@ -627,6 +688,7 @@ const TimeLine = () => {
         onCancel={handleCancelSelling}
         confirmText="確認"
         cancelText="取消"
+        isLoading={isPublishing}
       />
       {/* 複製時刻表對話框 */}
       <CopyScheduleDialog
@@ -636,6 +698,7 @@ const TimeLine = () => {
         errorMessage={copyError}
         draftDates={draftDates}
         sellingDates={sellingDates}
+        isLoading={isCopying}
       />
     </AdminContainer>
   )

@@ -1,4 +1,5 @@
 import { AlertTriangle } from "lucide-react"
+import { ClipLoader } from "react-spinners"
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -9,6 +10,7 @@ interface ConfirmDialogProps {
   onCancel: () => void
   confirmText?: string
   cancelText?: string
+  isLoading?: boolean
 }
 
 const ConfirmDialog = ({
@@ -20,6 +22,7 @@ const ConfirmDialog = ({
   onCancel,
   confirmText = "確認",
   cancelText = "取消",
+  isLoading = false,
 }: ConfirmDialogProps) => {
   if (!isOpen) return null
 
@@ -56,16 +59,22 @@ const ConfirmDialog = ({
           <button
             type="button"
             onClick={onCancel}
-            className="font-roboto h-full cursor-pointer rounded-sm bg-[#000000] px-3 text-white"
+            disabled={isLoading}
+            className={`font-roboto h-full rounded-sm bg-[#000000] px-3 text-white ${
+              isLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            }`}
           >
             {cancelText}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="font-roboto h-full cursor-pointer rounded-sm border border-[#000000] bg-white px-3 text-[#000000]"
+            disabled={isLoading}
+            className={`font-roboto h-full rounded-sm border border-[#000000] bg-white px-3 text-[#000000] ${
+              isLoading ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            }`}
           >
-            {confirmText}
+            {isLoading ? <ClipLoader color="#000000" size={16} /> : confirmText}
           </button>
         </div>
       </div>

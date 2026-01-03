@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { ClipLoader } from "react-spinners"
 import { fetchMovies, MovieAPIError } from "@/services/movieAPI"
 
 interface Schedule {
@@ -69,8 +70,8 @@ const MovieList = ({ schedules = [] }: MovieListProps) => {
           <span>電影</span>
           <span>場次</span>
         </div>
-        <div className="body-medium flex items-center justify-center px-2 py-8 text-gray-400">
-          載入中...
+        <div className="flex items-center justify-center px-2 py-8">
+          <ClipLoader color="#5365AC" size={30} />
         </div>
       </div>
     )
