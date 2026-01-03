@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom"
+import { ClipLoader } from "react-spinners"
 
 interface FormActionsProps {
   isEditMode: boolean
+  isSubmitting?: boolean
 }
 
-const FormActions = ({ isEditMode }: FormActionsProps) => {
+const FormActions = ({ isEditMode, isSubmitting = false }: FormActionsProps) => {
   const navigate = useNavigate()
 
   return (
@@ -13,14 +15,24 @@ const FormActions = ({ isEditMode }: FormActionsProps) => {
         className="body-medium text-primary-500 border-primary-500 flex cursor-pointer items-center justify-center rounded-[10px] border px-4 py-2.5"
         type="button"
         onClick={() => navigate("/movies")}
+        disabled={isSubmitting}
       >
         取消
       </button>
       <button
         type="submit"
-        className="body-medium border-primary-500 bg-primary-500 flex cursor-pointer items-center justify-center rounded-[10px] border px-4 py-2.5 text-white"
+        disabled={isSubmitting}
+        className={`body-medium border-primary-500 bg-primary-500 flex cursor-pointer items-center justify-center rounded-[10px] border px-4 py-2.5 text-white ${
+          isSubmitting ? "cursor-not-allowed opacity-70" : ""
+        }`}
       >
-        {isEditMode ? "更新" : "建立電影"}
+        {isSubmitting ? (
+          <ClipLoader color="#ffffff" size={20} />
+        ) : isEditMode ? (
+          "更新"
+        ) : (
+          "建立電影"
+        )}
       </button>
     </section>
   )

@@ -106,7 +106,7 @@ const SidebarToolbox = ({
                         : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
-                    <Armchair size={28} className="flex-shrink-0" />
+                    <Armchair size={28} className="shrink-0" />
                     <span>一般座位</span>
                   </button>
 
@@ -120,8 +120,8 @@ const SidebarToolbox = ({
                         : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
-                    <Accessibility size={28} className="flex-shrink-0" />
-                    <span>殘障座位</span>
+                    <Accessibility size={28} className="shrink-0" />
+                    <span>友善座位</span>
                   </button>
                 </div>
               </section>
@@ -139,7 +139,7 @@ const SidebarToolbox = ({
                         : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
-                    <Minus size={28} className="flex-shrink-0" />
+                    <Minus size={28} className="shrink-0" />
                     <span>走道</span>
                   </button>
                 </div>
@@ -158,7 +158,7 @@ const SidebarToolbox = ({
                         : "border-[#F7F7F7] bg-[#F7F7F7]"
                     }`}
                   >
-                    <Eraser size={28} className="flex-shrink-0" />
+                    <Eraser size={28} className="shrink-0" />
                     <span>橡皮擦</span>
                   </button>
                 </div>

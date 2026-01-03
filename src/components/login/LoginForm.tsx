@@ -90,6 +90,12 @@ const LoginForm = ({ className }: LoginFormProps) => {
         if (userName) {
           localStorage.setItem("user", userName)
         }
+
+        // 儲存 email（從 API 回應或表單輸入）
+        const userEmail = data.email || data.user?.email || data?.data?.email || formData.email
+        if (userEmail) {
+          localStorage.setItem("userEmail", userEmail)
+        }
       } else {
         // eslint-disable-next-line no-console
         console.warn("後端未回傳 token")

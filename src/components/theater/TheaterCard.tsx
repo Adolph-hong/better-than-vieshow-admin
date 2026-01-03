@@ -214,7 +214,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
                   onClick={handleDeleteClick}
                   role="menuitem"
                 >
-                  <Trash2 className="h-[18px] w-[18px] text-[#575867]" />
+                  <Trash2 className="h-[18px] w-[18px] text-gray-500" />
                   刪除
                 </button>
               </div>
@@ -229,7 +229,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           <dd className="text-[32px] font-semibold">{theater.normalSeats}</dd>
         </div>
         <div className="flex flex-col-reverse">
-          <dt className="text-xl font-medium text-[#646464]">殘障座位</dt>
+          <dt className="text-xl font-medium text-[#646464]">友善座位</dt>
           <dd className="text-[32px] font-semibold">{theater.accessibleSeats}</dd>
         </div>
       </dl>

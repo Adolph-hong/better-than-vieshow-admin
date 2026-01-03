@@ -1,11 +1,11 @@
 import { useEffect, useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search } from "lucide-react"
+import { ClipLoader } from "react-spinners"
 import AdminContainer from "@/components/layout/AdminContainer"
 import EmptyContent from "@/components/ui/EmptyContent"
 import Header from "@/components/ui/Header"
 import { fetchMovies, MovieAPIError } from "@/services/movieAPI"
-import filterMoviesByDate from "@/utils/movieFilter"
 
 interface MovieItem {
   id: string
@@ -58,6 +58,47 @@ const formatDate = (dateString: string): string => {
 
 const getPosterUrl = (poster: string | null): string => poster ?? ""
 
+// 根據日期區間判斷電影狀態
+type MovieStatus = "上映中" | "下檔" | "未上映"
+
+const getMovieStatus = (startAt: string, endAt: string): MovieStatus => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const startDate = new Date(startAt)
+  startDate.setHours(0, 0, 0, 0)
+
+  const endDate = new Date(endAt)
+  endDate.setHours(0, 0, 0, 0)
+
+  // 下檔：結束日期 < 今天
+  if (endDate < today) {
+    return "下檔"
+  }
+
+  // 未上映：開始日期 > 今天
+  if (startDate > today) {
+    return "未上映"
+  }
+
+  // 上映中：開始日期 <= 今天 <= 結束日期
+  return "上映中"
+}
+
+// 根據狀態返回標籤樣式
+const getStatusBadgeStyle = (status: MovieStatus): string => {
+  switch (status) {
+    case "上映中":
+      return "bg-[#454F8D] text-white"
+    case "下檔":
+      return "bg-[#707070] text-white"
+    case "未上映":
+      return "bg-[#707070] text-white"
+    default:
+      return "bg-[#454F8D] text-white"
+  }
+}
+
 const Movie = () => {
   const navigate = useNavigate()
   const [movies, setMovies] = useState<MovieItem[]>([])
@@ -75,10 +116,8 @@ const Movie = () => {
         const data = await fetchMovies()
         const allMovies = Array.isArray(data) ? data : []
 
-        // 使用共用過濾函數，根據今天日期過濾
-        const displayMovies = filterMoviesByDate(allMovies)
-
-        setMovies(displayMovies)
+        // 顯示所有電影，不過濾
+        setMovies(allMovies)
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("Failed to load movies:", err)
@@ -149,7 +188,11 @@ const Movie = () => {
           </div>
         </div>
       </div>
-      {isLoading && <EmptyContent title="資料載入中" description="請稍候，我們正在取得電影列表" />}
+      {isLoading && (
+        <div className="flex flex-1 items-center justify-center p-6">
+          <ClipLoader color="#5365AC" size={40} />
+        </div>
+      )}
       {!isLoading && error && <EmptyContent title="載入失敗" description={error} />}
       {!isLoading && !error && movies.length === 0 && (
         <EmptyContent title="一部電影都還沒有" description="點擊「建立電影」來新增第一部吧" />
@@ -190,9 +233,16 @@ const Movie = () => {
                         <h1 className="body-large line-clamp-1 break-all text-[#000000]">
                           {movie.movieName}
                         </h1>
-                        <div className="body-small flex h-[28px] shrink-0 items-center justify-center rounded-3xl bg-[#454F8D] px-3 py-2.5 text-white">
-                          上映中
-                        </div>
+                        {(() => {
+                          const status = getMovieStatus(movie.startAt, movie.endAt)
+                          return (
+                            <div
+                              className={`body-small flex h-[28px] shrink-0 items-center justify-center rounded-3xl px-3 py-2.5 ${getStatusBadgeStyle(status)}`}
+                            >
+                              {status}
+                            </div>
+                          )
+                        })()}
                       </section>
                       {/* 內容 */}
                       <section className="flex flex-col gap-4">
