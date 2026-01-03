@@ -165,7 +165,7 @@ const SeatingChart = ({
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
           >
-            <Minus className="h-6 w-6 text-[#838495]" aria-hidden="true" />
+            <Minus className="h-6 w-6 text-gray-300" aria-hidden="true" />
           </button>
         )
       case "empty":

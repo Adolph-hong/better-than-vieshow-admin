@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Image } from "lucide-react"
-import toast from "react-hot-toast"
 import { useDropzone } from "react-dropzone"
+import toast from "react-hot-toast"
 import type { DropEvent, FileRejection } from "react-dropzone"
 
 interface PosterUploadProps {

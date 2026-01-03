@@ -75,8 +75,6 @@ const TimeLine = () => {
   const [scheduleStatus, setScheduleStatus] = useState<"OnSale" | "Draft" | null>(null)
   const [theaters, setTheaters] = useState<Theater[]>([])
   const [movies, setMovies] = useState<Array<{ id: string; movieName: string; poster: string }>>([])
-  const [isLoadingTheaters, setIsLoadingTheaters] = useState(true)
-  const [isLoadingMovies, setIsLoadingMovies] = useState(true)
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true)
   const [isLoadingMonthOverview, setIsLoadingMonthOverview] = useState(true)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -100,7 +98,6 @@ const TimeLine = () => {
   // 從 API 獲取影廳列表
   useEffect(() => {
     const loadTheaters = async () => {
-      setIsLoadingTheaters(true)
       try {
         const response = await sendAPI("/api/admin/theaters", "GET")
 
@@ -135,8 +132,6 @@ const TimeLine = () => {
         toast.error("載入影廳列表失敗，請稍後再試", { id: "load-theaters-error" })
         // 如果載入失敗，使用空陣列
         setTheaters([])
-      } finally {
-        setIsLoadingTheaters(false)
       }
     }
 
@@ -184,7 +179,6 @@ const TimeLine = () => {
   // 載入電影列表（用於獲取電影海報）
   useEffect(() => {
     const loadMovies = async () => {
-      setIsLoadingMovies(true)
       try {
         const data = await fetchMovies()
         const movieList = data.map((movie) => ({
@@ -198,8 +192,6 @@ const TimeLine = () => {
         console.error("Failed to load movies:", error)
         toast.error("載入電影列表失敗，請稍後再試", { id: "load-movies-error" })
         setMovies([])
-      } finally {
-        setIsLoadingMovies(false)
       }
     }
 
@@ -327,7 +319,9 @@ const TimeLine = () => {
             setDraftDates([])
             setSellingDates([])
           } else {
-            toast.error(`載入月曆概覽失敗：${apiError.message}`, { id: "load-month-overview-error" })
+            toast.error(`載入月曆概覽失敗：${apiError.message}`, {
+              id: "load-month-overview-error",
+            })
             setDraftDates([])
             setSellingDates([])
           }
@@ -556,8 +550,8 @@ const TimeLine = () => {
           }
         }
       )
-        setSchedules(convertedSchedules)
-        setScheduleStatus(updatedTargetSchedule.status)
+      setSchedules(convertedSchedules)
+      setScheduleStatus(updatedTargetSchedule.status)
     } catch (error: unknown) {
       if (error instanceof TimelineAPIError) {
         const apiError: TimelineAPIError = error

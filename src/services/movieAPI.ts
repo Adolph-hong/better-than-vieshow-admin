@@ -40,15 +40,6 @@ export interface SchedulableMovieDto {
   genre: string | null
 }
 
-// 可排程電影的資料結構（用於時刻表編輯）
-export interface SchedulableMovieDto {
-  id: number
-  title: string | null
-  posterUrl: string | null
-  duration: number
-  genre: string | null
-}
-
 // 建立電影成功後的回應資料結構
 export interface CreateMovieResponse {
   id: number
@@ -489,7 +480,11 @@ export const getSchedulableMovies = async (date: string): Promise<SchedulableMov
 
     // 檢查 API 回應的 success 欄位
     if (!result.success) {
-      throw new MovieAPIError(result.message || "取得可排程電影列表失敗", response.status, "UNKNOWN")
+      throw new MovieAPIError(
+        result.message || "取得可排程電影列表失敗",
+        response.status,
+        "UNKNOWN"
+      )
     }
 
     // 確認 data 存在

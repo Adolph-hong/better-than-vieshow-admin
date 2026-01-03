@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale/zh-TW"
 import { AlertTriangle, CalendarDays } from "lucide-react"
-import { ClipLoader } from "react-spinners"
 import { DayPicker, getDefaultClassNames } from "react-day-picker"
+import { ClipLoader } from "react-spinners"
 
 interface CopyScheduleDialogProps {
   isOpen: boolean
