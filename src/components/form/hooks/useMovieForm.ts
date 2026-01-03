@@ -281,11 +281,8 @@ export const useMovieForm = (movieId?: string) => {
       return
     }
 
-<<<<<<< HEAD
-=======
     setIsSubmitting(true)
 
->>>>>>> Refactor-ui-logic-loading-alert
     const { poster } = data
 
     let posterUrl = ""
