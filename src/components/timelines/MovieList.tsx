@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
+import { ClipLoader } from "react-spinners"
 import { fetchMovies, MovieAPIError } from "@/services/movieAPI"
-import filterMoviesByDate from "@/utils/movieFilter"
 
 interface Schedule {
   id: string
@@ -29,11 +29,9 @@ const MovieList = ({ schedules = [] }: MovieListProps) => {
 
         const data = await fetchMovies()
 
-        // 使用共用過濾函數，根據今天日期過濾
-        const displayMovies = filterMoviesByDate(data)
-
+        // 顯示所有電影，不過濾
         // 轉換為 MovieList 需要的格式
-        const formattedMovies = displayMovies.map((movie) => ({
+        const formattedMovies = data.map((movie) => ({
           id: movie.id,
           movieName: movie.movieName,
         }))
@@ -72,8 +70,8 @@ const MovieList = ({ schedules = [] }: MovieListProps) => {
           <span>電影</span>
           <span>場次</span>
         </div>
-        <div className="body-medium flex items-center justify-center px-2 py-8 text-gray-400">
-          載入中...
+        <div className="flex items-center justify-center px-2 py-8">
+          <ClipLoader color="#5365AC" size={30} />
         </div>
       </div>
     )

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import {
   createMovie,
   getMovieById,
@@ -22,6 +23,7 @@ export interface MovieFormValues {
   poster: File | null
   startAt: string
   endAt: string
+  canCarousel: boolean
 }
 
 // 影片類型映射：中文 → 英文代碼
@@ -87,6 +89,8 @@ export const useMovieForm = (movieId?: string) => {
   const navigate = useNavigate()
   const isEditMode = !!movieId
   const [originalPosterUrl, setOriginalPosterUrl] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<MovieFormValues>({
     defaultValues: {
@@ -101,6 +105,7 @@ export const useMovieForm = (movieId?: string) => {
       poster: null,
       startAt: "",
       endAt: "",
+      canCarousel: false,
     },
   })
 
@@ -108,6 +113,7 @@ export const useMovieForm = (movieId?: string) => {
     if (!isEditMode || !movieId) return
 
     const loadMovie = async () => {
+      setIsLoading(true)
       try {
         const movie = await getMovieById(Number(movieId))
 
@@ -124,20 +130,23 @@ export const useMovieForm = (movieId?: string) => {
           poster: null,
           startAt: movie.releaseDate ? new Date(movie.releaseDate).toISOString().split("T")[0] : "",
           endAt: movie.endDate ? new Date(movie.endDate).toISOString().split("T")[0] : "",
+          canCarousel: movie.canCarousel || false,
         })
       } catch (error) {
         if (error instanceof MovieAPIError) {
           if (error.errorType === "NOT_FOUND") {
-            alert("找不到指定的電影")
+            toast.error("找不到指定的電影", { id: "load-movie-not-found" })
           } else if (error.errorType === "UNAUTHORIZED") {
-            alert("未授權，請重新登入")
+            toast.error("未授權，請重新登入", { id: "load-movie-unauthorized" })
           } else {
-            alert(`載入電影資料失敗：${error.message}`)
+            toast.error(`載入電影資料失敗：${error.message}`, { id: "load-movie-error" })
           }
         } else {
-          alert("載入電影資料失敗，請稍後再試")
+          toast.error("載入電影資料失敗，請稍後再試", { id: "load-movie-error" })
         }
         navigate("/movies")
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -152,7 +161,7 @@ export const useMovieForm = (movieId?: string) => {
     if (formData.duration) {
       const durationPattern = /^[1-9]\d*$/
       if (!durationPattern.test(formData.duration)) {
-        alert("片長只能輸入數字，且不能以0開頭")
+        toast.error("片長只能輸入數字，且不能以0開頭", { id: "validation-duration" })
         return false
       }
     }
@@ -160,17 +169,19 @@ export const useMovieForm = (movieId?: string) => {
     if (formData.trailerLink) {
       const trimmedLink = formData.trailerLink.trim()
       if (!trimmedLink.startsWith("http://") && !trimmedLink.startsWith("https://")) {
-        alert("預告片連結必須以 http:// 或 https:// 開頭")
+        toast.error("預告片連結必須以 http:// 或 https:// 開頭", { id: "validation-trailer-link" })
         return false
       }
       try {
         const url = new URL(trimmedLink)
         if (url.protocol !== "https:" && url.protocol !== "http:") {
-          alert("預告片連結必須以 http:// 或 https:// 開頭")
+          toast.error("預告片連結必須以 http:// 或 https:// 開頭", {
+            id: "validation-trailer-link",
+          })
           return false
         }
       } catch {
-        alert("請輸入有效的網址")
+        toast.error("請輸入有效的網址", { id: "validation-url" })
         return false
       }
     }
@@ -206,12 +217,12 @@ export const useMovieForm = (movieId?: string) => {
       })
 
       if (emptyFields.length > 0) {
-        alert("請填寫所有欄位")
+        toast.error("請填寫所有欄位", { id: "validation-empty-fields" })
         return false
       }
 
       if (formData.startAt && formData.endAt && formData.startAt >= formData.endAt) {
-        alert("開始日期必須小於結束日期")
+        toast.error("開始日期必須小於結束日期", { id: "validation-date-range" })
         return false
       }
 
@@ -222,14 +233,16 @@ export const useMovieForm = (movieId?: string) => {
         endDate.setHours(0, 0, 0, 0)
 
         if (endDate < today) {
-          alert("下映日不能是過去的日期，請選擇今天或未來的日期")
+          toast.error("下映日不能是過去的日期，請選擇今天或未來的日期", {
+            id: "validation-end-date",
+          })
           return false
         }
       }
     }
 
     if (isEditMode && formData.startAt && formData.endAt && formData.startAt >= formData.endAt) {
-      alert("開始日期必須小於結束日期")
+      toast.error("開始日期必須小於結束日期", { id: "validation-date-range" })
       return false
     }
 
@@ -240,7 +253,7 @@ export const useMovieForm = (movieId?: string) => {
       endDate.setHours(0, 0, 0, 0)
 
       if (endDate < today) {
-        alert("下映日不能是過去的日期，請選擇今天或未來的日期")
+        toast.error("下映日不能是過去的日期，請選擇今天或未來的日期", { id: "validation-end-date" })
         return false
       }
     }
@@ -268,6 +281,8 @@ export const useMovieForm = (movieId?: string) => {
       return
     }
 
+    setIsSubmitting(true)
+
     const { poster } = data
 
     let posterUrl = ""
@@ -275,7 +290,8 @@ export const useMovieForm = (movieId?: string) => {
       try {
         posterUrl = await uploadImageToCloudinary(poster)
       } catch (error) {
-        alert("上傳電影封面失敗，請稍後再試")
+        toast.error("上傳電影封面失敗，請稍後再試", { id: "upload-poster-error" })
+        setIsSubmitting(false)
         return
       }
     }
@@ -301,7 +317,7 @@ export const useMovieForm = (movieId?: string) => {
         trailerUrl: movieFormData.trailerLink || "",
         releaseDate,
         endDate,
-        canCarousel: false, // API 文件未說明如何設定，先設為 false
+        canCarousel: movieFormData.canCarousel || false,
       }
     }
 
@@ -310,44 +326,48 @@ export const useMovieForm = (movieId?: string) => {
     if (isEditMode && movieId) {
       try {
         await updateMovie(Number(movieId), apiData)
-        alert("電影更新成功")
+        toast.success("電影更新成功", { id: "update-movie-success" })
         navigate("/movies")
       } catch (error) {
         if (error instanceof MovieAPIError) {
           if (error.errorType === "VALIDATION_ERROR") {
-            alert(`更新電影失敗：${error.message}`)
+            toast.error(`更新電影失敗：${error.message}`, { id: "update-movie-error" })
           } else if (error.errorType === "NOT_FOUND") {
-            alert("找不到指定的電影")
+            toast.error("找不到指定的電影", { id: "update-movie-not-found" })
           } else if (error.errorType === "UNAUTHORIZED") {
-            alert("未授權，請重新登入")
+            toast.error("未授權，請重新登入", { id: "update-movie-unauthorized" })
           } else if (error.errorType === "FORBIDDEN") {
-            alert("權限不足，需要 Admin 角色")
+            toast.error("權限不足，需要 Admin 角色", { id: "update-movie-forbidden" })
           } else {
-            alert(`更新電影失敗：${error.message}`)
+            toast.error(`更新電影失敗：${error.message}`, { id: "update-movie-error" })
           }
         } else {
-          alert("更新電影失敗，請稍後再試")
+          toast.error("更新電影失敗，請稍後再試", { id: "update-movie-error" })
         }
+      } finally {
+        setIsSubmitting(false)
       }
     } else {
       try {
         await createMovie(apiData)
-        alert("電影建立成功")
+        toast.success("電影建立成功", { id: "create-movie-success" })
         navigate("/movies")
       } catch (error) {
         if (error instanceof MovieAPIError) {
           if (error.errorType === "VALIDATION_ERROR") {
-            alert(`建立電影失敗：${error.message}`)
+            toast.error(`建立電影失敗：${error.message}`, { id: "create-movie-error" })
           } else if (error.errorType === "UNAUTHORIZED") {
-            alert("未授權，請重新登入")
+            toast.error("未授權，請重新登入", { id: "create-movie-unauthorized" })
           } else if (error.errorType === "FORBIDDEN") {
-            alert("權限不足，需要 Admin 角色")
+            toast.error("權限不足，需要 Admin 角色", { id: "create-movie-forbidden" })
           } else {
-            alert(`建立電影失敗：${error.message}`)
+            toast.error(`建立電影失敗：${error.message}`, { id: "create-movie-error" })
           }
         } else {
-          alert("建立電影失敗，請稍後再試")
+          toast.error("建立電影失敗，請稍後再試", { id: "create-movie-error" })
         }
+      } finally {
+        setIsSubmitting(false)
       }
     }
   }
@@ -357,5 +377,7 @@ export const useMovieForm = (movieId?: string) => {
     isEditMode,
     originalPosterUrl,
     handleSubmit,
+    isLoading,
+    isSubmitting,
   }
 }

@@ -1,3 +1,5 @@
+import toast from "react-hot-toast"
+import { ClipLoader } from "react-spinners"
 import FormActions from "./FormActions"
 import { useMovieForm } from "./hooks/useMovieForm"
 import BasicInfoSection from "./sections/BasicInfoSection"
@@ -9,7 +11,8 @@ interface MovieFormProps {
 }
 
 const MovieForm = ({ movieId }: MovieFormProps) => {
-  const { form, isEditMode, originalPosterUrl, handleSubmit } = useMovieForm(movieId)
+  const { form, isEditMode, originalPosterUrl, handleSubmit, isLoading, isSubmitting } =
+    useMovieForm(movieId)
   const {
     register,
     handleSubmit: formHandleSubmit,
@@ -17,6 +20,14 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
     formState: { errors },
     setValue,
   } = form
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-6">
+        <ClipLoader color="#5365AC" size={40} />
+      </div>
+    )
+  }
 
   return (
     <form
@@ -27,9 +38,9 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
         (formErrors) => {
           const firstError = Object.values(formErrors)[0]
           if (firstError?.message) {
-            alert(firstError.message)
+            toast.error(firstError.message, { id: "validation-form-error" })
           } else {
-            alert("請檢查表單欄位是否填寫正確")
+            toast.error("請檢查表單欄位是否填寫正確", { id: "validation-form-error" })
           }
         }
       )}
@@ -49,7 +60,7 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
         originalPosterUrl={originalPosterUrl}
       />
       <PlayPeriodSection control={control} errors={errors} />
-      <FormActions isEditMode={isEditMode} />
+      <FormActions isEditMode={isEditMode} isSubmitting={isSubmitting} />
     </form>
   )
 }

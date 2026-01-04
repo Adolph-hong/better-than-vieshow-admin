@@ -229,7 +229,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           <dd className="text-[32px] font-semibold">{theater.normalSeats}</dd>
         </div>
         <div className="flex flex-col-reverse">
-          <dt className="text-xl font-medium text-[#646464]">殘障座位</dt>
+          <dt className="text-xl font-medium text-[#646464]">友善座位</dt>
           <dd className="text-[32px] font-semibold">{theater.accessibleSeats}</dd>
         </div>
       </dl>
