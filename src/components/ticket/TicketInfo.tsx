@@ -1,27 +1,30 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import type { Movie } from "@/utils/storage"
 
 interface TicketInfoProps {
-  movie: Movie
+  movieTitle: string
   date: string
   theater: string
   showtime: string
   seat: string
   ticketNumber: string
+  theaterType: string
   onConfirm: () => void
   showResult: boolean
+  isValidating?: boolean
 }
 
 const TicketInfo = ({
-  movie,
+  movieTitle,
   date,
   theater,
   showtime,
   seat,
   ticketNumber,
+  theaterType,
   onConfirm,
   showResult,
+  isValidating = false,
 }: TicketInfoProps) => {
   const navigate = useNavigate()
   const [isVisible, setIsVisible] = useState(false)
@@ -47,11 +50,10 @@ const TicketInfo = ({
       }`}
     >
       <div className="flex flex-1 flex-col overflow-y-auto rounded-t-3xl">
-        <div className="relative h-40 w-full">
+        <div className="relative h-40 w-full bg-gray-900">
           <div className="absolute inset-0 h-full w-full bg-black/40" />
-          <img src={movie.poster} alt={movie.movieName} className="h-full w-full object-cover" />
-          <h2 className="font-family-inter absolute bottom-3 line-clamp-1 px-3 text-xl leading-normal font-bold tracking-[0.04em] break-all text-white">
-            {movie.movieName}
+          <h2 className="font-family-inter absolute bottom-3 left-0 right-0 line-clamp-1 px-3 text-xl leading-normal font-bold tracking-[0.04em] break-all text-white">
+            {movieTitle}
           </h2>
         </div>
         <div className="flex flex-col px-4 pt-4">
@@ -80,17 +82,12 @@ const TicketInfo = ({
               <div className="flex flex-1 flex-col gap-1">
                 <span className="font-family-inter text-sm font-semibold text-[#777777]">類型</span>
                 <span className="body-medium text-[#232323]">
-                  一般{" "}
-                  {(() => {
-                    if (movie.filmType?.includes("3DX")) return "3DX"
-                    if (movie.filmType?.includes("IMAX")) return "IMAX"
-                    return "2D"
-                  })()}
+                  {theaterType || "一般數位"}
                 </span>
               </div>
               <div className="flex flex-1 flex-col gap-1">
                 <span className="font-family-inter text-sm font-semibold text-[#777777]">編號</span>
-                <span className="body-medium text-[#232323]">{ticketNumber}</span>
+                <span className="body-medium text-[#232323]">{ticketNumber || "-"}</span>
               </div>
             </div>
           </div>
@@ -100,9 +97,10 @@ const TicketInfo = ({
         <button
           type="button"
           onClick={handleButtonClick}
-          className="body-medium bg-primary-500 w-full rounded-[10px] px-4 py-2.5 text-white"
+          disabled={isValidating}
+          className="body-medium bg-primary-500 w-full rounded-[10px] px-4 py-2.5 text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {showResult ? "確認" : "確認驗票"}
+          {isValidating ? "驗票中..." : showResult ? "確認" : "確認驗票"}
         </button>
       </div>
     </div>

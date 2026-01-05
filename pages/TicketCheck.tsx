@@ -1,60 +1,146 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { zhTW } from "date-fns/locale"
+import toast from "react-hot-toast"
 import scanBg from "@/assets/icon/scan-bg.png"
 import ticketIcon from "@/assets/icon/ticket-icon.svg"
-import moviesData from "@/components/form/db.json"
 import QrScanner from "@/components/ticket/QrScanner"
 import TicketInfo from "@/components/ticket/TicketInfo"
 import VerificationResult from "@/components/ticket/VerificationResult"
-import type { Movie } from "@/utils/storage"
-
-const TARGET_MOVIE_ID = "9879baaf-2c45-4ace-8193-82af637e06a9"
+import { scanTicket, validateTicket, TicketAPIError } from "@/services/ticketAPI"
+import type { ScanTicketResponse } from "@/services/ticketAPI"
 
 const TicketCheck = () => {
   const navigate = useNavigate()
   const [scanned, setScanned] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [ticketData, setTicketData] = useState<ScanTicketResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
 
-  const movie = useMemo(() => {
-    const data = moviesData as { movies?: Movie[] }
-    const movies = Array.isArray(data.movies) ? data.movies : []
-    return movies.find((m) => m.id === TARGET_MOVIE_ID) || movies[0]
-  }, [])
+  const handleScan = async (decodedText: string) => {
+    try {
+      setIsLoading(true)
+      // eslint-disable-next-line no-console
+      console.log("掃描到的 QR Code 內容:", decodedText)
 
-  const handleScan = (decodedText: string) => {
-    // 實驗用：掃描任何 QR Code 都顯示預設的軒轅劍票券
-    // eslint-disable-next-line no-console
-    console.log("🎯 handleScan 被調用！掃描到的 QR Code 內容:", decodedText)
-    // eslint-disable-next-line no-console
-    console.log("🎯 準備設置 scanned = true")
-    // 直接顯示票券資訊（使用預設的 TARGET_MOVIE_ID）
-    setScanned(true)
-    // eslint-disable-next-line no-console
-    console.log("🎯 scanned 已設置為 true")
+      const data = await scanTicket(decodedText)
+      setTicketData(data)
+      setScanned(true)
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("掃描票券失敗:", error)
+
+      if (error instanceof TicketAPIError) {
+        if (error.errorType === "NOT_FOUND") {
+          toast.error("票券不存在", { id: "scan-ticket-not-found" })
+        } else if (error.errorType === "VALIDATION_ERROR") {
+          toast.error(`掃描失敗：${error.message}`, { id: "scan-ticket-validation-error" })
+        } else if (error.errorType === "UNAUTHORIZED") {
+          toast.error("未授權，請重新登入", { id: "scan-ticket-unauthorized" })
+          localStorage.removeItem("token")
+          navigate("/login")
+        } else if (error.errorType === "FORBIDDEN") {
+          toast.error("權限不足，需要 Admin 角色", { id: "scan-ticket-forbidden" })
+        } else {
+          toast.error(`掃描失敗：${error.message}`, { id: "scan-ticket-error" })
+        }
+      } else {
+        toast.error("掃描票券失敗，請稍後再試", { id: "scan-ticket-error" })
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleBack = () => {
     navigate("/")
   }
 
-  const handleConfirm = () => {
-    const success = Math.random() > 0.5
-    setIsSuccess(success)
-    setShowResult(true)
+  const handleConfirm = async () => {
+    if (!ticketData) return
+
+    try {
+      setIsValidating(true)
+      // 呼叫驗票 API
+      const result = await validateTicket(ticketData.ticketId)
+
+      // 驗票成功
+      setIsSuccess(true)
+      setShowResult(true)
+      toast.success(result.message || "驗票成功", { id: "validate-ticket-success" })
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("驗票失敗:", error)
+
+      // 驗票失敗
+      setIsSuccess(false)
+      setShowResult(true)
+
+      if (error instanceof TicketAPIError) {
+        if (error.errorType === "VALIDATION_ERROR") {
+          // 400: 票券狀態不允許驗票 (已使用/已過期/未支付)
+          toast.error(error.message || "驗票失敗", { id: "validate-ticket-error" })
+        } else if (error.errorType === "NOT_FOUND") {
+          toast.error("票券不存在", { id: "validate-ticket-not-found" })
+        } else if (error.errorType === "UNAUTHORIZED") {
+          toast.error("未授權，請重新登入", { id: "validate-ticket-unauthorized" })
+          localStorage.removeItem("token")
+          navigate("/login")
+        } else if (error.errorType === "FORBIDDEN") {
+          toast.error("權限不足，需要 Admin 角色", { id: "validate-ticket-forbidden" })
+        } else {
+          toast.error(`驗票失敗：${error.message}`, { id: "validate-ticket-error" })
+        }
+      } else {
+        toast.error("驗票失敗，請稍後再試", { id: "validate-ticket-error" })
+      }
+    } finally {
+      setIsValidating(false)
+    }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const weekDay = date.toLocaleDateString("zh-TW", { weekday: "narrow" })
-    const dateText = format(date, "yyyy/MM/dd", { locale: zhTW })
-    return `${dateText}(${weekDay})`
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return ""
+    try {
+      const date = new Date(dateString)
+      const weekDay = date.toLocaleDateString("zh-TW", { weekday: "narrow" })
+      const dateText = format(date, "yyyy/MM/dd", { locale: zhTW })
+      return `${dateText}(${weekDay})`
+    } catch {
+      return dateString
+    }
   }
 
-  const today = new Date()
-  const formattedDate = formatDate(today.toISOString().split("T")[0])
+  const formatTime = (timeString: string | null) => {
+    if (!timeString) return ""
+    try {
+      // 假設時間格式為 HH:mm 或 HH:mm:ss
+      const [hours, minutes] = timeString.split(":")
+      const hour = parseInt(hours, 10)
+      if (hour < 12) {
+        return `上午 ${timeString}`
+      }
+      if (hour === 12) {
+        return `下午 ${timeString}`
+      }
+      return `下午 ${String(hour - 12).padStart(2, "0")}:${minutes}`
+    } catch {
+      return timeString
+    }
+  }
+
+  const formatSeat = (row: string | null, column: number | null, label: string | null) => {
+    if (label) return label
+    if (row && column !== null) {
+      return `${row} 排 ${column} 號`
+    }
+    if (row) return `${row} 排`
+    if (column !== null) return `${column} 號`
+    return ""
+  }
 
   return (
     <div className="m-auto flex h-screen max-w-[375px] flex-col">
@@ -73,7 +159,7 @@ const TicketCheck = () => {
       </header>
       <div className="relative flex flex-1 overflow-hidden">
         <div className="absolute h-full w-full overflow-hidden">
-          {!scanned && (
+          {!scanned && !isLoading && (
             <QrScanner
               onScan={handleScan}
               onError={(err) => {
@@ -81,8 +167,14 @@ const TicketCheck = () => {
                   err instanceof Error ? err.message : "無法啟動相機，請檢查權限設定"
                 // eslint-disable-next-line no-console
                 console.error("相機錯誤:", errorMessage)
+                toast.error(errorMessage, { id: "camera-error" })
               }}
             />
+          )}
+          {isLoading && (
+            <div className="flex h-full w-full items-center justify-center bg-black/50">
+              <p className="font-family-inter text-xl font-bold text-white">掃描中...</p>
+            </div>
           )}
           {scanned && (
             <>
@@ -107,17 +199,19 @@ const TicketCheck = () => {
             返回
           </button>
         )}
-        {scanned && movie && (
+        {scanned && ticketData && (
           <>
             <TicketInfo
-              movie={movie}
-              date={formattedDate}
-              theater="2A"
-              showtime="下午 2:30"
-              seat="D 排 12 號"
-              ticketNumber="13395332"
+              movieTitle={ticketData.movieTitle || "未知電影"}
+              date={formatDate(ticketData.showDate)}
+              theater={ticketData.theaterName || ""}
+              showtime={formatTime(ticketData.showTime)}
+              seat={formatSeat(ticketData.seatRow, ticketData.seatColumn, ticketData.seatLabel)}
+              ticketNumber={ticketData.ticketNumber || ""}
+              theaterType={ticketData.theaterType || ""}
               onConfirm={handleConfirm}
               showResult={showResult}
+              isValidating={isValidating}
             />
             {showResult && <VerificationResult isSuccess={isSuccess} />}
           </>
