@@ -9,6 +9,13 @@ interface FormActionsProps {
 const FormActions = ({ isEditMode, isSubmitting = false }: FormActionsProps) => {
   const navigate = useNavigate()
 
+  const getButtonText = () => {
+    if (isEditMode) {
+      return "更新"
+    }
+    return "建立電影"
+  }
+
   return (
     <section className="flex justify-end gap-6 border-t border-gray-100 py-6">
       <button
@@ -26,13 +33,7 @@ const FormActions = ({ isEditMode, isSubmitting = false }: FormActionsProps) => 
           isSubmitting ? "cursor-not-allowed opacity-70" : ""
         }`}
       >
-        {isSubmitting ? (
-          <ClipLoader color="#ffffff" size={20} />
-        ) : isEditMode ? (
-          "更新"
-        ) : (
-          "建立電影"
-        )}
+        {isSubmitting ? <ClipLoader color="#ffffff" size={20} /> : getButtonText()}
       </button>
     </section>
   )

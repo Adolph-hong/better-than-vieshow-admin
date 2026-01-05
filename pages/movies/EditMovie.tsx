@@ -1,9 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import { ClipLoader } from "react-spinners"
+import { useMovieForm } from "@/components/form/hooks/useMovieForm"
 import MovieForm from "@/components/form/MovieForm"
 import AdminContainer from "@/components/layout/AdminContainer"
-import { useMovieForm } from "@/components/form/hooks/useMovieForm"
 
 const EditMovie = () => {
   const { id } = useParams<{ id: string }>()
