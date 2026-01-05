@@ -3,8 +3,8 @@ export { TimelineAPIError } from "./types"
 export type { UnauthorizedError, ValidationError } from "./types"
 
 // 匯出月曆 API
-export { getMonthOverview } from "./calendarAPI"
-export type { DailyScheduleStatus, MonthOverviewResponse } from "./calendarAPI"
+export { getMonthOverview } from "./calendar"
+export type { DailyScheduleStatus, MonthOverviewResponse } from "./calendar"
 
 // 匯出查詢時刻表 API
 export { getDailySchedule } from "./searchTimeline"
