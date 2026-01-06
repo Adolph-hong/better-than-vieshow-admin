@@ -23,6 +23,7 @@ export interface ScanTicketResponse {
   ticketNumber: string | null
   status: string | null
   movieTitle: string | null
+  posterUrl?: string | null
   showDate: string | null
   showTime: string | null
   seatRow: string | null

@@ -26,7 +26,32 @@ const TicketCheck = () => {
       // eslint-disable-next-line no-console
       console.log("掃描到的 QR Code 內容:", decodedText)
 
-      const data = await scanTicket(decodedText)
+      // 解析 QR Code 內容：可能是 JSON 物件或單純的票券編號
+      let ticketNumber = decodedText
+      try {
+        // 先嘗試 URL 解碼（如果 QR Code 內容是 URL 編碼的）
+        let decodedContent = decodedText
+        try {
+          decodedContent = decodeURIComponent(decodedText)
+        } catch {
+          // 如果解碼失敗，使用原始內容
+        }
+
+        // 嘗試解析為 JSON
+        const parsed = JSON.parse(decodedContent)
+        // 如果是 JSON 物件，提取 ticketNumber
+        if (parsed && typeof parsed === "object" && parsed.ticketNumber) {
+          ticketNumber = String(parsed.ticketNumber)
+          // eslint-disable-next-line no-console
+          console.log("從 JSON 中提取的票券編號:", ticketNumber)
+        }
+      } catch {
+        // 如果不是 JSON，直接使用原始內容作為票券編號
+        // eslint-disable-next-line no-console
+        console.log("QR Code 內容不是 JSON，直接使用作為票券編號")
+      }
+
+      const data = await scanTicket(ticketNumber)
       setTicketData(data)
       setScanned(true)
     } catch (error) {
@@ -203,6 +228,7 @@ const TicketCheck = () => {
           <>
             <TicketInfo
               movieTitle={ticketData.movieTitle || "未知電影"}
+              posterUrl={ticketData.posterUrl || null}
               date={formatDate(ticketData.showDate)}
               theater={ticketData.theaterName || ""}
               showtime={formatTime(ticketData.showTime)}

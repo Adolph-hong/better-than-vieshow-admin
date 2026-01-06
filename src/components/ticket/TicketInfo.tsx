@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 
 interface TicketInfoProps {
   movieTitle: string
+  posterUrl?: string | null
   date: string
   theater: string
   showtime: string
@@ -16,6 +17,7 @@ interface TicketInfoProps {
 
 const TicketInfo = ({
   movieTitle,
+  posterUrl,
   date,
   theater,
   showtime,
@@ -51,7 +53,22 @@ const TicketInfo = ({
     >
       <div className="flex flex-1 flex-col overflow-y-auto rounded-t-3xl">
         <div className="relative h-40 w-full bg-gray-900">
-          <div className="absolute inset-0 h-full w-full bg-black/40" />
+          {posterUrl ? (
+            <>
+              <img
+                src={posterUrl}
+                alt={movieTitle}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  // 如果圖片載入失敗，隱藏圖片，顯示背景色
+                  e.currentTarget.style.display = "none"
+                }}
+              />
+              <div className="absolute inset-0 h-full w-full bg-black/40" />
+            </>
+          ) : (
+            <div className="absolute inset-0 h-full w-full bg-black/40" />
+          )}
           <h2 className="font-family-inter absolute bottom-3 left-0 right-0 line-clamp-1 px-3 text-xl leading-normal font-bold tracking-[0.04em] break-all text-white">
             {movieTitle}
           </h2>
