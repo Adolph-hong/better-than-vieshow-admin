@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import type { SeatCell, SeatStats, ToolType } from "@/components/theater-builder/SeatingChart"
 import sendAPI from "@/utils/sendAPI"
+import { getTheaterTypeAPIValue } from "@/utils/theaterTypeMap"
 
 const useNewTheaterForm = () => {
   const navigate = useNavigate()
@@ -42,7 +43,7 @@ const useNewTheaterForm = () => {
 
     const payload = {
       name: trimmedName,
-      type: theaterType,
+      type: getTheaterTypeAPIValue(theaterType),
       floor,
       rowCount: rows,
       columnCount: columns,
