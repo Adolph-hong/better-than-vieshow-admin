@@ -23,6 +23,7 @@ const useTheaters = () => {
           ...theater,
           normalSeats: theater.standard ?? theater.normalSeats ?? 0,
           accessibleSeats: theater.wheelchair ?? theater.accessibleSeats ?? 0,
+          canDelete: theater.canDelete,
         }))
         
         setTheaters(transformedTheaters)

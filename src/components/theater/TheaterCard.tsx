@@ -7,6 +7,7 @@ import SeatingChartView from "@/components/theater/SeatingChartView"
 import type { SeatCell } from "@/components/theater-builder/SeatingChart"
 import type { TheaterData } from "@/contexts/TheaterContext"
 import sendAPI from "@/utils/sendAPI"
+import { getTheaterTypeDisplayName } from "@/utils/theaterTypeMap"
 
 type TheaterCardProps = {
   theater: TheaterData
@@ -180,7 +181,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
             {theater.name}
           </h3>
           <span className="shrink-0 rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
-            {theater.type}
+            {getTheaterTypeDisplayName(theater.type)}
           </span>
         </div>
         <div className="flex gap-5">
@@ -192,34 +193,36 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           >
             <Fullscreen />
           </button>
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              className="flex items-center hover:cursor-pointer"
-              onClick={() => setShowMenu(!showMenu)}
-              aria-label="更多選項"
-              aria-haspopup="true"
-              aria-expanded={showMenu}
-            >
-              <EllipsisVertical />
-            </button>
-            {showMenu && (
-              <div
-                className="absolute top-8 right-0 min-w-[143px] rounded-sm border border-gray-200 bg-white shadow-sm"
-                role="menu"
+          {theater.canDelete && (
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                className="flex items-center hover:cursor-pointer"
+                onClick={() => setShowMenu(!showMenu)}
+                aria-label="更多選項"
+                aria-haspopup="true"
+                aria-expanded={showMenu}
               >
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2 text-left hover:cursor-pointer"
-                  onClick={handleDeleteClick}
-                  role="menuitem"
+                <EllipsisVertical />
+              </button>
+              {showMenu && (
+                <div
+                  className="absolute top-8 right-0 min-w-[143px] rounded-sm border border-gray-200 bg-white shadow-sm"
+                  role="menu"
                 >
-                  <Trash2 className="h-[18px] w-[18px] text-gray-500" />
-                  刪除
-                </button>
-              </div>
-            )}
-          </div>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-3 px-4 py-2 text-left hover:cursor-pointer"
+                    onClick={handleDeleteClick}
+                    role="menuitem"
+                  >
+                    <Trash2 className="h-[18px] w-[18px] text-gray-500" />
+                    刪除
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
