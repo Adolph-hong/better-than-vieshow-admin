@@ -96,6 +96,8 @@ const TimeLineEditor = () => {
           id: number | string
           name: string
           type: string
+          standard?: number
+          wheelchair?: number
           normalSeats?: number
           accessibleSeats?: number
         }
@@ -104,8 +106,8 @@ const TimeLineEditor = () => {
           id: String(theater.id), // API 的 id 可能是數字，轉為字串
           name: theater.name,
           type: mapTheaterTypeToFrontend(theater.type), // 映射影廳類型
-          generalSeats: theater.normalSeats || 0,
-          disabledSeats: theater.accessibleSeats || 0,
+          generalSeats: theater.standard ?? theater.normalSeats ?? 0,
+          disabledSeats: theater.wheelchair ?? theater.accessibleSeats ?? 0,
         }))
 
         setTheaters(formattedTheaters)

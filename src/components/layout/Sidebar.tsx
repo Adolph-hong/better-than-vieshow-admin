@@ -52,7 +52,7 @@ const Sidebar = ({ borderColor = "border-white" }: SidebarProps) => {
 
   return (
     <aside
-      className={`flex min-h-screen w-[239px] shrink-0 flex-col border-r bg-white py-6 ${borderColor}`}
+      className={`sticky top-0 flex h-screen w-[239px] shrink-0 flex-col border-r bg-white py-6 ${borderColor}`}
     >
       {/* 上方logo與主題文字 */}
       <section className="mb-6 ml-4 flex text-[#333333]">
