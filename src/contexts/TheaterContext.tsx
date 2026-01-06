@@ -10,6 +10,7 @@ export type TheaterData = {
   accessibleSeats: number
   seatMap: SeatCell[][]
   type: string
+  canDelete: boolean
 }
 
 type TheaterContextType = {
