@@ -7,6 +7,7 @@ import SeatingChartView from "@/components/theater/SeatingChartView"
 import type { SeatCell } from "@/components/theater-builder/SeatingChart"
 import type { TheaterData } from "@/contexts/TheaterContext"
 import sendAPI from "@/utils/sendAPI"
+import { getTheaterTypeDisplayName } from "@/utils/theaterTypeMap"
 
 type TheaterCardProps = {
   theater: TheaterData
@@ -180,7 +181,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
             {theater.name}
           </h3>
           <span className="shrink-0 rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
-            {theater.type}
+            {getTheaterTypeDisplayName(theater.type)}
           </span>
         </div>
         <div className="flex gap-5">
