@@ -25,6 +25,7 @@ const TagInput = ({ label, name, control, placeholder, error, inputId }: TagInpu
       : []
   )
   const [inputValue, setInputValue] = useState<string>("")
+  const [isComposing, setIsComposing] = useState<boolean>(false)
 
   useEffect(() => {
     const newFieldValue = typeof field.value === "string" ? field.value : ""
@@ -39,7 +40,8 @@ const TagInput = ({ label, name, control, placeholder, error, inputId }: TagInpu
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
+      // 如果正在輸入中文（輸入法組合中），不處理 Enter 鍵
+      if (e.key === "Enter" && !isComposing && !e.nativeEvent.isComposing) {
         e.preventDefault()
         const inputElement = e.currentTarget
         const trimmedValue = inputElement.value.trim()
@@ -53,10 +55,25 @@ const TagInput = ({ label, name, control, placeholder, error, inputId }: TagInpu
             field.onChange(tagValue)
           })
         }
+      } else if (e.key === "Backspace" && inputValue === "" && tags.length > 0) {
+        // 當輸入框為空且按下 Backspace 時，刪除最後一個標籤
+        e.preventDefault()
+        const newTags = tags.slice(0, -1)
+        const tagValue = newTags.join(",")
+        setTags(newTags)
+        field.onChange(tagValue)
       }
     },
-    [tags, field]
+    [tags, field, inputValue, isComposing]
   )
+
+  const handleCompositionStart = useCallback(() => {
+    setIsComposing(true)
+  }, [])
+
+  const handleCompositionEnd = useCallback(() => {
+    setIsComposing(false)
+  }, [])
 
   const handleRemoveTag = useCallback(
     (tagToRemove: string) => {
@@ -67,6 +84,22 @@ const TagInput = ({ label, name, control, placeholder, error, inputId }: TagInpu
     },
     [tags, field]
   )
+
+  const handleBlur = useCallback(() => {
+    const trimmedValue = inputValue.trim()
+    if (trimmedValue && !tags.includes(trimmedValue)) {
+      const newTags = [...tags, trimmedValue]
+      const tagValue = newTags.join(",")
+      setInputValue("")
+      startTransition(() => {
+        setTags(newTags)
+        field.onChange(tagValue)
+      })
+    } else if (trimmedValue) {
+      // 如果已經存在，清空輸入框
+      setInputValue("")
+    }
+  }, [inputValue, tags, field])
 
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
@@ -98,6 +131,9 @@ const TagInput = ({ label, name, control, placeholder, error, inputId }: TagInpu
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
+          onBlur={handleBlur}
           placeholder={tags.length === 0 ? placeholder : ""}
           className="min-w-[120px] flex-1 border-none bg-transparent text-gray-900 outline-none"
           autoComplete="off"
