@@ -87,7 +87,7 @@ const MovieInfoSection = ({
         />
         <InputComponent
           label="描述"
-          placeholder="電影名稱"
+          placeholder="電影描述"
           register={register}
           registerName="describe"
           error={errors.describe?.message}
