@@ -1,19 +1,24 @@
 import { useState, useRef, useEffect } from "react"
 import { Fullscreen, EllipsisVertical, Trash2 } from "lucide-react"
+import toast from "react-hot-toast"
+import { ClipLoader } from "react-spinners"
 import Modal from "@/components/theater/Modal"
 import SeatingChartView from "@/components/theater/SeatingChartView"
 import type { SeatCell } from "@/components/theater-builder/SeatingChart"
 import type { TheaterData } from "@/contexts/TheaterContext"
 import sendAPI from "@/utils/sendAPI"
+import { getTheaterTypeDisplayName } from "@/utils/theaterTypeMap"
 
 type TheaterCardProps = {
   theater: TheaterData
-  onDelete: (id: string) => void
+  onDelete: (id: string) => Promise<boolean>
 }
 
 const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   const [showMenu, setShowMenu] = useState(false)
   const [showSeatingChart, setShowSeatingChart] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const [previewSeatMap, setPreviewSeatMap] = useState<SeatCell[][]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -35,9 +40,22 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
     }
   }, [showMenu])
 
-  const handleDelete = () => {
-    onDelete(theater.id)
+  const handleDeleteClick = () => {
     setShowMenu(false)
+    setShowDeleteConfirm(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true)
+    const success = await onDelete(theater.id)
+    setIsDeleting(false)
+
+    if (success) {
+      toast.success("刪除成功")
+      setShowDeleteConfirm(false)
+    } else {
+      toast.error("刪除失敗，請稍後再試")
+    }
   }
 
   const transformSeatMap = (rawSeats: string[][]): SeatCell[][] => {
@@ -51,19 +69,19 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
         }
 
         switch (seatType) {
-          case "一般座位":
+          case "Standard":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "normal",
             } as SeatCell
-          case "殘障座位":
+          case "Wheelchair":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "accessible",
             } as SeatCell
-          case "走道":
+          case "Aisle":
             return {
               ...baseCell,
               type: "aisle",
@@ -89,19 +107,19 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
         }
 
         switch (cell.seatType) {
-          case "一般座位":
+          case "Standard":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "normal",
             } as SeatCell
-          case "殘障座位":
+          case "Wheelchair":
             return {
               ...baseCell,
               type: "seat",
               seatKind: "accessible",
             } as SeatCell
-          case "走道":
+          case "Aisle":
             return {
               ...baseCell,
               type: "aisle",
@@ -120,7 +138,7 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
     setShowSeatingChart(true)
     setIsLoading(true)
     try {
-      const response = await sendAPI(`/api/admin/Theaters/${theater.id}`, "GET")
+      const response = await sendAPI(`/api/admin/theaters/${theater.id}`, "GET")
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -153,14 +171,17 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
   }
 
   return (
-    <div className="relative rounded-xl bg-white p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <article
+      className="relative rounded-xl bg-white p-6"
+      aria-labelledby={`theater-title-${theater.id}`}
+    >
+      <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3 overflow-hidden">
-          <h1 className="truncate text-2xl" title={theater.name}>
+          <h3 id={`theater-title-${theater.id}`} className="truncate text-2xl" title={theater.name}>
             {theater.name}
-          </h1>
+          </h3>
           <span className="shrink-0 rounded-full bg-[#69BDCE] px-4 py-2 text-sm leading-none font-normal text-white">
-            {theater.type}
+            {getTheaterTypeDisplayName(theater.type)}
           </span>
         </div>
         <div className="flex gap-5">
@@ -172,45 +193,54 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           >
             <Fullscreen />
           </button>
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              className="flex items-center hover:cursor-pointer"
-              onClick={() => setShowMenu(!showMenu)}
-              aria-label="更多選項"
-            >
-              <EllipsisVertical />
-            </button>
-            {showMenu && (
-              <div className="absolute top-8 right-0 min-w-[143px] rounded-sm border border-gray-200 bg-white shadow-sm">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2 text-left hover:cursor-pointer"
-                  onClick={handleDelete}
+          {theater.canDelete && (
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                className="flex items-center hover:cursor-pointer"
+                onClick={() => setShowMenu(!showMenu)}
+                aria-label="更多選項"
+                aria-haspopup="true"
+                aria-expanded={showMenu}
+              >
+                <EllipsisVertical />
+              </button>
+              {showMenu && (
+                <div
+                  className="absolute top-8 right-0 min-w-[143px] rounded-sm border border-gray-200 bg-white shadow-sm"
+                  role="menu"
                 >
-                  <Trash2 className="h-[18px] w-[18px] text-[#575867]" />
-                  刪除
-                </button>
-              </div>
-            )}
-          </div>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-3 px-4 py-2 text-left hover:cursor-pointer"
+                    onClick={handleDeleteClick}
+                    role="menuitem"
+                  >
+                    <Trash2 className="h-[18px] w-[18px] text-gray-500" />
+                    刪除
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </div>
+      </header>
 
-      <div className="flex gap-8">
-        <div className="flex flex-col">
-          <span className="text-[32px] font-semibold">{theater.normalSeats}</span>
-          <span className="text-xl font-medium text-[#646464]">一般座位</span>
+      <dl className="flex gap-8">
+        <div className="flex flex-col-reverse">
+          <dt className="text-xl font-medium text-[#646464]">一般座位</dt>
+          <dd className="text-[32px] font-semibold">{theater.normalSeats}</dd>
         </div>
-        <div className="flex flex-col">
-          <span className="text-[32px] font-semibold">{theater.accessibleSeats}</span>
-          <span className="text-xl font-medium text-[#646464]">殘障座位</span>
+        <div className="flex flex-col-reverse">
+          <dt className="text-xl font-medium text-[#646464]">友善座位</dt>
+          <dd className="text-[32px] font-semibold">{theater.accessibleSeats}</dd>
         </div>
-      </div>
+      </dl>
       <Modal isOpen={showSeatingChart} onClose={() => setShowSeatingChart(false)}>
         {isLoading ? (
-          <div className="flex h-64 w-full items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500" />
+          <div className="flex h-64 min-w-[500px] flex-col items-center justify-center gap-4">
+            <ClipLoader color="#5365AC" size={32} />
+            <p className="text-gray-500">正在載入座位圖...</p>
           </div>
         ) : (
           <SeatingChartView
@@ -220,7 +250,32 @@ const TheaterCard = ({ theater, onDelete }: TheaterCardProps) => {
           />
         )}
       </Modal>
-    </div>
+
+      <Modal isOpen={showDeleteConfirm} onClose={() => !isDeleting && setShowDeleteConfirm(false)}>
+        <div className="w-[400px] p-6">
+          <h2 className="mb-4 text-xl font-bold">確定要刪除嗎？</h2>
+          <p className="mb-6 text-gray-600">即將刪除「{theater.name}」，此操作無法復原。</p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="flex cursor-pointer items-center rounded-lg bg-[#5365AC] px-4 py-2 text-white"
+            >
+              {isDeleting ? <ClipLoader color="#ffffff" size={20} /> : "刪除"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </article>
   )
 }
 

@@ -1,9 +1,10 @@
-import type { UseFormRegister, Control, FieldErrors } from "react-hook-form"
-import type { MovieFormValues } from "../hooks/useMovieForm"
-import InputComponent from "../InputComponent"
-import FilmTypeSelect from "../FilmTypeSelect"
 import CustomSelect from "../CustomSelect"
+import FilmTypeSelect from "../FilmTypeSelect"
+import InputComponent from "../InputComponent"
+import SwitchComponent from "../SwitchComponent"
 import TitleComponent from "../TitleComponent"
+import type { MovieFormValues } from "../hooks/useMovieForm"
+import type { UseFormRegister, Control, FieldErrors } from "react-hook-form"
 
 interface BasicInfoSectionProps {
   register: UseFormRegister<MovieFormValues>
@@ -55,10 +56,15 @@ const BasicInfoSection = ({ register, control, errors, isEditMode }: BasicInfoSe
             />
           </div>
         </div>
+        <SwitchComponent
+          label="設為首頁輪播"
+          name="canCarousel"
+          control={control}
+          error={errors.canCarousel?.message}
+        />
       </div>
     </section>
   )
 }
 
 export default BasicInfoSection
-

@@ -1,4 +1,4 @@
-import { CalendarClock, Film, House } from "lucide-react"
+import { CalendarClock, Film, House, ScanText } from "lucide-react"
 // 未啟用 先註解起來 Beer CircleDollarSign Users UserStar
 
 interface SidebarItem {
@@ -16,5 +16,6 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   // { id: 5, title: '營收', to: '/#', icon: CircleDollarSign },
   // { id: 6, title: '會員', to: '/#', icon: Users },
   // { id: 7, title: '管理員', to: '/#', icon: UserStar },
+  { id: 8, title: "驗票", to: "/ticket-check", icon: ScanText },
 ]
 export default SIDEBAR_ITEMS

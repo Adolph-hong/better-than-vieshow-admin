@@ -1,46 +1,32 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { X } from "lucide-react"
 import AgeBadge from "@/components/timelines/AgeBadge"
-import { theaters, type TheaterType } from "@/components/timelines/timelineData"
+import type {
+  GroupedScheduleResponse,
+  MovieShowtimeGroup,
+  TheaterTypeGroup,
+  GroupedShowtimeItem,
+} from "@/services/timelineAPI"
 
-interface Movie {
-  id: string
-  movieName: string
-  duration: string
-  poster: string
-  category?: string
-}
-
-interface Schedule {
-  id: string
-  movieId: string
-  theaterId: string
-  startTime: string
-  endTime: string
-  movie: Movie
-}
-
-interface SchedulePreviewProps {
+export interface SchedulePreviewProps {
   formattedDate: string
-  schedules: Schedule[]
+  groupedSchedule: GroupedScheduleResponse
   onClose: () => void
 }
 
-const formatDuration = (minutes: string): string => {
-  const totalMinutes = parseInt(minutes, 10)
-  if (Number.isNaN(totalMinutes) || totalMinutes <= 0) return ""
-  const hours = Math.floor(totalMinutes / 60)
-  const mins = totalMinutes % 60
-  if (hours === 0) {
-    return `${mins} 分鐘`
+// 將 API 的 rating 轉換為前端使用的 category
+const convertRatingToCategory = (rating: string | null): string | undefined => {
+  if (!rating) return undefined
+  const ratingMap: Record<string, string> = {
+    G: "普遍級",
+    P: "保護級",
+    PG: "輔導級",
+    R: "限制級",
   }
-  if (mins === 0) {
-    return `${hours} 小時`
-  }
-  return `${hours} 小時 ${mins} 分鐘`
+  return ratingMap[rating] || undefined
 }
 
-const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewProps) => {
+const SchedulePreview = ({ formattedDate, groupedSchedule, onClose }: SchedulePreviewProps) => {
   const previewRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
 
@@ -74,68 +60,6 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [handleClose])
-
-  const schedulesByType = useMemo(() => {
-    const grouped: Record<TheaterType, typeof schedules> = {
-      數位: [],
-      "3DX": [],
-      IMAX: [],
-    }
-
-    schedules.forEach((schedule) => {
-      const theater = theaters.find((t) => t.id === schedule.theaterId)
-      if (theater) {
-        grouped[theater.type].push(schedule)
-      }
-    })
-
-    return grouped
-  }, [schedules])
-
-  const movieTypeList = useMemo(() => {
-    const types: TheaterType[] = ["數位", "3DX", "IMAX"]
-    const result: Array<{
-      movie: Movie
-      type: TheaterType
-      showtimes: { startTime: string; theaterId: string }[]
-    }> = []
-
-    types.forEach((type) => {
-      const typeSchedules = schedulesByType[type]
-      const movieGroups = typeSchedules.reduce(
-        (acc, schedule) => {
-          if (!acc[schedule.movieId]) {
-            acc[schedule.movieId] = {
-              movie: schedule.movie,
-              showtimes: [],
-            }
-          }
-          acc[schedule.movieId].showtimes.push({
-            startTime: schedule.startTime,
-            theaterId: schedule.theaterId,
-          })
-          return acc
-        },
-        {} as Record<
-          string,
-          {
-            movie: Movie
-            showtimes: { startTime: string; theaterId: string }[]
-          }
-        >
-      )
-
-      Object.values(movieGroups).forEach((group) => {
-        result.push({
-          movie: group.movie,
-          type,
-          showtimes: group.showtimes.sort((a, b) => a.startTime.localeCompare(b.startTime)),
-        })
-      })
-    })
-
-    return result
-  }, [schedulesByType])
 
   return (
     <>
@@ -171,53 +95,62 @@ const SchedulePreview = ({ formattedDate, schedules, onClose }: SchedulePreviewP
 
           {/* 內容區域 */}
           <div className="flex-1 overflow-y-auto">
-            {movieTypeList.length === 0 ? (
+            {groupedSchedule.movieShowtimes.length === 0 ? (
               <div className="flex h-full items-center justify-center">
                 <p className="body-medium text-gray-400">目前沒有排程</p>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {movieTypeList.map(({ movie, type, showtimes }) => (
-                  <div key={`${movie.id}-${type}`} className="flex gap-3 rounded-sm bg-gray-900">
-                    {/* 電影海報 */}
-                    <img
-                      src={movie.poster || ""}
-                      alt={movie.movieName}
-                      className="h-40 w-25 shrink-0 rounded-[10px] object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none"
-                      }}
-                    />
+                {groupedSchedule.movieShowtimes.flatMap((movieGroup: MovieShowtimeGroup) => {
+                  // 遍歷每個影廳類型分組
+                  return movieGroup.theaterTypeGroups.map((theaterTypeGroup: TheaterTypeGroup) => {
+                    const theaterTypeDisplay = theaterTypeGroup.theaterTypeDisplay || "一般數位"
+                    return (
+                      <div
+                        key={`${movieGroup.movieId}-${theaterTypeGroup.theaterType || "unknown"}`}
+                        className="flex gap-3 rounded-sm bg-gray-900"
+                      >
+                        {/* 電影海報 */}
+                        <img
+                          src={movieGroup.posterUrl || ""}
+                          alt={movieGroup.movieTitle || ""}
+                          className="h-40 w-25 shrink-0 rounded-[10px] object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none"
+                          }}
+                        />
 
-                    {/* 電影資訊 */}
-                    <div className="flex flex-1 flex-col p-1">
-                      {/* 片名 片長 分級 */}
-                      <div className="flex justify-between">
-                        {/* 片名 片長 */}
-                        <div className="flex flex-col gap-1">
-                          <h3 className="header-3 text-[#F2F2F2]">
-                            {movie.movieName}({type})
-                          </h3>
-                          <p className="body-medium text-[#F2F2F2]">
-                            片長 {formatDuration(movie.duration)}
-                          </p>
+                        {/* 電影資訊 */}
+                        <div className="flex flex-1 flex-col p-1">
+                          {/* 片名 片長 分級 */}
+                          <div className="flex justify-between">
+                            {/* 片名 片長 */}
+                            <div className="flex flex-col gap-1">
+                              <h3 className="header-3 text-[#F2F2F2]">
+                                {movieGroup.movieTitle || "未知電影"}({theaterTypeDisplay})
+                              </h3>
+                              <p className="body-medium text-[#F2F2F2]">
+                                片長 {movieGroup.durationDisplay || `${movieGroup.duration} 分鐘`}
+                              </p>
+                            </div>
+                            <AgeBadge category={convertRatingToCategory(movieGroup.rating)} />
+                          </div>
+                          {/* 場次時間 */}
+                          <div className="grid grid-cols-5">
+                            {theaterTypeGroup.showtimes.map((showtime: GroupedShowtimeItem) => (
+                              <span
+                                key={`${showtime.theaterId}-${showtime.startTime}`}
+                                className="header-3 flex text-[#F2F2F2]"
+                              >
+                                {showtime.startTime}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <AgeBadge category={movie.category} />
                       </div>
-                      {/* 場次時間 */}
-                      <div className="grid grid-cols-5">
-                        {showtimes.map((showtime) => (
-                          <span
-                            key={`${showtime.theaterId}-${showtime.startTime}`}
-                            className="header-3 flex text-[#F2F2F2]"
-                          >
-                            {showtime.startTime}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    )
+                  })
+                })}
               </div>
             )}
           </div>

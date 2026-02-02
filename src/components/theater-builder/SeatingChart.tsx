@@ -39,15 +39,6 @@ const SeatingChart = ({
   const [isDragging, setIsDragging] = useState(false)
   const processedSeatsRef = useRef<Set<string>>(new Set())
 
-  const screenWidth = useMemo(() => {
-    const seatWidth = 40
-    const seatGap = 8
-    const cols = Math.max(columnsCount, 1)
-    const totalSeatWidth = cols * seatWidth
-    const totalGapWidth = Math.max(cols - 1, 0) * seatGap
-    return totalSeatWidth + totalGapWidth
-  }, [columnsCount])
-
   const rows: RowLabel[] = useMemo(() => {
     return Array.from({ length: rowsCount }, (_, i) => String.fromCharCode(65 + i))
   }, [rowsCount])
@@ -130,6 +121,7 @@ const SeatingChart = ({
 
   const renderSeat = (row: RowLabel, col: number) => {
     const type = getSeatType(row, col)
+    const seatId = `seat-${row}-${col}`
 
     const baseClasses =
       "flex h-10 w-10 items-center justify-center rounded border transition-colors hover:cursor-pointer"
@@ -146,38 +138,45 @@ const SeatingChart = ({
       case "accessible":
         return (
           <button
-            key={`${row}-${col}`}
+            id={seatId}
+            type="button"
             className={`${baseClasses} border-white bg-[#A0CBA3]`}
             title={`${row}${col} - 無障礙座位`}
-            aria-label={`${row}${col} - 無障礙座位`}
+            aria-label={`座位 ${row}${col}，無障礙座位`}
+            aria-pressed="true"
+            aria-describedby="seat-legend"
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
           >
-            <Accessibility className="h-5 w-5 text-white" />
+            <Accessibility className="h-6 w-6 text-white" aria-hidden="true" />
           </button>
         )
       case "aisle":
         return (
           <button
-            key={`${row}-${col}`}
-            className={`${baseClasses} border-white bg-gray-200`}
+            id={seatId}
+            type="button"
+            className={`${baseClasses} border-white bg-[#F2F2F2]`}
             title={`${row}${col} - 走道`}
-            aria-label={`${row}${col} - 走道`}
+            aria-label={`位置 ${row}${col}，走道`}
+            aria-pressed="true"
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
           >
-            <Minus className="h-4 w-4 text-gray-300" />
+            <Minus className="h-6 w-6 text-gray-300" aria-hidden="true" />
           </button>
         )
       case "empty":
         return (
           <button
-            key={`${row}-${col}`}
+            id={seatId}
+            type="button"
             className={`${baseClasses} border-[#C2C2C2] bg-white`}
             title={`${row}${col} - 空白`}
-            aria-label={`${row}${col} - 空白`}
+            aria-label={`位置 ${row}${col}，未設定`}
+            aria-pressed="false"
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
@@ -187,15 +186,18 @@ const SeatingChart = ({
       default:
         return (
           <button
-            key={`${row}-${col}`}
+            id={seatId}
+            type="button"
             className={`${baseClasses} border-white bg-[#8EAFCB]`}
             title={`${row}${col} - 一般座位`}
-            aria-label={`${row}${col} - 一般座位`}
+            aria-label={`座位 ${row}${col}，一般座位`}
+            aria-pressed="true"
+            aria-describedby="seat-legend"
             onMouseDown={handleMouseDown}
             onMouseEnter={handleMouseEnter}
             onClick={handleClick}
           >
-            <Armchair className="h-5 w-5 text-white" />
+            <Armchair className="h-6 w-6 text-white" aria-hidden="true" />
           </button>
         )
     }
@@ -291,66 +293,68 @@ const SeatingChart = ({
   }, [isDragging])
 
   return (
-    <div className="flex justify-start bg-[#E7E8EF] p-6">
+    <section className="flex justify-start bg-[#E7E8EF]" aria-label="座位配置編輯器">
       <div className="flex w-full max-w-6xl justify-start">
-        <div className="flex flex-1 flex-col items-start">
-          <div className="rounded-sm bg-white px-6 pt-4 pb-6">
-            <div className="flex w-full justify-center px-4" style={{ marginBottom: "19px" }}>
-              <div
-                className="flex flex-col items-center gap-2"
-                style={{
-                  width: `${screenWidth}px`,
-                }}
-              >
-                <span className="text-sm font-normal">螢幕</span>
-                <div className="h-1 w-full bg-[#243B97]" />
-              </div>
-            </div>
-            <div className="mb-2 flex items-center gap-1">
-              <div className="h-10 w-10" />
-              <div className="flex gap-2">
-                {allColumns.map((col) => {
-                  if (isColumnAllAisle(col)) {
-                    return <div key={col} className="h-10 w-10" />
-                  }
-                  const actualLabel = getColumnLabel(col)
+        <article className="flex flex-1 flex-col items-start">
+          <div className="rounded-sm bg-white p-4">
+            <figure className="flex flex-col items-center gap-2" style={{ marginBottom: "19px" }}>
+              <figcaption className="text-sm font-normal">螢幕</figcaption>
+              <div className="h-1 w-full bg-[#243B97]" aria-hidden="true" />
+            </figure>
+
+            <table
+              role="grid"
+              aria-label="座位配置表"
+              aria-rowcount={rows.length}
+              aria-colcount={columnsCount}
+              className="border-separate border-spacing-2"
+            >
+              <thead>
+                <tr role="row">
+                  <th scope="col" className="h-10 w-10" aria-hidden="true" />
+                  {allColumns.map((col) => {
+                    if (isColumnAllAisle(col)) {
+                      return <th key={col} scope="col" className="h-10 w-10" aria-hidden="true" />
+                    }
+                    const actualLabel = getColumnLabel(col)
+                    return (
+                      <th
+                        key={col}
+                        scope="col"
+                        className="h-10 w-10 text-center text-[18px] font-medium text-gray-300"
+                      >
+                        {actualLabel}
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, rowIndex) => {
+                  const shouldShowRowLabel = !isRowAllAisle(row)
+                  const actualLabel = shouldShowRowLabel ? getRowLabel(rowIndex) : ""
                   return (
-                    <div
-                      key={col}
-                      className="flex h-10 w-10 items-center justify-center text-center text-[18px] font-medium text-gray-300"
-                    >
-                      {actualLabel}
-                    </div>
+                    <tr key={row} role="row">
+                      <th
+                        scope="row"
+                        className="h-10 w-10 text-center text-[18px] font-medium text-gray-300"
+                      >
+                        {actualLabel}
+                      </th>
+                      {allColumns.map((col) => (
+                        <td key={`${row}-${col}`} role="gridcell">
+                          {renderSeat(row, col)}
+                        </td>
+                      ))}
+                    </tr>
                   )
                 })}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              {rows.map((row, rowIndex) => {
-                const shouldShowRowLabel = !isRowAllAisle(row)
-                const actualLabel = shouldShowRowLabel ? getRowLabel(rowIndex) : ""
-                return (
-                  <div key={row}>
-                    <div className="flex items-center gap-1">
-                      <div className="flex h-10 w-10 items-center justify-center text-center text-[18px] font-medium text-gray-300">
-                        {actualLabel}
-                      </div>
-
-                      <div className="flex gap-2">
-                        {allColumns.map((col) => (
-                          <div key={`${row}-${col}`}>{renderSeat(row, col)}</div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+              </tbody>
+            </table>
           </div>
-        </div>
+        </article>
       </div>
-    </div>
+    </section>
   )
 }
 

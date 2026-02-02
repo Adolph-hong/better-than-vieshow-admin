@@ -12,6 +12,7 @@ interface ScheduleNavProps {
   onPreview?: () => void
   onStartSelling?: () => void
   onDuplicate?: () => void
+  isLoadingPreview?: boolean
 }
 
 const ScheduleNav = ({
@@ -25,6 +26,7 @@ const ScheduleNav = ({
   onPreview,
   onStartSelling,
   onDuplicate,
+  isLoadingPreview = false,
 }: ScheduleNavProps) => {
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -94,13 +96,18 @@ const ScheduleNav = ({
                 {/* 預覽 */}
                 <button
                   type="button"
-                  className="font-family-inter w-full cursor-pointer rounded-lg px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                  disabled={isLoadingPreview}
+                  className={`font-family-inter w-full rounded-lg px-4 py-2 text-left text-sm text-gray-900 ${
+                    isLoadingPreview
+                      ? "cursor-not-allowed opacity-60"
+                      : "cursor-pointer hover:bg-gray-100"
+                  }`}
                   onClick={() => {
                     onPreview?.()
                     setShowMenu(false)
                   }}
                 >
-                  預覽
+                  {isLoadingPreview ? "載入中..." : "預覽"}
                 </button>
 
                 {isPublished ? (

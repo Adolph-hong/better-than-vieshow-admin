@@ -175,13 +175,13 @@ const TheaterScheduleList = ({
   return (
     <div className="flex h-full w-full overflow-x-auto overflow-y-auto rounded-sm bg-white [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div className="flex py-2">
-        {theaters.map((theater, index) => (
+        {theaters.map((theater) => (
           <div
             key={theater.id}
-            className={`flex w-full min-w-46.5 flex-col gap-2 p-2 ${index < theaters.length - 1 ? "border-r border-gray-50" : ""}`}
+            className="flex w-full min-w-46.5 flex-col gap-2 border-r border-gray-50 p-2"
           >
             <div className="flex flex-col gap-1 bg-white">
-              <span className="body-medium text-gray-900">
+              <span className="body-medium line-clamp-2 h-10 w-43 break-all text-gray-900">
                 {theater.name}({theater.type})
               </span>
               <div className="font-family-inter flex w-full justify-between text-xs font-normal text-gray-300">
@@ -189,7 +189,7 @@ const TheaterScheduleList = ({
                 <span>{theater.generalSeats} 位</span>
               </div>
               <div className="font-family-inter flex w-full justify-between text-xs font-normal text-gray-300">
-                <span>殘障座位</span>
+                <span>友善座位</span>
                 <span>{theater.disabledSeats} 位</span>
               </div>
             </div>

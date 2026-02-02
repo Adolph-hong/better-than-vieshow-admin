@@ -124,13 +124,18 @@ const SeatingChartView = ({ seatMap, title, onClose }: SeatingChartViewProps) =>
         <div className="h-1 w-full bg-[#243B97]" />
       </div>
 
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2">
-          <div className="h-10 w-10 flex-shrink-0" />
+      <div
+        className="flex flex-col items-center gap-2"
+        role="grid"
+        aria-label={`${title} 座位網格`}
+      >
+        <div className="flex items-center gap-2" role="row">
+          <div className="h-10 w-10 shrink-0" role="presentation" />
           {columns.map((col) => (
             <div
               key={col}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-center text-[18px] font-medium text-gray-300"
+              className="flex h-10 w-10 shrink-0 items-center justify-center text-center text-[18px] font-medium text-gray-300"
+              role="columnheader"
             >
               {col}
             </div>
@@ -138,12 +143,15 @@ const SeatingChartView = ({ seatMap, title, onClose }: SeatingChartViewProps) =>
         </div>
 
         {rows.map((row) => (
-          <div key={row} className="flex items-center gap-2">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-center text-[18px] font-medium text-gray-300">
+          <div key={row} className="flex items-center gap-2" role="row">
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center text-center text-[18px] font-medium text-gray-300"
+              role="rowheader"
+            >
               {row}
             </div>
             {columns.map((col) => (
-              <div key={`${row}-${col}`} className="flex-shrink-0">
+              <div key={`${row}-${col}`} className="shrink-0" role="gridcell">
                 {renderSeat(row, col)}
               </div>
             ))}

@@ -1,6 +1,9 @@
-import { NavLink, useLocation } from "react-router-dom"
+import { useState } from "react"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
+import { Menu, MenuItem } from "@mui/material"
 import adminLogo from "@/assets/icon/admin-logo.png"
 import adminPhoto from "@/assets/icon/admin-photo.svg"
+import logoText from "@/assets/icon/logoText.svg"
 import SIDEBAR_ITEMS from "@/components/layout/sidebarItem"
 
 interface SidebarProps {
@@ -17,6 +20,25 @@ const sidebarStyle = (isActive: boolean) => {
 
 const Sidebar = ({ borderColor = "border-white" }: SidebarProps) => {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    localStorage.removeItem("userEmail")
+    handleClose()
+    navigate("/login")
+  }
 
   const checkIsActive = (to: string, currentPath: string) => {
     if (to === "/#") {
@@ -30,15 +52,12 @@ const Sidebar = ({ borderColor = "border-white" }: SidebarProps) => {
 
   return (
     <aside
-      className={`flex min-h-screen w-[239px] shrink-0 flex-col border-r bg-white py-6 ${borderColor}`}
+      className={`sticky top-0 flex h-screen w-[239px] shrink-0 flex-col border-r bg-white py-6 ${borderColor}`}
     >
       {/* 上方logo與主題文字 */}
       <section className="mb-6 ml-4 flex text-[#333333]">
         <img src={adminLogo} alt="logo" />
-        <div className="flex flex-col items-center py-1.5">
-          <span className="font-family-inter text-sm leading-[1.2] font-bold">Better Than</span>
-          <span className="font-family-noto-serif text-2xl leading-[1.2] font-semibold">威秀</span>
-        </div>
+        <img src={logoText} alt="Better Than 威秀" className="h-14.5" />
       </section>
       {/* 中間選單 */}
       <section className="flex flex-col">
@@ -66,16 +85,36 @@ const Sidebar = ({ borderColor = "border-white" }: SidebarProps) => {
       {/* 下方會員 */}
       <section className="mt-auto px-3">
         <div className="flex gap-3">
-          <img src={adminPhoto} alt="admin-photo" />
+          <button
+            type="button"
+            onClick={handleClick}
+            className="cursor-pointer border-none bg-transparent p-0 outline-none"
+            aria-controls={open ? "account-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+          >
+            <img src={adminPhoto} alt="admin-photo" />
+          </button>
           <div className="mt-auto flex h-[45px] min-w-0 flex-1 flex-col justify-end gap-1">
             <span className="font-inter text-lg leading-none font-semibold text-[#000000]">
-              Zhen Yu
+              {localStorage.getItem("user") || "未登入"}
             </span>
             <span className="font-inter truncate text-sm font-normal text-[#BAB9BE]">
-              zhen-yu@gmail.com
+              {localStorage.getItem("userEmail") || "未登入"}
             </span>
           </div>
         </div>
+        <Menu
+          id="account-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          onClick={handleClose}
+          transformOrigin={{ horizontal: "right", vertical: "bottom" }}
+          anchorOrigin={{ horizontal: "right", vertical: "top" }}
+        >
+          <MenuItem onClick={handleLogout}>登出</MenuItem>
+        </Menu>
       </section>
     </aside>
   )
