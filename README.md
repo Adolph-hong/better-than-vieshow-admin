@@ -1,75 +1,82 @@
-# React + TypeScript + Vitee
+# Better Than 威秀 - 後台管理系統
 
-Dev001
+> 本產品以提升整體電影購票流程的使用體驗為目標，打造一套包含前後台操作更直覺的電影購票系統。
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📌 專案簡介
 
-Currently, two official plugins are available:
+這是一個現代化的電影購票系統後台管理應用，提供完整的影廳管理、電影管理、場次管理、訂單管理等功能。採用直覺的管理介面，讓管理人員能夠輕鬆維護整個電影購票系統。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔗 相關連結
 
-## React Compiler
+- **後台展示**：[https://better-than-vieshow-admin.vercel.app/]
+- **前台 Repository**：[https://github.com/Adolph-hong/better-than-vieshow-user]
+- **前台展示**：[https://better-than-vieshow-user.vercel.app/]
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 測試帳號 (Demo 專用)
+若您欲進入系統體驗完整流程，可使用以下測試資訊：
+- **測試帳號**：`guest@test.com` 
+- **測試密碼**：`Abcd1234`
 
-## Expanding the ESLint configuration
+> [!TIP]
+> 為了最佳體驗，建議使用桌面瀏覽器開啟後台管理系統。
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ 技術棧
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+### 核心框架
+- **React 19** - 前端開發
+- **TypeScript** - 型別安全
+- **Vite** - 建置工具與開發伺服器
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### UI/UX
+- **Material UI (MUI) 7** - UI 元件庫
+- **Tailwind CSS 4** - 樣式框架
+- **Lucide React** - 圖示庫
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 功能套件
+- **React Router DOM** - 路由管理
+- **React Hot Toast** - 通知提示
+- **React Hook Form** - 表單處理
+- **html5-qrcode** - 票券 QR Code 掃描驗證
+- **date-fns** - 日期處理工具
+- **react-select** / **react-dropzone** / **react-day-picker** - 表單互動元件
+- **react-spinners** - 載入狀態動畫
+
+### 開發工具
+- **ESLint** - 程式碼檢查（Airbnb 規範）
+- **Prettier** - 程式碼格式化
+
+## 🎯 主要功能
+
+- **影廳管理** - 新增、編輯、刪除影廳資訊
+- **電影管理** - 管理電影資料、海報、分級與類型
+- **場次管理 (Timelines)** - 排程電影場次與時間管理
+- **票券驗證 (Ticket Check)** - 透過掃描 QR Code 進行票券狀態驗證
+- **訂單管理** - 查看管理系統內的所有訂單資訊
+- **儀表板 (Dashboard)** - 系統數據總覽與即時統計
+
+## 📁 專案結構
+
+```
+better-than-vieshow-admin/
+├── pages/              # 頁面元件
+│   ├── login/         # 登入頁面
+│   ├── theaters/      # 影廳管理
+│   ├── movies/        # 電影管理
+│   ├── timelines/     # 場次 (時間軸) 管理
+│   └── TicketCheck.tsx # 票券掃描驗證
+├── src/
+│   ├── components/    # 共用元件
+│   ├── services/      # API 服務 (movieAPI, ticketAPI, timelineAPI)
+│   ├── config/        # API 設定與環境變數連結
+│   ├── utils/         # 工具函式 (sendAPI 等)
+│   └── contexts/      # React Context (TheaterContext 等)
+└── public/            # 靜態資源
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🚀 部署
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x"
-import reactDom from "eslint-plugin-react-dom"
+專案已配置 Vercel 部署設定（`vercel.json`），可直接部署至 Vercel 平台。
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📄 授權
+
+本專案僅供學習與展示使用。
