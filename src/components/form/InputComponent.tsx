@@ -10,6 +10,8 @@ interface InputComponentProps<T extends FieldValues> {
   suffix?: string
   as?: "input" | "textarea"
   validation?: RegisterOptions<T, FieldPath<T>>
+  showRequiredBadge?: boolean
+  isFilled?: boolean
 }
 
 const InputComponent = <T extends FieldValues>({
@@ -22,10 +24,21 @@ const InputComponent = <T extends FieldValues>({
   suffix,
   as = "input",
   validation,
+  showRequiredBadge = false,
+  isFilled = false,
 }: InputComponentProps<T>) => {
+  const shouldShowRequired = showRequiredBadge && !isFilled
+
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
-      <label htmlFor={registerName}>{label}</label>
+      <label htmlFor={registerName} className="flex items-center gap-2">
+        <span>{label}</span>
+        {shouldShowRequired && (
+          <span className="body-small rounded-full bg-[#FFF0F0] px-2 py-0.5 text-[10px] text-[#E54848]">
+            必填
+          </span>
+        )}
+      </label>
       <div className="relative">
         {as === "textarea" ? (
           <textarea

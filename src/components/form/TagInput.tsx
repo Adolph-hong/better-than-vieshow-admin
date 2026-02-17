@@ -11,9 +11,20 @@ interface TagInputProps {
   placeholder?: string
   error?: string
   inputId: string
+  showRequiredBadge?: boolean
+  isFilled?: boolean
 }
 
-const TagInput = ({ label, name, control, placeholder, error, inputId }: TagInputProps) => {
+const TagInput = ({
+  label,
+  name,
+  control,
+  placeholder,
+  error,
+  inputId,
+  showRequiredBadge = false,
+  isFilled,
+}: TagInputProps) => {
   const { field } = useController({ name, control })
   const fieldValue = typeof field.value === "string" ? field.value : ""
   const [tags, setTags] = useState<string[]>(
@@ -101,9 +112,19 @@ const TagInput = ({ label, name, control, placeholder, error, inputId }: TagInpu
     }
   }, [inputValue, tags, field])
 
+  const isFieldFilled = typeof isFilled === "boolean" ? isFilled : tags.length > 0
+  const shouldShowRequired = showRequiredBadge && !isFieldFilled
+
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
-      <span>{label}</span>
+      <span className="flex items-center gap-2">
+        <span>{label}</span>
+        {shouldShowRequired && (
+          <span className="body-small rounded-full bg-[#FFF0F0] px-2 py-0.5 text-[10px] text-[#E54848]">
+            必填
+          </span>
+        )}
+      </span>
       <input type="hidden" {...field} value={fieldValue} />
       <label
         htmlFor={inputId}

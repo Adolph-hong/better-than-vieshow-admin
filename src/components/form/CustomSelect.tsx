@@ -15,6 +15,8 @@ interface CustomSelectProps<T extends FieldValues> {
   control: Control<T>
   error?: string
   options: Option[]
+  showRequiredBadge?: boolean
+  isFilled?: boolean
 }
 
 const CustomSelect = <T extends FieldValues>({
@@ -24,12 +26,22 @@ const CustomSelect = <T extends FieldValues>({
   control,
   error,
   options,
+  showRequiredBadge = false,
+  isFilled = false,
 }: CustomSelectProps<T>) => {
   const [open, setOpen] = useState(false)
+  const shouldShowRequired = showRequiredBadge && !isFilled
 
   return (
     <div className="font-family-inter relative flex flex-col gap-2 text-sm font-medium text-[#000000]">
-      <label htmlFor={name}>{label}</label>
+      <label htmlFor={name} className="flex items-center gap-2">
+        <span>{label}</span>
+        {shouldShowRequired && (
+          <span className="body-small rounded-full bg-[#FFF0F0] px-2 py-0.5 text-[10px] text-[#E54848]">
+            必填
+          </span>
+        )}
+      </label>
       <Controller
         name={name}
         control={control}
