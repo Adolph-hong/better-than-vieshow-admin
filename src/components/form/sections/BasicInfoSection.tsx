@@ -1,3 +1,4 @@
+import { useWatch } from "react-hook-form"
 import CustomSelect from "../CustomSelect"
 import FilmTypeSelect from "../FilmTypeSelect"
 import InputComponent from "../InputComponent"
@@ -14,6 +15,13 @@ interface BasicInfoSectionProps {
 }
 
 const BasicInfoSection = ({ register, control, errors, isEditMode }: BasicInfoSectionProps) => {
+  const movieName = useWatch({ control, name: "movieName" })
+  const filmType = useWatch({ control, name: "filmType" })
+  const duration = useWatch({ control, name: "duration" })
+  const category = useWatch({ control, name: "category" })
+
+  const showRequiredBadge = !isEditMode
+
   return (
     <section className="flex justify-between border-t border-gray-100 py-6">
       <TitleComponent
@@ -27,8 +35,16 @@ const BasicInfoSection = ({ register, control, errors, isEditMode }: BasicInfoSe
           register={register}
           registerName="movieName"
           error={errors.movieName?.message}
+          showRequiredBadge={showRequiredBadge}
+          isFilled={typeof movieName === "string" && movieName.trim().length > 0}
         />
-        <FilmTypeSelect name="filmType" control={control} error={errors.filmType?.message} />
+        <FilmTypeSelect
+          name="filmType"
+          control={control}
+          error={errors.filmType?.message}
+          showRequiredBadge={showRequiredBadge}
+          isFilled={typeof filmType === "string" && filmType.trim().length > 0}
+        />
         <div className="flex gap-6">
           <div className="flex-1">
             <InputComponent
@@ -39,6 +55,8 @@ const BasicInfoSection = ({ register, control, errors, isEditMode }: BasicInfoSe
               registerName="duration"
               error={errors.duration?.message}
               suffix="分鐘"
+              showRequiredBadge={showRequiredBadge}
+              isFilled={typeof duration === "string" && duration.trim().length > 0}
             />
           </div>
           <div className="flex-1">
@@ -48,6 +66,8 @@ const BasicInfoSection = ({ register, control, errors, isEditMode }: BasicInfoSe
               name="category"
               control={control}
               error={errors.category?.message}
+              showRequiredBadge={showRequiredBadge}
+              isFilled={typeof category === "string" && category.trim().length > 0}
               options={[
                 { label: "普遍級", value: "G" },
                 { label: "輔導級", value: "PG-12" },
