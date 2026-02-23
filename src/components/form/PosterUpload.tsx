@@ -10,6 +10,8 @@ interface PosterUploadProps {
   accept?: string[]
   existingImageUrl?: string | null
   onChange?: (file: File | null, event?: DropEvent) => void
+  showRequiredBadge?: boolean
+  isFilled?: boolean
 }
 
 const PosterUpload = ({
@@ -18,6 +20,8 @@ const PosterUpload = ({
   accept = ["image/jpeg", "image/png"],
   existingImageUrl,
   onChange,
+  showRequiredBadge = false,
+  isFilled,
 }: PosterUploadProps) => {
   const [file, setFile] = useState<File | null>(null)
 
@@ -73,9 +77,19 @@ const PosterUpload = ({
     return "cursor-pointer border-dashed border-[#d8d8d8] bg-white text-gray-700"
   }
 
+  const isFieldFilled = typeof isFilled === "boolean" ? isFilled : !!previewUrl
+  const shouldShowRequired = showRequiredBadge && !isFieldFilled
+
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
-      <span>{label}</span>
+      <span className="flex items-center gap-2">
+        <span>{label}</span>
+        {shouldShowRequired && (
+          <span className="body-small rounded-full bg-[#FFF0F0] px-2 py-0.5 text-[10px] text-[#E54848]">
+            必填
+          </span>
+        )}
+      </span>
 
       <div
         {...(previewUrl ? {} : getRootProps())}

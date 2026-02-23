@@ -58,8 +58,9 @@ const MovieForm = ({ movieId }: MovieFormProps) => {
         errors={errors}
         setValue={setValue}
         originalPosterUrl={originalPosterUrl}
+        isEditMode={isEditMode}
       />
-      <PlayPeriodSection control={control} errors={errors} />
+      <PlayPeriodSection control={control} errors={errors} isEditMode={isEditMode} />
       <FormActions isEditMode={isEditMode} isSubmitting={isSubmitting} />
     </form>
   )

@@ -13,6 +13,7 @@ interface MovieInfoSectionProps {
   errors: FieldErrors<MovieFormValues>
   setValue: UseFormSetValue<MovieFormValues>
   originalPosterUrl: string | null
+  isEditMode: boolean
 }
 
 // 將 YouTube URL 轉換為嵌入 URL
@@ -58,8 +59,15 @@ const MovieInfoSection = ({
   errors,
   setValue,
   originalPosterUrl,
+  isEditMode,
 }: MovieInfoSectionProps) => {
   const trailerLink = useWatch({ control, name: "trailerLink" })
+  const director = useWatch({ control, name: "director" })
+  const actors = useWatch({ control, name: "actors" })
+  const describe = useWatch({ control, name: "describe" })
+  const poster = useWatch({ control, name: "poster" })
+
+  const showRequiredBadge = !isEditMode
   const embedUrl = useMemo(() => {
     if (!trailerLink || typeof trailerLink !== "string") return null
     return getYouTubeEmbedUrl(trailerLink.trim())
@@ -76,6 +84,8 @@ const MovieInfoSection = ({
           placeholder="導演"
           error={errors.director?.message}
           inputId="director-input"
+          showRequiredBadge={showRequiredBadge}
+          isFilled={typeof director === "string" && director.trim().length > 0}
         />
         <TagInput
           label="演員"
@@ -84,6 +94,8 @@ const MovieInfoSection = ({
           placeholder="演員A、演員B、演員C"
           error={errors.actors?.message}
           inputId="actor-input"
+          showRequiredBadge={showRequiredBadge}
+          isFilled={typeof actors === "string" && actors.trim().length > 0}
         />
         <InputComponent
           label="描述"
@@ -92,6 +104,8 @@ const MovieInfoSection = ({
           registerName="describe"
           error={errors.describe?.message}
           as="textarea"
+          showRequiredBadge={showRequiredBadge}
+          isFilled={typeof describe === "string" && describe.trim().length > 0}
         />
         <div className="flex flex-col gap-2">
           <InputComponent
@@ -100,6 +114,8 @@ const MovieInfoSection = ({
             register={register}
             registerName="trailerLink"
             error={errors.trailerLink?.message}
+            showRequiredBadge={showRequiredBadge}
+            isFilled={typeof trailerLink === "string" && trailerLink.trim().length > 0}
           />
           {embedUrl && (
             <div className="mt-2 w-full overflow-hidden rounded-lg">
@@ -124,6 +140,8 @@ const MovieInfoSection = ({
           placeholder="JPG or PNG"
           existingImageUrl={originalPosterUrl}
           onChange={(file) => setValue("poster", file)}
+          showRequiredBadge={showRequiredBadge}
+          isFilled={poster instanceof File}
         />
       </div>
     </section>
