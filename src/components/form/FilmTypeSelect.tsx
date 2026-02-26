@@ -7,6 +7,8 @@ interface FilmTypeSelectProps {
   name: "filmType"
   control: Control<MovieFormValues>
   error?: string
+  showRequiredBadge?: boolean
+  isFilled?: boolean
 }
 
 const filmTypeOptions = [
@@ -20,7 +22,13 @@ const filmTypeOptions = [
   { label: "喜劇", value: "喜劇" },
 ]
 
-const FilmTypeSelect = ({ name, control, error }: FilmTypeSelectProps) => {
+const FilmTypeSelect = ({
+  name,
+  control,
+  error,
+  showRequiredBadge = false,
+  isFilled = false,
+}: FilmTypeSelectProps) => {
   const { field } = useController({ name, control })
 
   const fieldValue = typeof field.value === "string" ? field.value : ""
@@ -33,9 +41,18 @@ const FilmTypeSelect = ({ name, control, error }: FilmTypeSelectProps) => {
         .filter(Boolean)
     : []
 
+  const shouldShowRequired = showRequiredBadge && !isFilled
+
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
-      <span>影片類型</span>
+      <span className="flex items-center gap-2">
+        <span>影片類型</span>
+        {shouldShowRequired && (
+          <span className="body-small rounded-full bg-[#FFF0F0] px-2 py-0.5 text-[10px] text-[#E54848]">
+            必填
+          </span>
+        )}
+      </span>
       <Select
         isMulti
         options={filmTypeOptions}

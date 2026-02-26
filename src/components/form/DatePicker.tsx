@@ -11,6 +11,8 @@ interface DatePickerProps {
   onChange: (value: string) => void
   error?: string
   placeholder?: string
+  showRequiredBadge?: boolean
+  isFilled?: boolean
 }
 
 const DatePicker = ({
@@ -19,6 +21,8 @@ const DatePicker = ({
   onChange,
   error,
   placeholder = "選擇日期",
+  showRequiredBadge = false,
+  isFilled = false,
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
@@ -67,9 +71,18 @@ const DatePicker = ({
 
   const buttonId = `datepicker-${label.replace(/\s+/g, "-").toLowerCase()}`
 
+  const shouldShowRequired = showRequiredBadge && !isFilled
+
   return (
     <div className="font-family-inter flex flex-col gap-2 text-sm font-medium text-[#000000]">
-      <label htmlFor={buttonId}>{label}</label>
+      <label htmlFor={buttonId} className="flex items-center gap-2">
+        <span>{label}</span>
+        {shouldShowRequired && (
+          <span className="body-small rounded-full bg-[#FFF0F0] px-2 py-0.5 text-[10px] text-[#E54848]">
+            必填
+          </span>
+        )}
+      </label>
       <div className="relative" ref={containerRef}>
         <button
           id={buttonId}
